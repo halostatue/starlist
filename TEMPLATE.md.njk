@@ -1,0 +1,33 @@
+# {{ username }} Star List [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/sindresorhus/awesome)
+
+> :star: generated with [halostatue/starlist](https://github.com/halostatue/starlist)
+
+Last updated {{ updatedAt.date }} {{ updatedAt.time }}
+
+{{ total }} stars in {{ languages | length }} languages
+
+## Table of Contents
+
+{% for language in languages %}
+## {{ language }}
+
+{% set repos = byLanguage[language] -%}
+{%- set count = repos | length -%}
+{% if count > 1 %}{{ count }} repos{% endif %}
+
+{% for repo in repos -%}
+- [{{ repo.name }}]({{ repo.url }}){% if repo.description %}: {{ repo.description }}{% endif %}
+
+  **Last Push**: {{ repo.pushedOn.date }} {{ repo.pushedOn.time }}
+  **Stars**: {{ repo.stars }} star{{ "s" if repo.stars > 1 }}
+  **Starred On**: {{ repo.starredOn.date }}
+  {% if repo.forks > 0 %}**Forks**: {{ repo.forks }} fork{{ "s" if repo.forks > 1 }}{% endif %}
+  {% if repo.archivedOn %}**Archived On**: {{ repo.archivedOn.date }}{% endif %}
+
+  {% if repo.topicCount > 0 %}**Topics**: {% for topic in repo.topics -%}
+  [{{ topic.name }}]({{ topic.url }}){{ ", " if loop.last != true }}
+  {% endfor %}{% endif %}
+{% endfor %}
+
+{% endfor %}
+

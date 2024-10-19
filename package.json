@@ -1,68 +1,68 @@
 {
-  "name": "mawesome",
-  "version": "2.2.0",
-  "description": "Generate awesome list from user starred repositories",
-  "main": "index.js",
-  "author": "Simone Corsi<simonecorsi.dev@gmail.com>",
-  "license": "MIT",
+  "name": "starlist",
+  "version": "3.0.0",
+  "description": "Generate a list from user starred GitHub repositories",
+  "author": "Austin Ziegler",
+  "type": "module",
+  "main": "lib/index.js",
   "scripts": {
-    "style:lint": "eslint src --ext .ts",
-    "style:prettier": "prettier \"src/**/*.ts\" --list-different --write",
-    "build": "./node_modules/.bin/ncc build src/index.ts -o ./",
-    "dev": "ts-node-dev src/index.ts",
-    "prepare": "node prepare.js || echo 'Skipping prepare'"
+    "build": "tsc",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "package": "ncc build --source-map --license licenses.txt --minify",
+    "all": "pnpm run build && pnpm run check && pnpm run package"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/halostatue/starlist.git"
   },
   "keywords": [
-    "github",
     "action",
     "awesome",
-    "list",
     "generator",
-    "typescript",
-    "javascript"
+    "github",
+    "javascript",
+    "list",
+    "stars",
+    "typescript"
   ],
+  "bugs": {
+    "url": "https://github.com/halostatue/starlist/issues"
+  },
+  "homepage": "https://github.com/halostatue/starlist#readme",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/exec": "^1.1.1",
+    "@actions/github": "^6.0.0",
+    "@octokit/core": "^6.1.2",
+    "@octokit/plugin-paginate-graphql": "^5.2.4",
+    "@octokit/plugin-throttling": "^9.3.2",
+    "@types/parse-link-header": "^2.0.3",
+    "gh-star-fetch": "^1.5.0",
+    "nunjucks": "^3.2.4",
+    "parse-link-header": "^2.0.0",
+    "remark": "^15.0.1",
+    "remark-toc": "^9.0.0",
+    "yaml": "^2.6.0"
+  },
   "devDependencies": {
-    "@commitlint/cli": "^18.6.1",
-    "@commitlint/config-conventional": "^18.6.2",
-    "@octokit/rest": "^20.0.2",
-    "@octokit/types": "^12.6.0",
-    "@saithodev/semantic-release-backmerge": "^4.0.1",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/commit-analyzer": "^11.1.0",
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^9.2.6",
-    "@semantic-release/release-notes-generator": "^12.1.0",
+    "@biomejs/biome": "1.9.4",
+    "@octokit/graphql-schema": "^15.25.0",
+    "@octokit/types": "^13.6.1",
     "@types/ejs": "^3.1.5",
     "@types/got": "^9.6.12",
-    "@types/node": "^20.11.30",
+    "@types/node": "^20.16.13",
+    "@types/nunjucks": "^3.2.6",
     "@types/sinon": "^17.0.3",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
-    "@vercel/ncc": "^0.38.1",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^5.1.3",
-    "husky": "^8.0.3",
-    "lint-staged": "^15.2.2",
-    "markdown-toc": "^1.2.0",
-    "nyc": "^15.0.1",
-    "prettier": "^3.2.5",
-    "sinon": "^17.0.1",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.4.3"
+    "@vercel/ncc": "^0.38.2",
+    "sinon": "^19.0.2",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
   },
-  "dependencies": {
-    "@actions/core": "^1.10.1",
-    "@actions/exec": "^1.1.1",
-    "ejs": "^3.1.10",
-    "gh-star-fetch": "^1.5.0",
-    "got": "^11.8.5",
-    "remark": "^15.0.1",
-    "remark-toc": "^9.0.0"
-  },
-  "volta": {
-    "node": "16.14.2",
-    "npm": "8.6.0"
-  }
+  "packageManager": "pnpm@9.12.2+sha512.22721b3a11f81661ae1ec68ce1a7b879425a1ca5b991c975b074ac220b187ce56c708fe5db69f4c962c989452eee76c82877f4ee80f474cebd61ee13461b6228"
 }

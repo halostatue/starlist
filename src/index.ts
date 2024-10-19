@@ -1,97 +1,72 @@
-import path from 'path';
-import * as core from '@actions/core';
-import { readFile } from 'fs/promises';
-import ghStarFetch, {
-  Options,
-  compactByLanguage,
-  compactByTopic,
-} from 'gh-star-fetch';
+import { readFileSync, writeFileSync } from 'node:fs'
+import * as core from '@actions/core'
 
-import {
-  renderer,
-  REPO_USERNAME,
-  generateMd,
-  MARKDOWN_FILENAME,
-} from './helpers';
-import git from './git';
+import { config } from './config.js'
+import * as git from './git.js'
+import * as markdown from './markdown.js'
+import { getStars, groupByFirstLanguage, groupByTopics } from './stars.js'
+import * as template from './template.js'
+
+import type { GeneratedFile, TemplateVars, Topic, Viewer } from './types.js'
 
 export async function main() {
-  // set default template
-  let template = await readFile(
-    path.resolve(__dirname, './TEMPLATE.ejs'),
-    'utf8'
-  );
+  const options = await config()
 
-  // get template if found in the repo
-  const customTemplatePath = core.getInput('template-path');
-  core.info(`check if customTemplatePath: ${customTemplatePath} exists`);
-  try {
-    template = await readFile(customTemplatePath, 'utf8');
-  } catch {
-    core.info("Couldn't find template file, using default");
+  const files: GeneratedFile[] = []
+  let viewer: Viewer
+
+  template.compile(readFileSync(options.templatePath, 'utf8'), options.templateName)
+
+  if (options.loadStarsFromJson) {
+    const data = readFileSync('data.json', 'utf-8')
+    viewer = JSON.parse(data) as Viewer
+  } else {
+    viewer = await getStars(options)
+
+    // Write `data.json` immediately on retrieval, and add the file for pushing.
+    writeFileSync('data.json', JSON.stringify(viewer))
+    files.push({ filename: 'data.json' })
   }
 
-  const opts: Partial<Options> = {
-    accessToken: core.getInput('api-token', { required: true }),
-  };
+  const byLanguage = groupByFirstLanguage(viewer.stars)
+  const byTopic = groupByTopics(viewer.stars)
+  const languages = Object.keys(byLanguage).sort()
+  const topics = Object.keys(byTopic)
+    .sort()
+    .map((name): Topic => ({ name, url: byTopic[name].url }))
 
-  const results = await ghStarFetch(opts);
-
-  const files = [];
-
-  const compactedByLanguage = compactByLanguage(results);
-  const byLanguage = await renderer(
-    {
-      username: REPO_USERNAME,
-      stars: Object.entries(compactedByLanguage),
-      updatedAt: Date.now(),
-    },
-    template
-  );
-
-  files.push(
-    {
-      filename: MARKDOWN_FILENAME,
-      data: await generateMd(byLanguage),
-    },
-    {
-      filename: 'data.json',
-      data: JSON.stringify(compactedByLanguage, null, 2),
-    }
-  );
-
-  if (core.getInput('compact-by-topic') === 'true') {
-    const compactedByTopic = compactByTopic(results);
-    const byTopic = await renderer(
-      {
-        username: REPO_USERNAME,
-        stars: Object.entries(compactedByTopic),
-        updatedAt: Date.now(),
-      },
-      template
-    );
-    files.push({
-      filename: 'TOPICS.md',
-      data: await generateMd(byTopic),
-    });
+  const vars: TemplateVars = {
+    ...viewer,
+    byLanguage,
+    byTopic,
+    languages,
+    topics,
   }
 
-  await git.pushNewFiles(files);
+  const rendered = template.render(vars)
+  files.push({
+    filename: options.outputFilename,
+    data: await markdown.generate(rendered),
+  })
+
+  await git.setup(options)
+  await git.pushFiles(files)
 }
 
 export async function run(): Promise<void> {
   try {
-    await main();
+    await main()
   } catch (error) {
-    core.setFailed(`#run: ${error}`);
+    core.setFailed(`#run: ${error}`)
   }
 }
 
 const catchAll = (info: string) => {
-  core.setFailed(`#catchAll: ${info}`);
-  core.error(info);
-};
-process.on('unhandledRejection', catchAll);
-process.on('uncaughtException', catchAll);
+  core.setFailed(`#catchAll: ${info}`)
+  core.error(info)
+}
 
-run().catch(core.error);
+process.on('unhandledRejection', catchAll)
+process.on('uncaughtException', catchAll)
+
+run().catch(core.error)
