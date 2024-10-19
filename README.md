@@ -1,79 +1,80 @@
-# My Awesome List
+# Starlist
 
-This action query the github api to get starred list of the user and then generates a list ordered by languages.
+This action queries the GitHub API to get list of the user's stars and generates
+a list ordered by implementation language. This is a fork of
+[simonecorsi/mawesome][simonecorsi/mawesome].
 
-You can see an example of the output at my own [simonecorsi/awesome](https://github.com/simonecorsi/awesome)
+An example can be seen at [halostatue/stars][halostatue/stars].
 
-## Table of Contents
+You can see an example of the output at my own
+[simonecorsi/awesome](https://github.com/simonecorsi/awesome)
 
-<!-- toc -->
-
-- [Documentation](#documentation)
-  - [Requirements](#requirements)
-  - [Configuration](#configuration)
-    - [`api-token`](#api-token)
-    - [`compact-by-topic`](#compact-by-topic)
-    - [`template-path`](#template-path)
-- [Example workflow](#example-workflow)
-
-<!-- tocstop -->
-
-## Documentation
-
-### Requirements
+## Requirements
 
 - An empty repository
-- A personal github api key
+- A personal GitHub API key
 
-### Configuration
+## Configuration
 
-The service can be configured setting the appropriate environment variables or writing an `.env` file.
+The service can be configured setting the appropriate environment variables in
+the workflow.
 
-| Variable           | Description                                                         | Default                          |
-| ------------------ | ------------------------------------------------------------------- | -------------------------------- |
-| `api-token`        | Personal Token is used to avoid rate limit, [read more](#api-token) | `${{ secrets.API_TOKEN }}`       |
-| `compact-by-topic` | Render another list in `TOPICS.md` compacted by github topics       | `'false'`                        |
-| `github-name`      | Name used for the commit                                            | Github Action                    |
-| `github-email`     | email used for commit                                               | actions@users.noreply.github.com |
-| `template-path`    | Custom `README.md` template, [read more](#template-path)            |
-| `output-filename`  | Output filename                                                     | `README.md`                      |
+### `api-token`
 
-#### `api-token`
+The Personal API Access Token is mandatory to fetch stars from the API without
+incurring in Rate Limits. You'll have to generate a
+[personal api token](https://github.com/settings/tokens/new) and then add it to
+your repository's secrets configuration.
 
-The Personal API Access Token is mandatory to fetch stars from the API without incurring in Rate Limits.
+### `compact-by-topic` (default `'false'`)
 
-You'll have to generate a [personal api token](https://github.com/settings/tokens/new) and then add
+If `compact-by-topic` is `'true'` it will generate another markdown file
+`TOPICS.md` with all stars compacted by their GitHub topics. Be aware that this
+list will be bigger since data is duplicated.
 
-#### `compact-by-topic`
+### `template-path`
 
-If `compact-by-topic` is `'true'` it will generate another markdown file `TOPICS.md` whith all stars compacted by their github topics, be aware that this list will be bigger since data is duplicated.
+If you don't like the output (default example [here](./TEMPLATE.ejs) ), you can
+provide your custom template that will be rendered using [EJS](https://ejs.co/)
+template engine.
 
-#### `template-path`
+The `template-path` is relative to the repository root; if the file is not
+found, the default template will be used.
 
-If you don't like the output (default example [here](./TEMPLATE.ejs) ), you can provide your custom template that will be rendered using [EJS](https://ejs.co/) template engine.
+### `output-filename` (default `'README.md'`)
 
-**Path provided is relative to your current repository directory, if file is not found it will default.**
+The output filename to use for the generated list of stars.
+
+### `github-hame` (default `'GitHub Actions'`)
+
+The username for the commit of the updated star list.
+
+### `github-email` (default `'actions@users.noreply.github.com'`)
+
+The email address for the commit of the updated star list.
 
 ## Example workflow
 
 ```yml
-name: Update awesome list
+name: Update star list
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Awesome generator
-        uses: simonecorsi/mawesome@latest
+      - uses: actions/checkout@v4
+      - name: Generate stars list
+        uses: halostatue/starlist@v3
         with:
           api-token: ${{ secrets.API_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           github-email: ${{ secrets.USER_EMAIL }}
           github-name: ${{ github.repository_owner }}
 ```
+
+[simonecorsi/mawesome]: https://github.com/simonecorsi/mawesome
+[halostatue/stars]: https://github.com/halostatue/stars

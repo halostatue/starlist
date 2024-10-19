@@ -1,16 +1,13 @@
-name: 'My Awesome list'
-description: 'Generate awesome list from user starred repositories'
-branding:
-  icon: align-justify
-  color: yellow
+name: 'Starlist'
+description: 'Generate a list of user starred repositories'
 inputs:
+  api-token:
+    description: 'Personal API Token'
+    required: true
   compact-by-topic:
     description: 'Generate another page with output compacted by github topics'
     default: 'false'
     required: false
-  api-token:
-    description: 'Personal API Token'
-    required: true
   github-name:
     description: 'Name shown in the commit'
     default: 'GitHub Actions'
@@ -27,6 +24,11 @@ inputs:
     description: 'The output file name, default to README.md'
     required: false
     default: 'README.md'
+
 runs:
-  using: 'node16'
-  main: 'index.js'
+  using: 'node20'
+  main: 'dist/index.js'
+
+branding:
+  icon: align-justify
+  color: yellow
