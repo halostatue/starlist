@@ -1,39 +1,17 @@
 name: Dependabot auto-merge
 
-on: pull_request_target
+on:
+  pull_request:
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
-  check:
+  dependabot-automerge:
     runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }}
+
     steps:
-      - uses: actions/setup-node@v4
+      - uses: KineticCafe/actions/dependabot-automerge@v2.0
         with:
-          node-version: lts/*
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_TOKEN }}
-          persist-credentials: false
-
-      - name: Install dependencies
-        run: npm i
-
-      - name: Build
-        run: npm run build
-
-  dependabot:
-    needs: [check]
-    runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }}
-    steps:
-      - name: Dependabot metadata
-        id: metadata
-        uses: dependabot/fetch-metadata@v2.2.0
-        with:
-          github-token: '${{ secrets.GH_TOKEN }}'
-      - name: Enable auto-merge for Dependabot PRs
-        if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor' }}
-        run: gh pr merge --auto --merge "$PR_URL"
-        env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GH_TOKEN }}
+          update-type: minor
