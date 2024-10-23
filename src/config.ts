@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import * as core from '@actions/core'
 import yaml from 'yaml'
@@ -11,14 +12,9 @@ export const config = async (): Promise<Options> => {
   core.setSecret(token)
 
   const dateTime = resolveDateTime()
-  const gitRoot = await root()
-  const templatePath = resolve(
-    gitRoot,
-    core.getInput('template_path') || 'TEMPLATE.md.njk',
-  )
-  const templateName = templatePath.replace(new RegExp(`^${gitRoot}/?`), '')
+  const { templateName, templatePath } = await resolveTemplate()
 
-  return {
+  const options = {
     dateTime,
     git: {
       commitMessage:
@@ -34,6 +30,51 @@ export const config = async (): Promise<Options> => {
     templatePath,
     token,
   }
+
+  if (options.loadStarsFromJson && !existsSync('data.json')) {
+    console.info(
+      'load_stars_from_json has been set but the data does not exist; falling back to the GitHub API',
+    )
+    options.loadStarsFromJson = false
+  }
+
+  core.debug(`Resolved options: ${JSON.stringify(options)}`)
+
+  return options
+}
+
+const resolveTemplate = async (): Promise<{
+  templateName: string
+  templatePath: string
+}> => {
+  const wanted = core.getInput('template_path') || 'TEMPLATE.md.njk'
+
+  // Try to resolve the template with respect to the git root directory first.
+  const gitRoot = await root()
+  const inRoot = resolve(gitRoot, wanted)
+
+  if (existsSync(inRoot)) {
+    return {
+      templateName: inRoot.replace(new RegExp(`^${gitRoot}/?`), ''),
+      templatePath: inRoot,
+    }
+  }
+
+  // The template does not exist in the git root, so we need to find it relative to the
+  // action repo.
+  const inActionPath = resolve(import.meta.dirname, '..')
+  const inAction = resolve(inActionPath, wanted)
+
+  if (existsSync(inAction)) {
+    return {
+      templateName: inAction.replace(new RegExp(`^${inActionPath}/?`), 'action:'),
+      templatePath: inAction,
+    }
+  }
+
+  throw new Error(
+    `Cannot find template path ${wanted} in the current repository or in halostatue/starlist`,
+  )
 }
 
 const resolveDateTime = (): DateTimeOptions => {

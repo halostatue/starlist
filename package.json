@@ -1,6 +1,6 @@
 {
   "name": "starlist",
-  "version": "3.0.0",
+  "version": "1.0.0",
   "description": "Generate a list from user starred GitHub repositories",
   "author": "Austin Ziegler",
   "type": "module",

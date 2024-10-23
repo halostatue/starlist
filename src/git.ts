@@ -17,11 +17,17 @@ export const setup = async (opts: Options): Promise<void> => {
   const repo = await resolveRepoName()
   const branch = await getBranch(process.env.GITHUB_REF)
 
+  const isShallow = await execGit(['rev-parse', '--is-shallow-repository'], {
+    trim: true,
+  })
+
   gitContext = {
     ...opts.git,
     branch,
-    isShallow: await isShallow(),
+    isShallow: isShallow === 'true',
   }
+
+  core.debug(`Configured gitContext: ${JSON.stringify(gitContext)}`)
 
   // Set config
   await gitSetConfig('user.name', opts.git.name, opts.git.readOnly)
@@ -36,79 +42,38 @@ export const setup = async (opts: Options): Promise<void> => {
 }
 
 export const root = async () => {
-  return execGit('rev-parse --show-toplevel', { trim: true })
+  return execGit(['rev-parse', '--show-toplevel'], { trim: true })
 }
 
-export const add = async (input: string | string[]) => {
-  if (!gitContext) {
-    throw new Error(unready('add'))
-  }
+export const add = async (input: string | string[]) =>
+  await execGit(Array.isArray(input) ? ['add', ...input] : ['add', input])
 
-  if (gitContext.readOnly) {
-    return
-  }
+export const commit = async (message: string) => await execGit(['commit', '-m', message])
 
-  const files = Array.isArray(input) ? input : [input]
-  await execGit(`add ${files.join(' ')}`)
-}
-
-export const commit = async (message: string) => {
-  if (!gitContext) {
-    throw new Error(unready('commit'))
-  }
-
-  if (gitContext.readOnly) {
-    return
-  }
-
-  await execGit(`commit -m "${message}"`)
-}
-
-export const pull = async () => {
-  if (!gitContext) {
-    throw new Error(unready('pull'))
-  }
-
-  if (gitContext.readOnly) {
-    return
-  }
-
-  const args = ['pull', '--tags', gitContext.pullOptions]
-
-  if (await isShallow()) {
-    args.push('--unshallow')
-  }
-
-  execGit(args.join(' '))
-}
+export const pull = async () =>
+  await execGit(
+    [
+      'pull',
+      '--tags',
+      gitContext?.pullOptions ?? '',
+      gitContext?.isShallow ? '--unshallow' : '',
+    ].filter((v) => v),
+  )
 
 export const push = async () => {
-  if (!gitContext) {
-    throw new Error(unready('push'))
+  if (!gitContext?.branch) {
+    throw new Error('Cannot push: missing context branch')
   }
 
-  if (gitContext.readOnly) {
-    return
-  }
-
-  await execGit(`push origin ${gitContext.branch} --follow-tags`)
+  return await execGit(['push', 'origin', gitContext.branch, '--follow-tags'])
 }
 
-export const createTag = async (tag: string) => {
-  if (!gitContext) {
-    throw new Error(unready('createTag'))
-  }
+export const createTag = async (tag: string) =>
+  await execGit(['tag', '-a', tag, '-m', tag])
 
-  if (gitContext.readOnly) {
-    return
-  }
-
-  await execGit(`tag -a ${tag} -m "${tag}"`)
-}
-
-export const pushFiles = async (files: GeneratedFile[] = []) => {
-  if (!gitContext) {
-    throw new Error(unready('pushFiles'))
+export const pushFiles = async (files: GeneratedFile[] = [], commitMessage?: string) => {
+  if (!commitMessage && !gitContext?.commitMessage) {
+    throw new Error('Cannot push files without a commit message')
   }
 
   if (!files.length) {
@@ -124,63 +89,29 @@ export const pushFiles = async (files: GeneratedFile[] = []) => {
   }
 
   await add(files.map(({ filename }) => filename))
-  await commit(gitContext.commitMessage)
+  await commit(commitMessage ?? gitContext?.commitMessage ?? 'Default commit message')
   await push()
-}
-
-const unready = (fn: string): string => {
-  const message = `Must call git.setup() before calling ${fn}`
-  core.error(message)
-
-  return message
-}
-
-const execGit = async (
-  command: string,
-  opts: { trim: boolean } = { trim: false },
-): Promise<string> => {
-  let execOutput = ''
-
-  const options = {
-    listeners: {
-      stdout: (data: Buffer) => {
-        execOutput += data.toString()
-      },
-    },
-  }
-
-  const exitCode = await exec(`git ${command}`, undefined, options)
-
-  if (exitCode === 0) {
-    return opts.trim ? execOutput.trim().replace('\n', '') : execOutput
-  }
-
-  core.error(`Command "git ${command}" exited with code ${exitCode}.`)
-  throw new Error(`Command "git ${command}" exited with code ${exitCode}.`)
 }
 
 const getBranch = async (maybeRef?: string): Promise<string> => {
   const ref =
     maybeRef == null
-      ? await execGit('rev-parse --symbolic-full-name HEAD', { trim: true })
+      ? await execGit(['rev-parse', '--symbolic-full-name', 'HEAD'], { trim: true })
       : maybeRef
   return ref.replace(/^refs\/heads\//, '')
 }
 
 const gitSetConfig = async (prop: string, value: string, readOnly: boolean) => {
   if (!readOnly) {
-    await execGit(`config ${prop} "${value}"`)
+    await execGit(['config', '--local', prop, value])
   }
 }
 
 const gitUpdateOrigin = async (repo: string, readOnly: boolean) => {
   if (!readOnly) {
-    await execGit(`remote set-url origin ${repo}`)
+    await execGit(['remote', 'set-url', 'origin', repo])
   }
 }
-
-const isShallow = async (): Promise<boolean> =>
-  (await execGit('rev-parse --is-shallow-repository', { trim: true })) === 'true'
 
 const REPO_MATCH = [
   'https://github.com/(?<http>[^/]+/[^.]+)\\.git',
@@ -192,7 +123,7 @@ const resolveRepoName = async (): Promise<string> => {
     return process.env.GITHUB_REPOSITORY
   }
 
-  const url = await execGit('remote get-url origin', { trim: true })
+  const url = await execGit(['remote', 'get-url', 'origin'], { trim: true })
   const match = url.match(REPO_MATCH)
 
   if (match?.groups?.https || match?.groups?.ssh) {
@@ -202,4 +133,57 @@ const resolveRepoName = async (): Promise<string> => {
   const message = 'GITHUB_REPOSITORY is not set and the origin URL is not a GitHub URL'
   core.error(message)
   throw new Error(message)
+}
+
+const execGit = async (
+  args: string[],
+  opts: { trim: boolean } = { trim: false },
+): Promise<string> => {
+  switch (args[0]) {
+    case 'config':
+    case 'remote':
+    case 'rev-parse': {
+      // These subcommands do not require gitContext and are used to configure gitContext.
+      showGit(args)
+      break
+    }
+    default: {
+      if (!gitContext) {
+        throw new Error(unready(args[0]))
+      }
+
+      showGit(args)
+    }
+  }
+
+  let execOutput = ''
+
+  const options = {
+    listeners: {
+      stdout: (data: Buffer) => {
+        execOutput += data.toString()
+      },
+    },
+  }
+
+  const exitCode = await exec('git', args, options)
+
+  if (exitCode === 0) {
+    return opts.trim ? execOutput.trim().replace('\n', '') : execOutput
+  }
+
+  core.error(`Command "git ${args[0]}" exited with code ${exitCode}.`)
+  throw new Error(`Command "git ${args[0]}" exited with code ${exitCode}.`)
+}
+
+const showGit = (args: string[]): void => {
+  const printable = args.map((v) => (v.indexOf(' ') > -1 ? `"${v}"` : v)).join(' ')
+  core.debug(`git ${printable}`)
+}
+
+const unready = (fn: string): string => {
+  const message = `Must call git.setup() before calling ${fn}`
+  core.error(message)
+
+  return message
 }

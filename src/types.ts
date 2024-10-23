@@ -1,5 +1,5 @@
 /**
- * Configuration options. These are
+ * Configuration options.
  */
 export interface Options {
   dateTime: DateTimeOptions

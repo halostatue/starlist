@@ -1,4 +1,3 @@
-import * as core from '@actions/core'
 import { remark } from 'remark'
 import toc from 'remark-toc'
 

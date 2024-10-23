@@ -17,15 +17,21 @@ export async function main() {
 
   template.compile(readFileSync(options.templatePath, 'utf8'), options.templateName)
 
+  await git.setup(options)
+
   if (options.loadStarsFromJson) {
     const data = readFileSync('data.json', 'utf-8')
     viewer = JSON.parse(data) as Viewer
+
+    console.info('Loaded star data from data.json')
   } else {
     viewer = await getStars(options)
 
     // Write `data.json` immediately on retrieval, and add the file for pushing.
     writeFileSync('data.json', JSON.stringify(viewer))
     files.push({ filename: 'data.json' })
+
+    console.info('Loaded star data from GitHub API and saved as data.json')
   }
 
   const byLanguage = groupByFirstLanguage(viewer.stars)
@@ -49,7 +55,8 @@ export async function main() {
     data: await markdown.generate(rendered),
   })
 
-  await git.setup(options)
+  console.debug('Rendered template')
+
   await git.pushFiles(files)
 }
 
