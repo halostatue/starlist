@@ -7,17 +7,33 @@ inputs:
     description: |
       A GitHub Personal Access Token (PAT). With a classic PAT, no OAuth scopes are
       required. Fine-grained PATs are not currently supported.
+  config:
+    required: false
+    description: |
+      The configuration for generating files as a YAML object. This is the preferred
+      configuration approach halostatue/starlist. Values present in this configuration
+      object override values present in other configuration keys. See the documentation
+      for full details on this configuration object.
   git_commit_message:
     required: false
-    description: The commit message to use.
+    description: |
+      The commit message to use.
+
+      Deprecated, use 'config.git.commit_message' instead.
     default: 'chore(updates): updated entries in files'
   git_email:
     required: false
-    description: The email to use for the commit.
+    description: |
+      The email to use for the commit.
+
+      Deprecated, use 'config.git.email' instead.
     default: 'actions@users.noreply.github.com'
   git_name:
     required: false
-    description: The user name to use for the commit.
+    description: |
+      The user name to use for the commit.
+
+      Deprecated, use 'config.git.name' instead.
     default: 'GitHub Actions'
   git_pull_options:
     required: false
@@ -25,12 +41,16 @@ inputs:
       The method to use when calling `git-pull` prior to committing the update. Blank by
       default, supported values are any parameters to `git-pull`. Note that `--tags` and
       `--unshallow` will be added automatically as required.
+
+      Deprecated, use 'config.git.pull_options' instead.
     default: ''
   load_stars_from_json:
     required: false
     description: |
       This is an advanced option. If specified, the viewer stargazing data will be loaded
       from the `data.json` file in the repository.
+
+      Deprecated, use 'config.stars.source' instead.
     default: 'false'
   date_time:
     required: false
@@ -38,16 +58,22 @@ inputs:
       The YAML locale configuration for dates and times. If omitted, dates will be
       formatted as an ISO date (`2024-10-21`) and times will be formatted with a 24-hour
       clock, omitting minutes (`13:24`).
+
+      Deprecated, use 'config.format.date_time' instead.
   output_filename:
     required: false
     description: |
       The output file name relative to the repo root directory, defaulting to `README.md`.
+
+      Deprecated, use 'config.output.filename' instead.
     default: README.md
   template_path:
     required: false
     description: |
       The template path relative to the repo root directory. The default value is
       `TEMPLATE.md.njk`, a `nunjucks` template.
+
+      Deprecated, use 'config.template.source' instead.
 
 runs:
   using: 'node20'

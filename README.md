@@ -1,15 +1,21 @@
 # Starlist
 
+This action queries the GitHub API to get the list of the user's stars and
+generates markdown containing the list of stars grouped by implementation
+language. This is an incompatible fork of [simonecorsi/mawesome][mawesome].
+
+The generated markdown is output as a single file using a [Nunjucks][nunjucks]
+template.
+
 This action queries the GitHub API to get list of the user's stars and generates
-a list ordered by implementation language. This is an incompatible fork of
-[simonecorsi/mawesome][mawesome].
+a list ordered by implementation language.
 
 An example can be seen at [halostatue/stars][stars].
 
 ## Requirements
 
-- An empty repository
-- A personal GitHub API key
+- A (mostly) empty repository.
+- A GitHub Personal Access Token
 
 ## Configuration
 
@@ -18,8 +24,8 @@ the workflow.
 
 ### `token` **required**
 
-The Personal Access Token is mandatory to fetch stars from the API. The default
-GitHub Actions token cannot be used, so it is necessary to to generate a
+The `token` parameter is **required** to fetch stars from the API. The GitHub
+Actions default token cannot be used, so you must generate a
 [Personal Access Token][pat] and then add it to the target repository's secrets
 configuration.
 
@@ -28,57 +34,73 @@ additional OAuth scopes. Fine-grained PATs should be scoped to include the
 target repository and the permissions `repository:contents:read-write`,
 `repository:metadata:read-only`, and `account:starring:read-only`.
 
-### `template_path` (default `./TEMPLATE.md.njk`)
+### `config` (default _special_)
 
-The template path relative to the repo root directory. The default value is
-[`TEMPLATE.md.njk`][default-template], a [`nunjucks`][nunjucks] template.
+The YAML configuration object. Any values present in a provided configuration
+object parameter take precedence over _override_ values provided by other input
+parameters.
 
-See [Template Data](#template-data) for more details.
+#### `config.format`
 
-### `date_time` (default _special_)
+General data formatting options. Currently only has one option, `date_time`
+
+##### `config.format.date_time` (default _special_)
+
+> This overrides the `date_time` input parameter.
 
 The YAML locale configuration for dates and times. This is used to configure
 [`Intl.DateTimeFormat`][idtf] objects for formatting date and time. If omitted,
 dates will be formatted as year-month-day and times will be formatted with a
-24-hour clock, as if `iso: true` was specified.
+24-hour clock, as if `mode: iso` has been provided.
 
-- [`locale`][lparam]: The ISO locale to use, or the special value `iso`. If
-  omitted, this value will default to `iso` if it is the only key or if the only
-  other option provided is `timeZone`. Otherwise, it will default to `en`. The
-  `Intl.DateTimeFormat` constructor accepts an array of locales; this action
-  does not.
+- `mode`: The formatting mode, either `iso` or `locale`. If omitted, this
+  defaults to `iso` _unless_ a `locale` value other than `iso` is provided.
 
-- [`timeZone`][timezone]: The timezone to use for adjusting timestamps (which
-  are returned as `UTC` by GitHub). Defaults to `UTC`.
+- [`time_zone`][time_zone] (deprecated name `timeZone`): The timezone to use for
+  adjusting timestamps (which are returned as `UTC` by GitHub). Defaults to
+  `UTC`.
 
-If the `locale` value is _not_ `iso`, additional options may be used:
+- [`locale`][lparam]: The ISO locale to use. If `mode` is `locale`, this value
+  defaults to `en`. The `Intl.DateTimeFormat` constructor accepts an array of
+  locales; this action currently does not.
+
+  The special value `iso` If omitted, this value will default to `iso` if it is
+  the only key or if the only other option provided is `time_zone`.
+
+If the `locale` value is _not_ `iso`, additional options may be used. Secondary
+names marked with a dagger (†) are deprecated and will be removed in a future
+version.
 
 - The [locale][lopt] options [`calendar`][calendar],
-  [`numberingSystem`][numberingsystem], [`hour12`][hour12], and
-  [`hourCycle`][hourcycle] will be applied to both date and time formatters.
+  [`numbering_system`][numbering_system] (`numberingSystem`†),
+  [`hour12`][hour12], and [`hour_cycle`][hour_cycle] (`hourCycle`†) will be
+  applied to both date and time formatters.
 
 - The [date-time component][dtopt] options [`weekday`][weekday], [`era`][era],
   [`year`][year], [`month`][month], and [`day`][day] will be applied to date
-  formatters. These will be ignored if `dateStyle` is set.
+  formatters. These will be ignored if `date_style` is set.
 
-- The [date-time component][dtopt] options [`dayPeriod`][dayPeriod],
-  [`hour`][hour], [`minute`][minute], [`second`][second],
-  [`fractionalSecondDigits`][fractionalSecondDigits],
-  [`timeZoneName`][timeZoneName] will be applied to time formatters. These will
-  be ignored if `timeStyle` is set.
+- The [date-time component][dtopt] options [`day_period`][day_period]
+  (`dayPeriod`†), [`hour`][hour], [`minute`][minute], [`second`][second],
+  [`fractional_second_digits`][fractional_second_digits]
+  (`fractionalSecondDigits`†), and [`time_zone_name`][time_zone_name]
+  (`timeZoneName`†) will be applied to time formatters. These will be ignored if
+  `time_style` is set.
 
-- The [style][style] shortcuts [`dateStyle`][dateStyle] and
-  [`timeStyle`][timeStyle] will be used in preference to date-time component
-  options.
+- The [style][style] shortcuts [`date_style`][date_style] (`dateStyle`†) and
+  [`time_style`][time_style] (`timeStyle`†) will be used in preference to
+  date-time component options.
 
-If no date formatter options are set, `dateStyle` will be set to `short`. If no
-time formatter are set, `timeStyle` will be set to `short`.
+If no date formatter options are set, `date_style` will be set to `short`. If no
+time formatter options are set, `time_style` will be set to `short`.
 
 The default configuration is
 
 ```yaml
-locale: iso
-timeZone: UTC
+format:
+  date_time:
+    locale: iso
+    time_zone: UTC
 ```
 
 With this, dates will be formatted as an ISO date (`2024-10-21`) and times will
@@ -87,32 +109,79 @@ be formatted with a 24-hour clock, omitting minutes (`13:24`).
 > NOTE: No validation is performed on the various date time format option
 > _values_, but keys will be checked and only supported keys will be provided.
 
-### `output_filename` (default `README.md`)
+#### `config.git`
 
-The output filename to use for the generated list of stars.
+Configuration options to prepare the repository for updates for code generation.
 
-### `git_commit_message` (default: `chore(updates): updated entries in files`)
+##### `config.git.commit_message` (default: `chore(updates): updated entries in files`)
+
+> This overrides the `git_commit_message` input parameter.
 
 The commit message to use.
 
-### `git_name` (default `GitHub Actions`)
+##### `config.git.name` (default `GitHub Actions`)
+
+> This overrides the `git_name` input parameter.
 
 The username for the commit of the updated star list.
 
-### `git_email` (default `actions@users.noreply.github.com`)
+##### `config.git.email` (default `actions@users.noreply.github.com`)
+
+> This overrides the `git_email` input parameter.
 
 The email address for the commit of the updated star list.
 
-### `git_pull_options` (default blank)
+##### `config.git.pull_flags` (default blank)
+
+> This overrides the `git_pull_options` input parameter.
 
 The method to use when calling `git-pull` prior to committing the update. Blank
 by default, supported values are any parameters to `git-pull`. Note that
 `--tags` and `--unshallow` will be added automatically as required.
 
-### `load_stars_from_json` (default `false`)
+### `config.output`
 
-This is an advanced option. If specified, the viewer stargazing data will be
-loaded from the `data.json` file in the repository.
+Configuration options for generated file output.
+
+#### `config.output.filename` (default `README.md`)
+
+The output filename to use for the generated list of stars.
+
+#### `config.stars`
+
+Configuration options for star data retrieval.
+
+##### `config.stars.source` (default `api`)
+
+> This overrides the `load_stars_from_json` input parameter.
+
+The source of the star data, either `api` or `file`. If set to `api`, the
+stargazing data will be loaded from the GitHub API. If set to `file`, the
+stargazing data will be loaded from the `data.json` file in the repository.
+
+`load_stars_from_json: true` is the same as `config.stars.source: file`.
+
+### `config.template`
+
+Configuration options for template discovery and parsing.
+
+### `config.template.source` (default `./TEMPLATE.md.njk`)
+
+The template path relative to the repo root directory. The default value is
+[`TEMPLATE.md.njk`][default-template], a [Nunjucks][nunjucks] template.
+
+See [Template Data](#template-data) for more details.
+
+### Deprecated Input Parameters
+
+- `template_path` (use `config.template.source`)
+- `date_time` (use `config.format.date_time`)
+- `output_filename` (use `config.output.filename`)
+- `git_commit_message` (use `config.git.commit_message`)
+- `git_name` (use `config.git.name`)
+- `git_email` (use `config.git.email`)
+- `git_pull_options` (use `config.git.pull_options`)
+- `load_stars_from_json` (use `config.stars.source`)
 
 ## Template Data
 
@@ -289,36 +358,39 @@ jobs:
         uses: halostatue/starlist@v1
         with:
           token: ${{ secrets.API_TOKEN }}
-          git_email: ${{ secrets.USER_EMAIL }}
-          git_name: ${{ github.repository_owner }}
+          config: |
+            git:
+              email: ${{ secrets.USER_EMAIL }}
+              name: ${{ github.repository_owner }}
 ```
 
 [calendar]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#calendar
-[dateStyle]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#datestyle
-[dayPeriod]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#dayperiod
+[date_style]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#datestyle
+[day_period]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#dayperiod
 [day]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#day
 [default-template]: ./TEMPLATE.md.njk
 [dtopt]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#date-time_component_options
 [era]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#era
-[fractionalSecondDigits]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#fractionalseconddigits
+[fractional_second_digits]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#fractionalseconddigits
 [hour12]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#hour12
 [hour]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#hour
-[hourcycle]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#hourcycle
+[hour_cycle]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#hourcycle
 [idtf]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat
 [lopt]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#locale_options
 [lparam]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#locales
 [mawesome]: https://github.com/simonecorsi/mawesome
 [minute]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#minute
 [month]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#month
-[numberingsystem]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#numberingsystem
+[numbering_system]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#numberingsystem
 [nunjucks]: https://mozilla.github.io/nunjucks/
 [pat]: https://github.com/settings/tokens/new
 [second]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#era
 [stars]: https://github.com/halostatue/stars
 [style]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#style_shortcuts
-[timeStyle]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#timestyle
-[timeZoneName]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#timezonename
-[timezone]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#timezone
+[time_style]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#timestyle
+[time_zone_name]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#timezonename
+[time_zone]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#timezone
 [weekday]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#weekday
 [year]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#year
 [gateway]: https://github.com/orgs/community/discussions/36441#discussioncomment-11008673
+[nunjucks]: https://mozilla.github.io/nunjucks/

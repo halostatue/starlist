@@ -1,45 +1,82 @@
+import type {
+  Repository as Repo,
+  Language as RepoLanguage,
+  Release as RepoRelease,
+  StarredRepositoryEdge as RepoStar,
+  RepositoryTopic as RepoTopic,
+} from '@octokit/graphql-schema'
+
 /**
- * Configuration options.
+ * A minimally processed query response that flattens subquery values, but otherwise
+ * matches the GraphQL response. It must be parsed into a `TemplateVars` value.
  */
-export interface Options {
-  dateTime: DateTimeOptions
-  git: GitOptions
-  loadStarsFromJson: boolean
-  outputFilename: string
-  templateName: string
-  templatePath: string
-  token: string
+export interface QueryResponse {
+  /**
+   * The current data version, used to validate that the local source files match what is
+   * expected from the parser.
+   *
+   * Versions should be considered strictly incompatible.
+   */
+  dataVersion: number
+
+  /**
+   * The user login for the response.
+   */
+  login: string
+
+  /**
+   * Indicates whether the response list of stars is truncated because the user is
+   * considered `isOverLimit`.
+   */
+  truncated: boolean
+
+  /**
+   * The total number of stars recorded for the user.
+   */
+  total: number
+
+  /**
+   * The list of starred repositories from the query.
+   */
+  stars: ResponseRepo[]
+
+  /**
+   * An ISO timestamp string when the query request was started.
+   */
+  updatedAt: string
 }
 
-export interface DateTimeOptions {
-  locale: 'iso' | string
-  timeZone: string
-  date?: Intl.DateTimeFormat
-  time?: Intl.DateTimeFormat
+export interface ResponseRepo {
+  archivedOn: Repo['archivedAt']
+  description: Repo['description']
+  forks: Repo['forkCount']
+  homepageUrl: Repo['homepageUrl']
+  isFork: Repo['isFork']
+  isTemplate: Repo['isTemplate']
+  languageCount: number
+  languages: { name: RepoLanguage['name']; percent: number }[]
+  latestRelease?: { name: RepoRelease['name']; publishedOn: RepoRelease['publishedAt'] }
+  license: string
+  name: Repo['name']
+  parentRepo?: string
+  pushedOn: Repo['pushedAt']
+  starredOn: RepoStar['starredAt']
+  stars: Repo['stargazerCount']
+  topicCount: number
+  topics?: { name: RepoTopic['topic']['name']; url: RepoTopic['url'] }[]
+  url: Repo['url']
 }
 
-export interface GitOptions {
-  commitMessage: string
-  email: string
-  name: string
-  pullOptions: string
-  readOnly: boolean
-}
+export interface TemplateVars {
+  dataVersion: number
+  updatedAt: Timestamp
+  generatedAt: Timestamp
 
-export interface Timestamp {
-  date: string
-  time: string
-}
-
-export interface Viewer {
   login: string
   truncated: boolean
   total: number
   stars: StarredRepo[]
-  updatedAt: Timestamp
-}
 
-export interface TemplateVars extends Viewer {
   byLanguage: LanguageGroups
   byTopic: TopicGroups
   languages: string[]
@@ -57,7 +94,7 @@ export interface Topic {
 }
 
 export interface Release {
-  name: string
+  name: string | null
   publishedOn: Timestamp
 }
 
@@ -96,4 +133,9 @@ export type TopicGroups = {
 export interface GeneratedFile {
   filename: string
   data?: string
+}
+
+export interface Timestamp {
+  date: string
+  time: string
 }
