@@ -1,25 +1,27 @@
-import type { DateTimeOptions, Timestamp } from './types.js'
+import type { Config, ISODateTimeConfig, LocaleDateTimeConfig } from './config.js'
+import type { Timestamp } from './types.js'
 
-export const timestamp = (options: DateTimeOptions, isoTimestamp?: string): Timestamp => {
+export const timestamp = (
+  { format: { dateTime: config } }: Config,
+  isoTimestamp?: string,
+): Timestamp => {
   const value = isoTimestamp ? new Date(isoTimestamp) : new Date()
 
-  if (options.locale === 'iso') {
-    return formatTimestapIso(value, options.timeZone)
-  }
+  return config.mode === 'iso'
+    ? formatTimestampIso(value, config)
+    : formatTimestampLocale(value, config)
+}
 
-  if (!options.date || !options.time) {
-    throw new Error('this code should never be reached')
-  }
-
+const formatTimestampLocale = (input: Date, config: LocaleDateTimeConfig): Timestamp => {
   return {
-    date: options.date.format(value),
-    time: options.time.format(value),
+    date: config.date.format(input),
+    time: config.time.format(input),
   }
 }
 
-const formatTimestapIso = (input: Date, timeZone: string) =>
+const formatTimestampIso = (input: Date, config: ISODateTimeConfig) =>
   splitIso(
-    timeZone === 'UTC'
+    config.timeZone === 'UTC'
       ? input
       : new Date(input.getTime() - input.getTimezoneOffset() * 60000),
   )

@@ -5,10 +5,10 @@ _default:
 generate TOKEN *ARGS:
     #!/usr/bin/env bash
 
-    declare INPUT_TOKEN INPUT_GIT_READ_ONLY INPUT_OUTPUT_FILENAME \
-      INPUT_LOAD_STARS_FROM_JSON INPUT_DATE_TIME
+    declare INPUT_TOKEN INPUT_GIT_LOCAL INPUT_OUTPUT_FILENAME \
+      INPUT_LOAD_STARS_FROM_JSON INPUT_CONFIG
     INPUT_TOKEN="{{ TOKEN }}"
-    INPUT_GIT_READ_ONLY=true
+    INPUT_GIT_LOCAL=true
     INPUT_OUTPUT_FILENAME=stars.md
     INPUT_LOAD_STARS_FROM_JSON=true
 
@@ -21,6 +21,7 @@ generate TOKEN *ARGS:
     read from that file.
 
     Options
+      --config, -c FILENAME   Specify the `config` input YAML file.
       --output, -o FILENAME   Sets the output filename. Defaults to stars.md
       --query-api             Queries the data from the API instead of loading
                               the data from data.json. Enabled if data.json does
@@ -42,11 +43,11 @@ generate TOKEN *ARGS:
         shift
         ;;
       --query-api) INPUT_LOAD_STARS_FROM_JSON=false ;;
-      --date-time)
+      --config | -c)
         if [[ -f "${2:?}" ]]; then
-          INPUT_DATE_TIME="$(<"$2")"
+          INPUT_CONFIG="$(<"$2")"
         else
-          INPUT_DATE_TIME="$2"
+          INPUT_CONFIG="$2"
         fi
 
         shift
@@ -64,8 +65,8 @@ generate TOKEN *ARGS:
       INPUT_LOAD_STARS_FROM_JSON=false
     fi
 
-    export INPUT_TOKEN INPUT_GIT_READ_ONLY INPUT_OUTPUT_FILENAME \
-      INPUT_LOAD_STARS_FROM_JSON INPUT_DATE_TIME
+    export INPUT_TOKEN INPUT_GIT_LOCAL INPUT_OUTPUT_FILENAME \
+      INPUT_LOAD_STARS_FROM_JSON INPUT_CONFIG
 
     pnpm exec tsx src/index.ts
 

@@ -1,63 +1,70 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, resolve as resolvePath } from 'node:path'
 import * as core from '@actions/core'
 
-import { config } from './config.js'
+import { resolve } from './config.js'
 import * as git from './git.js'
 import * as markdown from './markdown.js'
-import { getStars, groupByFirstLanguage, groupByTopics } from './stars.js'
+import * as stars from './stars.js'
 import * as template from './template.js'
 
-import type { GeneratedFile, TemplateVars, Topic, Viewer } from './types.js'
+import type { GeneratedFile } from './types.js'
 
 export async function main() {
-  const options = await config()
+  const config = await resolve()
+
+  core.debug(`Resolved configuration: ${config}`)
 
   const files: GeneratedFile[] = []
-  let viewer: Viewer
 
-  template.compile(readFileSync(options.templatePath, 'utf8'), options.templateName)
+  template.compile(
+    readFileSync(config.template.source.path, 'utf8'),
+    config.template.source.name,
+  )
 
-  await git.setup(options)
+  await git.setup(config)
+  await git.pull(config.git.pullFlags)
 
-  if (options.loadStarsFromJson) {
-    const data = readFileSync('data.json', 'utf-8')
-    viewer = JSON.parse(data) as Viewer
+  const response = await stars.getStars(config)
 
-    console.info('Loaded star data from data.json')
-  } else {
-    viewer = await getStars(options)
-
-    // Write `data.json` immediately on retrieval, and add the file for pushing.
-    writeFileSync('data.json', JSON.stringify(viewer))
-    files.push({ filename: 'data.json' })
-
-    console.info('Loaded star data from GitHub API and saved as data.json')
+  if (config.stars.source === 'api') {
+    git.add(config.stars.filename)
   }
 
-  const byLanguage = groupByFirstLanguage(viewer.stars)
-  const byTopic = groupByTopics(viewer.stars)
-  const languages = Object.keys(byLanguage).sort()
-  const topics = Object.keys(byTopic)
-    .sort()
-    .map((name): Topic => ({ name, url: byTopic[name].url }))
-
-  const vars: TemplateVars = {
-    ...viewer,
-    byLanguage,
-    byTopic,
-    languages,
-    topics,
-  }
+  const vars = stars.resolveResponse(response, config)
 
   const rendered = template.render(vars)
   files.push({
-    filename: options.outputFilename,
+    filename: config.output.filename,
     data: await markdown.generate(rendered),
   })
 
   console.debug('Rendered template')
 
-  await git.pushFiles(files)
+  // Security check: ensure that each filename would end up in the git repository so that
+  // we do not chance writing something out of tree.
+  for (const file of files) {
+    const filename = resolvePath(file.filename)
+
+    if (!filename.startsWith(git.root)) {
+      throw new Error(`${filename} outside of git repo`)
+    }
+
+    const parent = dirname(filename)
+
+    if (parent !== git.root) {
+      mkdirSync(dirname(filename), { recursive: true })
+    }
+
+    if (file.data) {
+      writeFileSync(file.filename, file.data)
+    }
+
+    await git.add(filename)
+  }
+
+  await git.commit(config.git.commitMessage)
+  await git.push()
 }
 
 export async function run(): Promise<void> {

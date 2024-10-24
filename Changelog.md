@@ -1,5 +1,31 @@
 # halostatue/starlist Changelog
 
+## 1.1.0 / 2024-10-26
+
+In preparation for several major changes (see the [roadmap](./ROADMAP.md)),
+halostatue/starlist configuration is now configured with a single configuration
+input parameter, `config`. The configuration for `token` remains a separate
+input because it must be masked on output.
+
+New configuration options will be added only to the new config parameter object,
+and any configuration option present in the config parameter take precedence
+over the now deprecated named input parameters. For consistency, the names of
+the date/time formatting configuration keys are also normalized to the same
+pattern. Defaults remain the same.
+
+Warnings are printed on the of old configuration input parameters (`date_time`,
+`git_commit_message`, `git_email`, `git_name`, `git_pull_options`,
+`load_stars_from_json`, `output_filename`, and `template_path`). Warnings will
+also be printed on date/time formatting keys that use camel case (`dateStyle`,
+`timeStyle`, `dayPeriod`, `fractionalSecondDigits`, `hourCycle`,
+`numberingSystem`, and `timeZoneName`).
+
+The use of the old configuration parameters will print warnings.
+
+- The undocumented parameter `git_read_only` has been renamed to `git_local`
+  with no backwards compatibility check. This emphasizes that this should be
+  used only for local development testing.
+
 ## 1.0.0 / 2024-10-22
 
 Forked from [simonecorsi/mawesome][mawesome] with substantial changes. It is not
