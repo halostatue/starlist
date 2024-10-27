@@ -1,6 +1,12 @@
 # halostatue/starlist Changelog
 
-## 1.1.1 / 2024-10-26
+## 1.1.2 / 2024-10-27
+
+- Remove `remark-github` until configuration can be added to support it.
+
+## ~~1.1.1 / 2024-10-26~~
+
+> This release has been removed because it does not work.
 
 - Fix a small wording issue with the default template.
 - Fix overstrict handling of the deliberately undocumented `git_local` input.

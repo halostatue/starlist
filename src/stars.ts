@@ -54,7 +54,7 @@ const loadStarsFromFile = async (config: Config): Promise<QueryResponse | undefi
   const data = JSON.parse(readFileSync(config.stars.filename, 'utf-8'))
 
   if (isValidQueryResponse(data)) {
-    console.info(`Loaded star data from ${config.stars.filename}`)
+    core.info(`Loaded star data from ${config.stars.filename}`)
     return data as QueryResponse
   }
 

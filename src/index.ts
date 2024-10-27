@@ -2,16 +2,20 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve as resolvePath } from 'node:path'
 import * as core from '@actions/core'
 
-import { resolve } from './config.js'
+import * as cfg from './config.js'
 import * as git from './git.js'
 import * as markdown from './markdown.js'
 import * as stars from './stars.js'
 import * as template from './template.js'
 
+import packageInfo from '../package.json'
+
 import type { GeneratedFile } from './types.js'
 
 export async function main() {
-  const config = await resolve()
+  core.info(`${packageInfo.name} v${packageInfo.version}`)
+
+  const config = await cfg.resolve()
 
   core.debug(`Resolved configuration: ${JSON.stringify(config)}`)
 
@@ -24,11 +28,13 @@ export async function main() {
 
   await git.setup(config)
   await git.pull(config.git.pullFlags)
+  await git.status()
 
   const response = await stars.getStars(config)
 
   if (config.stars.source === 'api') {
-    git.add(config.stars.filename)
+    await git.add(config.stars.filename)
+    await git.status()
   }
 
   const vars = stars.resolveResponse(response, config)
@@ -39,7 +45,7 @@ export async function main() {
     data: await markdown.generate(rendered),
   })
 
-  console.debug('Rendered template')
+  core.debug('Rendered template')
 
   // Security check: ensure that each filename would end up in the git repository so that
   // we do not chance writing something out of tree.
@@ -63,8 +69,11 @@ export async function main() {
     await git.add(filename)
   }
 
+  await git.status()
   await git.commit(config.git.commitMessage)
+  await git.status()
   await git.push()
+  await git.status()
 }
 
 export async function run(): Promise<void> {

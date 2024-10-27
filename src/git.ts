@@ -35,6 +35,8 @@ export const setup = async ({ token, git }: Config) => {
   await gitUpdateOrigin(`https://x-access-token:${token}@github.com/${repo}.git`)
 }
 
+export const status = async () => await execGit(['status', '-s', '-b'])
+
 export const add = async (input: string | string[]) => {
   if (!LOCAL_TESTING) {
     await execGit(Array.isArray(input) ? ['add', ...input] : ['add', input])
