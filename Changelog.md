@@ -1,5 +1,10 @@
 # halostatue/starlist Changelog
 
+## 1.1.1 / 2024-10-26
+
+- Fix a small wording issue with the default template.
+- Fix overstrict handling of the deliberately undocumented `git_local` input.
+
 ## 1.1.0 / 2024-10-26
 
 In preparation for several major changes (see the [roadmap](./ROADMAP.md)),

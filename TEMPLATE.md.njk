@@ -18,7 +18,7 @@ Last updated {{ updatedAt.date }} {{ updatedAt.time }}
 {% for repo in repos -%}
 - [{{ repo.name }}]({{ repo.url }}){% if repo.description %}: {{ repo.description }}{% endif %}
 
-  **Last Push**: {{ repo.pushedOn.date }} {{ repo.pushedOn.time }}
+  **Latest Update**: {{ repo.pushedOn.date }} {{ repo.pushedOn.time }}
   **Stars**: {{ repo.stars }} star{{ "s" if repo.stars > 1 }}
   **Starred On**: {{ repo.starredOn.date }}
   {% if repo.forks > 0 %}**Forks**: {{ repo.forks }} fork{{ "s" if repo.forks > 1 }}{% endif %}

@@ -270,22 +270,34 @@ const resolveDateTimeConfig = async (
 
   const object = typeof value === 'object' ? value : null
 
-  if (object == null) {
-    return { mode: 'iso', timeZone: 'UTC' }
-  }
-
+  // If this does not resolve to an object, does not contain *either* 'mode' or 'locale',
+  // or *either* 'mode' or 'locale' is the value 'iso', then process as ISO.
   if (
+    object == null ||
+    ('mode' in object && !object.mode && 'locale' in object && !object.locale) ||
     ('mode' in object && object.mode === 'iso') ||
     ('locale' in object && object.locale === 'iso')
   ) {
+    if (object && 'locale' in object && object.locale === 'iso') {
+      core.warning('setting locale to iso is deprecated; use mode iso instead')
+    }
+
     return resolveISODateTimeConfig(object)
+  }
+
+  if ('mode' in object && object.mode !== 'locale') {
+    core.warning(
+      `invalid format.date_time.mode value ${object.mode}, must be iso or locale`,
+    )
   }
 
   return resolveLocaleDateTimeConfig(object)
 }
 
-const resolveISODateTimeConfig = (value: object): ISODateTimeConfig => {
-  return { mode: 'iso', timeZone: resolveTimeZone(value) }
+const resolveISODateTimeConfig = (
+  value: object | null | undefined,
+): ISODateTimeConfig => {
+  return { mode: 'iso', timeZone: resolveTimeZone(value || {}) }
 }
 
 const resolveLocaleDateTimeConfig = (value: object): LocaleDateTimeConfig => {

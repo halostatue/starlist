@@ -12,7 +12,9 @@ const DEFAULT_BRANCH = (
     : await execGit(['rev-parse', '--symbolic-full-name', 'HEAD'], { trim: true })
 ).replace('refs/heads/', '')
 
-const LOCAL_TESTING = core.getBooleanInput('git_local')
+const LOCAL_TESTING = core.getInput('git_local')
+  ? core.getBooleanInput('git_local')
+  : false
 
 const PULL_UNSHALLOW =
   (await execGit(['rev-parse', '--is-shallow-repository'], { trim: true })) === 'true'

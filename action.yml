@@ -20,21 +20,18 @@ inputs:
       The commit message to use.
 
       Deprecated, use 'config.git.commit_message' instead.
-    default: 'chore(updates): updated entries in files'
   git_email:
     required: false
     description: |
       The email to use for the commit.
 
       Deprecated, use 'config.git.email' instead.
-    default: 'actions@users.noreply.github.com'
   git_name:
     required: false
     description: |
       The user name to use for the commit.
 
       Deprecated, use 'config.git.name' instead.
-    default: 'GitHub Actions'
   git_pull_options:
     required: false
     description: |
@@ -43,7 +40,6 @@ inputs:
       `--unshallow` will be added automatically as required.
 
       Deprecated, use 'config.git.pull_options' instead.
-    default: ''
   load_stars_from_json:
     required: false
     description: |
@@ -51,7 +47,6 @@ inputs:
       from the `data.json` file in the repository.
 
       Deprecated, use 'config.stars.source' instead.
-    default: 'false'
   date_time:
     required: false
     description: |
@@ -66,7 +61,6 @@ inputs:
       The output file name relative to the repo root directory, defaulting to `README.md`.
 
       Deprecated, use 'config.output.filename' instead.
-    default: README.md
   template_path:
     required: false
     description: |

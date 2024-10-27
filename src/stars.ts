@@ -128,7 +128,7 @@ const queryStarsFromAPI = async (config: Config): Promise<QueryResponse> => {
 
   writeFileSync(config.stars.filename, JSON.stringify(response))
 
-  console.info(`Loaded star data from GitHub API and saved as ${config.stars.filename}`)
+  core.info(`Loaded star data from GitHub API and saved as ${config.stars.filename}`)
 
   return response
 }

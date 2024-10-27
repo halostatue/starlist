@@ -13,7 +13,7 @@ import type { GeneratedFile } from './types.js'
 export async function main() {
   const config = await resolve()
 
-  core.debug(`Resolved configuration: ${config}`)
+  core.debug(`Resolved configuration: ${JSON.stringify(config)}`)
 
   const files: GeneratedFile[] = []
 
@@ -72,6 +72,10 @@ export async function run(): Promise<void> {
     await main()
   } catch (error) {
     core.setFailed(`#run: ${error}`)
+
+    if (error instanceof Error && error.stack) {
+      core.error(error.stack)
+    }
   }
 }
 
