@@ -1,75 +1,78 @@
 _default:
     just --list
 
-# Run the generation task. See --help.
-generate TOKEN *ARGS:
+# Build the action bundle
+@build:
+    gleam build
+    gleam run -m build_action
+
+# Run the action locally in a scratch directory (options --config-file, --config, --use-data)
+action *ARGS: build
     #!/usr/bin/env bash
+    set -euo pipefail
 
-    declare INPUT_TOKEN INPUT_GIT_LOCAL INPUT_OUTPUT_FILENAME \
-      INPUT_LOAD_STARS_FROM_JSON INPUT_CONFIG
-    INPUT_TOKEN="{{ TOKEN }}"
-    INPUT_GIT_LOCAL=true
-    INPUT_OUTPUT_FILENAME=stars.md
-    INPUT_LOAD_STARS_FROM_JSON=true
+    : "${INPUT_TOKEN:?Set INPUT_TOKEN or use INPUT_TOKEN=\$(gh auth token) just action}"
 
-    if [[ "$INPUT_TOKEN" == --help ]] || [[ "$INPUT_TOKEN"  == -h ]]; then
-      cat <<USAGE
-    usage: just generate TOKEN [options]
-           just generate --help|-h
-
-    Runs the generate task with TOKEN. If TOKEN is a file, the token will be
-    read from that file.
-
-    Options
-      --config, -c FILENAME   Specify the `config` input YAML file.
-      --output, -o FILENAME   Sets the output filename. Defaults to stars.md
-      --query-api             Queries the data from the API instead of loading
-                              the data from data.json. Enabled if data.json does
-                              not exist.
-    USAGE
-      exit 0
-    fi
-
-    if [[ -f "$INPUT_TOKEN" ]]; then
-      INPUT_TOKEN="$(<"$INPUT_TOKEN")"
-    fi
+    declare INPUT_CONFIG INPUT_CONFIG_FILE
+    declare SCRATCH USE_DATA
+    USE_DATA=
 
     set -- {{ ARGS }}
 
     while (($#)); do
       case "$1" in
-      --output | -o)
-        INPUT_OUTPUT_FILENAME="${2:?}"
+      --help)
+        printf "usage: INPUT_TOKEN=<value> just action [options]\n\n"
+        printf "INPUT_TOKEN is required.\n\n"
+        printf "Options:\n\n"
+        printf "--config-file FILENAME    The config file to use\n"
+        printf "--use-data [FILENAME]     The data file to use. Ensure that fetch.source\n"
+        printf "                          is 'file' in the configuration file. Defaults\n"
+        printf "                          to 'data.json'.\n"
+        ;;
+      --config-file)
+        INPUT_CONFIG_FILE="${2:?}"
         shift
         ;;
-      --query-api) INPUT_LOAD_STARS_FROM_JSON=false ;;
-      --config | -c)
-        if [[ -f "${2:?}" ]]; then
-          INPUT_CONFIG="$(<"$2")"
-        else
-          INPUT_CONFIG="$2"
+      --use-data)
+        USE_DATA=data.json
+        if [[ -n "${2:-}" ]] && [[ -f "${2}" ]]; then
+          USE_DATA="${2}"
+          shift
         fi
-
-        shift
         ;;
       *)
         echo >&2 "Unknown option $1."
         exit 1
         ;;
       esac
-
       shift
     done
 
-    if [[ "$INPUT_LOAD_STARS_FROM_JSON" == true ]] && ! [[ -f data.json ]]; then
-      INPUT_LOAD_STARS_FROM_JSON=false
+    export INPUT_TOKEN
+    export INPUT_CONFIG="${INPUT_CONFIG:-}"
+    export INPUT_CONFIG_FILE="${INPUT_CONFIG_FILE:-}"
+
+    # SCRATCH="$(mktemp -d)"
+    SCRATCH="scratch.$$"
+    mkdir -p "$SCRATCH"
+    trap 'echo "Output in $SCRATCH"' EXIT
+
+    # Copy templates and action bundle into scratch
+    cp -r dist "$SCRATCH"
+    [[ -n "${USE_DATA}" ]] && cp "${USE_DATA}" "${SCRATCH}"/data.json
+    cp -f TEMPLATE.md.glemp INDEX.md.glemp "$SCRATCH/" 2>/dev/null || true
+    if [[ -n "$INPUT_CONFIG_FILE" ]] && [[ -f "$INPUT_CONFIG_FILE" ]]; then
+      cp "$INPUT_CONFIG_FILE" "$SCRATCH/"
+      INPUT_CONFIG_FILE="$(basename "$INPUT_CONFIG_FILE")"
+      export INPUT_CONFIG_FILE
     fi
 
-    export INPUT_TOKEN INPUT_GIT_LOCAL INPUT_OUTPUT_FILENAME \
-      INPUT_LOAD_STARS_FROM_JSON INPUT_CONFIG
+    cd "$SCRATCH"
+    git init -q
+    node dist/starlist.js
 
-    pnpm exec tsx src/index.ts
-
-# Removes generated files
+# Remove scratch artifacts (if any leaked into repo root)
 clean:
-    @rm -f data.json stars.md
+    @rm -f data.json stars.json
+    @rm -rf scratch.*

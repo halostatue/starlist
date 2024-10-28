@@ -1,0 +1,35 @@
+<% if partition %># <%= partition.name %>
+<% else %># <%= login %> Star List [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/sindresorhus/awesome)
+<% end %>
+> :star: generated with [halostatue/starlist](https://github.com/halostatue/starlist)
+
+Last updated <%= updated_at.date %> <%= updated_at.time %>
+
+<%= total %> stars in <%= group_count %> <%= group_description %>
+
+## Table of Contents
+
+<% for group in groups %>
+- [<%= group.name %>](#<%= group.slug %>)
+<% end %>
+
+<% for group in groups %>
+## <%= group.name %>
+
+<%= group.count_label %>
+
+<% for repo in group.repos %>
+- [<%= repo.name %>](<%= repo.url %>)<% if repo.description %>: <%= repo.description %><% end %>
+
+  **Latest Update**: <%= repo.pushed_on.date %> <%= repo.pushed_on.time %>
+  **Stars**: <%= repo.stars %>
+  **Starred On**: <%= repo.starred_on.date %>
+<% if repo.forks %>  **Forks**: <%= repo.forks %>
+<% end %>
+<% if repo.archived_on %>  **Archived On**: <%= repo.archived_on.date %>
+<% end %>
+<% if repo.topic_count %>  **Topics**: <%= repo.topic_links %>
+<% end %>
+<% end %>
+
+<% end %>
