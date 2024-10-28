@@ -3,12 +3,18 @@ import { dirname, resolve as resolvePath } from 'node:path'
 import * as core from '@actions/core'
 
 import { resolve } from './config.js'
+import { exec } from './exec.js'
 import * as git from './git.js'
 import * as markdown from './markdown.js'
 import * as stars from './stars.js'
 import * as template from './template.js'
 
 import type { GeneratedFile } from './types.js'
+
+const showDotGit = async (message: string) => {
+  const { exitCode: _, stdout } = await exec('ls', ['.git'])
+  core.info(`${message}: ${stdout.split('\n').join(' ')}`)
+}
 
 export async function main() {
   const config = await resolve()
@@ -23,12 +29,15 @@ export async function main() {
   )
 
   await git.setup(config)
+  await showDotGit('after setup')
   await git.pull(config.git.pullFlags)
+  await showDotGit('after pull')
 
   const response = await stars.getStars(config)
 
   if (config.stars.source === 'api') {
     git.add(config.stars.filename)
+    await showDotGit('after get stars & git add')
   }
 
   const vars = stars.resolveResponse(response, config)
@@ -39,7 +48,7 @@ export async function main() {
     data: await markdown.generate(rendered),
   })
 
-  console.debug('Rendered template')
+  core.debug('Rendered template')
 
   // Security check: ensure that each filename would end up in the git repository so that
   // we do not chance writing something out of tree.
@@ -62,6 +71,8 @@ export async function main() {
 
     await git.add(filename)
   }
+
+  await showDotGit('after write & git add')
 
   await git.commit(config.git.commitMessage)
   await git.push()
