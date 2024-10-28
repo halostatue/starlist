@@ -1,12 +1,10 @@
-# Ensures the `dist/` directory contains the expected bundled code.
-# If the checked-in `dist/` does not match the build output, the workflow fails.
-name: Check Transpiled JavaScript
+name: Gleam verify
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -15,8 +13,8 @@ concurrency:
 permissions: {}
 
 jobs:
-  check-dist:
-    name: Check dist/
+  test:
+    name: Run Gleam tests
     runs-on: ubuntu-latest
 
     permissions:
@@ -47,19 +45,6 @@ jobs:
           rebar3-version: "3"
 
       - run: gleam deps download
+      - run: gleam test
+      - run: gleam format --check src test
       - run: gleam run -m build_action
-
-      - name: Compare Directories
-        id: diff
-        run: |
-          if [[ "$(git diff --ignore-space-at-eol --text dist/ | wc -l)" -gt 0 ]]; then
-            echo "Detected uncommitted changes after build. See status below:"
-            git diff --text --ignore-space-at-eol dist/
-            exit 1
-          fi
-
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        if: ${{ failure() && steps.diff.outcome == 'failure' }}
-        with:
-          name: dist
-          path: dist/

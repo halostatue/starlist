@@ -3,76 +3,26 @@ description: |
   Generate a list of repositories that the running user has starred.
 inputs:
   token:
+    description: |
+      A GitHub Personal Access Token (PAT) that is not the default actions token. 
+      Classic PATs require no additional OAuth scopes. Fine-grained PATs should be scoped
+      to include the target repository and the permissions
+      `repository:contents:read-write`, `repository:metadata:read-only`, and
+      `account:starring:read-only`.
     required: true
+  config_file:
     description: |
-      A GitHub Personal Access Token (PAT). With a classic PAT, no OAuth scopes are
-      required. Fine-grained PATs are not currently supported.
+      The TOML configuration file to load. Must not be specified if `config` is provided.
+      See `ACTION.md` for details.
   config:
-    required: false
     description: |
-      The configuration for generating files as a YAML object. This is the preferred
-      configuration approach halostatue/starlist. Values present in this configuration
-      object override values present in other configuration keys. See the documentation
-      for full details on this configuration object.
-  git_commit_message:
-    required: false
-    description: |
-      The commit message to use.
-
-      Deprecated, use 'config.git.commit_message' instead.
-  git_email:
-    required: false
-    description: |
-      The email to use for the commit.
-
-      Deprecated, use 'config.git.email' instead.
-  git_name:
-    required: false
-    description: |
-      The user name to use for the commit.
-
-      Deprecated, use 'config.git.name' instead.
-  git_pull_options:
-    required: false
-    description: |
-      The method to use when calling `git-pull` prior to committing the update. Blank by
-      default, supported values are any parameters to `git-pull`. Note that `--tags` and
-      `--unshallow` will be added automatically as required.
-
-      Deprecated, use 'config.git.pull_options' instead.
-  load_stars_from_json:
-    required: false
-    description: |
-      This is an advanced option. If specified, the viewer stargazing data will be loaded
-      from the `data.json` file in the repository.
-
-      Deprecated, use 'config.stars.source' instead.
-  date_time:
-    required: false
-    description: |
-      The YAML locale configuration for dates and times. If omitted, dates will be
-      formatted as an ISO date (`2024-10-21`) and times will be formatted with a 24-hour
-      clock, omitting minutes (`13:24`).
-
-      Deprecated, use 'config.format.date_time' instead.
-  output_filename:
-    required: false
-    description: |
-      The output file name relative to the repo root directory, defaulting to `README.md`.
-
-      Deprecated, use 'config.output.filename' instead.
-  template_path:
-    required: false
-    description: |
-      The template path relative to the repo root directory. The default value is
-      `TEMPLATE.md.njk`, a `nunjucks` template.
-
-      Deprecated, use 'config.template.source' instead.
+      The TOML configuration to use. Must not be specified if `config_file` is provided.
+      See `ACTION.md` for details.
 
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: 'node24'
+  main: 'dist/starlist.js'
 
 branding:
-  icon: align-justify
+  icon: star
   color: yellow
