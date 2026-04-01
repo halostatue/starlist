@@ -34,13 +34,13 @@ import starlist/internal/star_types.{
 
 const package_name = "halostatue/starlist"
 
-const package_version = "2.0.0"
+const package_version = "2.0.2"
 
 const auto_partition_threshold = 2000
 
 pub fn main() -> Nil {
   register_process_handlers(core.error, core.set_failed)
-  core.info(package_name <> " v" <> package_version)
+  boot_info()
 
   promise.map(run(), fn(res) {
     case res {
@@ -51,6 +51,25 @@ pub fn main() -> Nil {
   })
 
   Nil
+}
+
+fn boot_info() -> Nil {
+  core.info(package_name <> " v" <> package_version)
+  log_env_vars([
+    "GITHUB_ACTION_REPOSITORY",
+    "GITHUB_REPOSITORY",
+  ])
+}
+
+fn log_env_vars(vars: List(String)) {
+  list.each(vars, fn(name) {
+    let value =
+      name
+      |> envoy.get
+      |> result.unwrap(or: "<unset>")
+
+    core.info(name <> ": " <> value)
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -101,14 +120,23 @@ fn run() -> Promise(Result(Nil, StarlistError)) {
   // 8. Commit and push
   core.start_group("Commit")
   let message = cfg.git.commit_message
-  use _ <- try_promise(git.commit(message))
-  let branch = case git.current_branch() {
-    Ok(b) -> b
-    Error(_) -> "HEAD"
+  use commit_result <- try_promise(git.commit(message))
+  case commit_result {
+    git.NothingToCommit -> {
+      core.info("Nothing to commit, skipping push.")
+      core.end_group()
+      promise.resolve(Ok(Nil))
+    }
+    git.Committed -> {
+      let branch = case git.current_branch() {
+        Ok(b) -> b
+        Error(_) -> "HEAD"
+      }
+      use _ <- promise.try_await(promise.resolve(git.push(branch)))
+      core.end_group()
+      promise.resolve(Ok(Nil))
+    }
   }
-  use _ <- promise.try_await(promise.resolve(git.push(branch)))
-  core.end_group()
-  promise.resolve(Ok(Nil))
 }
 
 // ---------------------------------------------------------------------------
@@ -221,21 +249,7 @@ fn compile_templates(render: config.Render) -> Result(Templates, StarlistError) 
 }
 
 fn compile_template(path: String) -> Result(Template, StarlistError) {
-  case simplifile.read(path) {
-    Ok(content) -> renderer.compile(content, path)
-    Error(_) ->
-      case envoy.get("GITHUB_ACTION_PATH") {
-        Ok(action_path) -> {
-          let fallback = filepath.join(action_path, path)
-          case simplifile.read(fallback) {
-            Ok(content) -> renderer.compile(content, fallback)
-            Error(_) ->
-              Error(errors.FileError("Cannot read template: " <> path))
-          }
-        }
-        Error(_) -> Error(errors.FileError("Cannot read template: " <> path))
-      }
-  }
+  renderer.compile_file(path)
 }
 
 // ---------------------------------------------------------------------------

@@ -7,24 +7,50 @@ import starlist/internal/errors
 
 /// Stage files for commit.
 pub fn add(paths: List(String)) -> Result(Nil, errors.StarlistError) {
-  use _ <- try(git(list.prepend(paths, "add")))
-  Ok(Nil)
+  try_git(list.prepend(paths, "add"))
 }
 
-/// Commit staged changes.
-pub fn commit(message: String) -> Result(Nil, errors.StarlistError) {
-  use _ <- try(git(["commit", "-m", message]))
-  Ok(Nil)
+/// Result of a commit attempt.
+pub type CommitResult {
+  /// Commit was created.
+  Committed
+  /// Nothing to commit (clean working tree).
+  NothingToCommit
+}
+
+/// Commit staged changes. Returns NothingToCommit if nothing is staged.
+pub fn commit(message: String) -> Result(CommitResult, errors.StarlistError) {
+  case has_staged_changes() {
+    False -> Ok(NothingToCommit)
+    True -> {
+      case git(["commit", "-m", message]) {
+        Ok(_) -> Ok(Committed)
+        Error(e) -> Error(e)
+      }
+    }
+  }
+}
+
+/// Check whether the index has staged changes.
+fn has_staged_changes() -> Bool {
+  case
+    shellout.command(
+      run: "git",
+      with: ["diff", "--cached", "--quiet"],
+      in: ".",
+      opt: [],
+    )
+  {
+    Ok(_) -> False
+    Error(_) -> True
+  }
 }
 
 /// Push to the given branch with --follow-tags. No-op if no remote origin.
 pub fn push(branch: String) -> Result(Nil, errors.StarlistError) {
   case remote_url() {
     Error(_) -> Ok(Nil)
-    Ok(_) -> {
-      use _ <- try(git(["push", "--follow-tags", "origin", branch]))
-      Ok(Nil)
-    }
+    Ok(_) -> try_git(["push", "--follow-tags", "origin", branch])
   }
 }
 
@@ -53,8 +79,7 @@ pub fn pull(
               |> list.filter(fn(s) { !string.is_empty(s) }),
           )
       }
-      use _ <- try(git(args))
-      Ok(Nil)
+      try_git(args)
     }
   }
 }
@@ -82,8 +107,7 @@ pub fn config_set(
   key: String,
   value: String,
 ) -> Result(Nil, errors.StarlistError) {
-  use _ <- try(git(["config", key, value]))
-  Ok(Nil)
+  try_git(["config", key, value])
 }
 
 /// Get a git config value. Returns Error if not set.
@@ -98,13 +122,17 @@ pub fn remote_url() -> Result(String, errors.StarlistError) {
 
 /// Set the remote origin URL.
 pub fn set_remote_url(url: String) -> Result(Nil, errors.StarlistError) {
-  use _ <- try(git(["remote", "set-url", "origin", url]))
-  Ok(Nil)
+  try_git(["remote", "set-url", "origin", url])
 }
 
 // ---------------------------------------------------------------------------
 // Internal
 // ---------------------------------------------------------------------------
+
+fn try_git(args: List(String)) -> Result(Nil, errors.StarlistError) {
+  use _ <- try(git(args))
+  Ok(Nil)
+}
 
 fn git(args: List(String)) -> Result(String, errors.StarlistError) {
   case shellout.command(run: "git", with: args, in: ".", opt: []) {

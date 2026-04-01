@@ -91,9 +91,18 @@ fn apply_action_git_defaults(git: config.Git) -> config.Git {
       None -> Some("")
       other -> other
     },
-    committer: case git.committer {
-      None -> Some(#(bot_name, bot_email))
-      other -> other
-    },
+    committer: Some(case git.committer {
+      Some(#(name, email)) -> #(
+        case name {
+          "" -> bot_name
+          _ -> name
+        },
+        case email {
+          "" -> bot_email
+          _ -> email
+        },
+      )
+      None -> #(bot_name, bot_email)
+    }),
   )
 }

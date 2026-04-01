@@ -28,13 +28,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Generate stars list
-        uses: halostatue/starlist@v2.0.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          config: |
-            git.email = "${{ secrets.USER_EMAIL }}"
-            git.name = "${{ github.repository_owner }}"
+          persist-credentials: false
+      - name: Generate stars list
+        uses: halostatue/starlist@v2.0.2
+        with:
+          token: ${{ secrets.STARLIST_PAT }}
 ```
 
 Alternatively, you can save your configuration as a TOML file and load it from
@@ -43,9 +42,9 @@ Alternatively, you can save your configuration as a TOML file and load it from
 ```yaml
 …
       - name: Generate stars list
-        uses: halostatue/starlist@v2.0.0
+        uses: halostatue/starlist@v2.0.2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.STARLIST_PAT }}
           config_file: stars.toml
 ```
 
@@ -55,13 +54,32 @@ Alternatively, you can save your configuration as a TOML file and load it from
 
 The `token` parameter is **required** to fetch stars from the API and for
 committing and pushing the changes back to the origin repository. The GitHub
-Actions default token is insufficient; a [Personal Access Token][pat] must be
-generated and added to the target repository's secrets configuration.
+Actions default token (`secrets.GITHUB_TOKEN`) is insufficient; a [Personal
+Access Token][pat] must be generated and added to the target repository's
+secrets configuration.
 
-Both classic and fine-grained PATs are supported. Classic PATs require no
-additional OAuth scopes. Fine-grained PATs should be scoped to include the
-target repository and the permissions `repository:contents:read-write`,
-`repository:metadata:read-only`, and `account:starring:read-only`.
+Both classic and fine-grained PATs are supported:
+
+- **Classic PATs** require the `public_repo` scope for public repositories, or
+  the `repo` scope for private repositories.
+- **Fine-grained PATs** must be scoped to the target repository with the
+  permission `contents: read and write`.
+
+#### Checkout and Credentials
+
+The action injects the provided token into the git remote URL for push access.
+The recommended configuration uses `persist-credentials: false` on the checkout
+step so that the default `GITHUB_TOKEN` credential helper does not interfere:
+
+```yaml
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+```
+
+If `persist-credentials` is omitted or set to `true`, the default `GITHUB_TOKEN`
+is used for push. In that case, the job or workflow must have
+`permissions: { contents: write }`.
 
 #### `config`
 
