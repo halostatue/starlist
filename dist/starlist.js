@@ -1035,6 +1035,21 @@ function keys(dict2) {
   );
 }
 
+// build/dev/javascript/envoy/envoy_ffi.mjs
+function get2(key) {
+  let value;
+  if (globalThis.Deno) {
+    value = Deno.env.get(key);
+  } else if (globalThis.process) {
+    value = process.env[key];
+  }
+  if (value === void 0) {
+    return Result$Error(void 0);
+  } else {
+    return Result$Ok(value);
+  }
+}
+
 // build/dev/javascript/gleam_stdlib/gleam/order.mjs
 var Lt = class extends CustomType {
 };
@@ -1107,6 +1122,9 @@ function drop_end(string4, num_graphemes) {
   } else {
     return slice(string4, 0, string_length(string4) - num_graphemes);
   }
+}
+function append2(first, second) {
+  return first + second;
 }
 function concat_loop(loop$strings, loop$accumulator) {
   while (true) {
@@ -2633,6 +2651,17 @@ function replace_error(result, error2) {
 }
 
 // build/dev/javascript/filepath/filepath.mjs
+function relative(loop$path) {
+  while (true) {
+    let path2 = loop$path;
+    if (path2.startsWith("/")) {
+      let path$1 = path2.slice(1);
+      loop$path = path$1;
+    } else {
+      return path2;
+    }
+  }
+}
 function remove_trailing_slash(path2) {
   let $ = ends_with(path2, "/");
   if ($) {
@@ -2640,6 +2669,32 @@ function remove_trailing_slash(path2) {
   } else {
     return path2;
   }
+}
+function join2(left, right) {
+  let _block;
+  if (right === "/") {
+    _block = left;
+  } else if (right.startsWith("/")) {
+    if (left === "") {
+      _block = relative(right);
+    } else if (left === "/") {
+      _block = right;
+    } else {
+      let _pipe2 = remove_trailing_slash(left);
+      let _pipe$1 = append2(_pipe2, "/");
+      _block = append2(_pipe$1, relative(right));
+    }
+  } else if (left === "") {
+    _block = relative(right);
+  } else if (left === "/") {
+    _block = left + right;
+  } else {
+    let _pipe2 = remove_trailing_slash(left);
+    let _pipe$1 = append2(_pipe2, "/");
+    _block = append2(_pipe$1, relative(right));
+  }
+  let _pipe = _block;
+  return remove_trailing_slash(_pipe);
 }
 function get_directory_name(loop$path, loop$acc, loop$segment) {
   while (true) {
@@ -3016,21 +3071,6 @@ function write(filepath, contents) {
 }
 function create_directory_all(dirpath) {
   return createDirAll(dirpath + "/");
-}
-
-// build/dev/javascript/envoy/envoy_ffi.mjs
-function get2(key) {
-  let value;
-  if (globalThis.Deno) {
-    value = Deno.env.get(key);
-  } else if (globalThis.process) {
-    value = process.env[key];
-  }
-  if (value === void 0) {
-    return Result$Error(void 0);
-  } else {
-    return Result$Ok(value);
-  }
 }
 
 // build/dev/javascript/gleam_time/gleam/time/duration.mjs
@@ -14285,7 +14325,20 @@ function compile_template(path2) {
     let content = $[0];
     return compile3(content, path2);
   } else {
-    return new Error2(new FileError("Cannot read template: " + path2));
+    let $1 = get2("GITHUB_ACTION_PATH");
+    if ($1 instanceof Ok) {
+      let action_path = $1[0];
+      let fallback = join2(action_path, path2);
+      let $2 = read(fallback);
+      if ($2 instanceof Ok) {
+        let content = $2[0];
+        return compile3(content, fallback);
+      } else {
+        return new Error2(new FileError("Cannot read template: " + path2));
+      }
+    } else {
+      return new Error2(new FileError("Cannot read template: " + path2));
+    }
   }
 }
 function compile_templates(render4) {
@@ -14631,15 +14684,15 @@ function run3() {
           "let_assert",
           FILEPATH3,
           "starlist/action",
-          63,
+          64,
           "run",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 1760,
-            end: 1794,
-            pattern_start: 1771,
-            pattern_end: 1782
+            start: 1773,
+            end: 1807,
+            pattern_start: 1784,
+            pattern_end: 1795
           }
         );
       }

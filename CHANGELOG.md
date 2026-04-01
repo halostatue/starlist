@@ -1,5 +1,9 @@
 # halostatue/starlist Changelog
 
+## 2.0.1 / 2026-04-01
+
+Fixed an issue with resolving default templates.
+
 ## 2.0.0 / 2026-04-01
 
 This is a breaking change release and a complete rewrite in Gleam. This should
