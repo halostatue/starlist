@@ -166,13 +166,9 @@ fn generate_files(
 }
 
 fn compile_template(path: String) -> Result(Template, String) {
-  case simplifile.read(path) {
-    Error(_) -> Error("Cannot read template: " <> path)
-    Ok(content) ->
-      case renderer.compile(content, path) {
-        Ok(tpl) -> Ok(tpl)
-        Error(err) -> Error("Template error: " <> string.inspect(err))
-      }
+  case renderer.compile_file(path) {
+    Ok(tpl) -> Ok(tpl)
+    Error(err) -> Error(string.inspect(err))
   }
 }
 

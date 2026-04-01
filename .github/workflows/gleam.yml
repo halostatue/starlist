@@ -45,6 +45,37 @@ jobs:
           rebar3-version: "3"
 
       - run: gleam deps download
-      - run: gleam test
+
       - run: gleam format --check src test
+
+      - run: gleam run -m squall generate https://api.github.com/graphql
+        env:
+          SQUALL_AUTH_TOKEN: ${{ github.token }}
+
+      - run: gleam run -m cog
+
+      - name: Ensure that nothing changed in src because of code generation
+        run: |
+          gleam format
+
+          if [[ "$(git diff --ignore-space-at-eol --text src/ | wc -l)" -gt 0 ]]; then
+            echo "Detected uncommitted changes after code generation. See status below:"
+            git diff --text --ignore-space-at-eol src/
+            exit 1
+          fi
+
+      - run: gleam build
+      - run: gleam test
+
       - run: gleam run -m build_action
+
+      - name: Ensure that nothing changed in dist (action is not ready)
+        id: diff
+        run: |
+          if [[ "$(git diff --ignore-space-at-eol --text dist/ | wc -l)" -gt 0 ]]; then
+            echo "Detected uncommitted changes after build. See status below:"
+            git diff --text --ignore-space-at-eol dist/
+            exit 1
+          fi
+
+

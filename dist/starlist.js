@@ -182,11 +182,11 @@ var BitArray = class {
    * @param {number} index
    * @returns {number | undefined}
    */
-  byteAt(index5) {
-    if (index5 < 0 || index5 >= this.byteSize) {
+  byteAt(index6) {
+    if (index6 < 0 || index6 >= this.byteSize) {
       return void 0;
     }
-    return bitArrayByteAt(this.rawBuffer, this.bitOffset, index5);
+    return bitArrayByteAt(this.rawBuffer, this.bitOffset, index6);
   }
   equals(other) {
     if (this.bitSize !== other.bitSize) {
@@ -273,12 +273,12 @@ var BitArray = class {
     return this.rawBuffer.length;
   }
 };
-function bitArrayByteAt(buffer, bitOffset, index5) {
+function bitArrayByteAt(buffer, bitOffset, index6) {
   if (bitOffset === 0) {
-    return buffer[index5] ?? 0;
+    return buffer[index6] ?? 0;
   } else {
-    const a = buffer[index5] << bitOffset & 255;
-    const b = buffer[index5 + 1] >> 8 - bitOffset;
+    const a = buffer[index6] << bitOffset & 255;
+    const b = buffer[index6 + 1] >> 8 - bitOffset;
     return a | b;
   }
 }
@@ -1123,9 +1123,6 @@ function drop_end(string4, num_graphemes) {
     return slice(string4, 0, string_length(string4) - num_graphemes);
   }
 }
-function append2(first, second) {
-  return first + second;
-}
 function concat_loop(loop$strings, loop$accumulator) {
   while (true) {
     let strings = loop$strings;
@@ -1562,8 +1559,8 @@ function concat(xs) {
   }
   return result;
 }
-function string_byte_slice(string4, index5, length5) {
-  return string4.slice(index5, index5 + length5);
+function string_byte_slice(string4, index6, length5) {
+  return string4.slice(index6, index6 + length5);
 }
 function string_grapheme_slice(string4, idx, len) {
   if (len <= 0 || idx >= string4.length) {
@@ -1720,9 +1717,9 @@ function float_to_string(float3) {
   if (string4.indexOf(".") >= 0) {
     return string4;
   } else {
-    const index5 = string4.indexOf("e");
-    if (index5 >= 0) {
-      return string4.slice(0, index5) + ".0" + string4.slice(index5);
+    const index6 = string4.indexOf("e");
+    if (index6 >= 0) {
+      return string4.slice(0, index6) + ".0" + string4.slice(index6);
     } else {
       return string4 + ".0";
     }
@@ -1780,10 +1777,10 @@ var Inspector = class {
     const head = name === "Object" ? "" : name + " ";
     return `//js(${head}{${body}})`;
   }
-  #dict(map10) {
+  #dict(map11) {
     let body = "dict.from_list([";
     let first = true;
-    body = fold(map10, body, (body2, key, value) => {
+    body = fold(map11, body, (body2, key, value) => {
       if (!first) body2 = body2 + ", ";
       first = false;
       return body2 + "#(" + this.inspect(key) + ", " + this.inspect(value) + ")";
@@ -1908,7 +1905,7 @@ function index2(data2, key) {
   }
   return Result$Error(key_is_int ? "Indexable" : "Dict");
 }
-function list(data2, decode2, pushPath, index5, emptyList) {
+function list(data2, decode2, pushPath, index6, emptyList) {
   if (!(isList(data2) || Array.isArray(data2))) {
     const error2 = DecodeError$DecodeError("List", classify_dynamic(data2), emptyList);
     return [emptyList, arrayToList([error2])];
@@ -1918,11 +1915,11 @@ function list(data2, decode2, pushPath, index5, emptyList) {
     const layer = decode2(element);
     const [out, errors] = layer;
     if (List$isNonEmpty(errors)) {
-      const [_, errors2] = pushPath(layer, index5.toString());
+      const [_, errors2] = pushPath(layer, index6.toString());
       return [emptyList, errors2];
     }
     decoded.push(out);
-    index5++;
+    index6++;
   }
   return [arrayToList(decoded), emptyList];
 }
@@ -2582,6 +2579,21 @@ function key_set_loop(loop$list, loop$key, loop$value, loop$inspected) {
 function key_set(list3, key, value) {
   return key_set_loop(list3, key, value, toList([]));
 }
+function each(loop$list, loop$f) {
+  while (true) {
+    let list3 = loop$list;
+    let f = loop$f;
+    if (list3 instanceof Empty) {
+      return void 0;
+    } else {
+      let first$1 = list3.head;
+      let rest$1 = list3.tail;
+      f(first$1);
+      loop$list = rest$1;
+      loop$f = f;
+    }
+  }
+}
 function drop_while(loop$list, loop$predicate) {
   while (true) {
     let list3 = loop$list;
@@ -2651,17 +2663,6 @@ function replace_error(result, error2) {
 }
 
 // build/dev/javascript/filepath/filepath.mjs
-function relative(loop$path) {
-  while (true) {
-    let path2 = loop$path;
-    if (path2.startsWith("/")) {
-      let path$1 = path2.slice(1);
-      loop$path = path$1;
-    } else {
-      return path2;
-    }
-  }
-}
 function remove_trailing_slash(path2) {
   let $ = ends_with(path2, "/");
   if ($) {
@@ -2669,32 +2670,6 @@ function remove_trailing_slash(path2) {
   } else {
     return path2;
   }
-}
-function join2(left, right) {
-  let _block;
-  if (right === "/") {
-    _block = left;
-  } else if (right.startsWith("/")) {
-    if (left === "") {
-      _block = relative(right);
-    } else if (left === "/") {
-      _block = right;
-    } else {
-      let _pipe2 = remove_trailing_slash(left);
-      let _pipe$1 = append2(_pipe2, "/");
-      _block = append2(_pipe$1, relative(right));
-    }
-  } else if (left === "") {
-    _block = relative(right);
-  } else if (left === "/") {
-    _block = left + right;
-  } else {
-    let _pipe2 = remove_trailing_slash(left);
-    let _pipe$1 = append2(_pipe2, "/");
-    _block = append2(_pipe$1, relative(right));
-  }
-  let _pipe = _block;
-  return remove_trailing_slash(_pipe);
 }
 function get_directory_name(loop$path, loop$acc, loop$segment) {
   while (true) {
@@ -3363,9 +3338,6 @@ function start_group(name) {
 function end_group() {
   return issue("endgroup", "");
 }
-function debug(message) {
-  return issue("debug", message);
-}
 function set_failed(message) {
   setExitCode(new Failure());
   return error(message);
@@ -3496,6 +3468,16 @@ var WrongType = class extends CustomType {
     this.expected = expected;
     this.got = got;
   }
+};
+var NotInString = class extends CustomType {
+};
+var InDoubleString = class extends CustomType {
+};
+var InMultilineDoubleString = class extends CustomType {
+};
+var InSingleString = class extends CustomType {
+};
+var InMultilineSingleString = class extends CustomType {
 };
 function classify(toml) {
   if (toml instanceof Int) {
@@ -3853,136 +3835,284 @@ function skip_whitespace(loop$input) {
     }
   }
 }
-function drop_comments(loop$input, loop$acc, loop$in_string) {
+function drop_comments(loop$input, loop$acc, loop$state) {
   while (true) {
     let input = loop$input;
     let acc = loop$acc;
-    let in_string = loop$in_string;
+    let state = loop$state;
     if (input instanceof Empty) {
       return reverse(acc);
     } else {
-      let $ = input.tail;
-      if ($ instanceof Empty) {
-        let $1 = input.head;
-        if ($1 === '"') {
-          let input$1 = $;
-          loop$input = input$1;
-          loop$acc = prepend('"', acc);
-          loop$in_string = !in_string;
-        } else if ($1 === "#") {
-          if (in_string) {
-            let input$1 = $;
-            loop$input = input$1;
-            loop$acc = prepend("#", acc);
-            loop$in_string = in_string;
-          } else if (!in_string) {
-            let input$1 = $;
-            let _pipe = input$1;
-            let _pipe$1 = drop_while(_pipe, (g) => {
-              return g !== "\n";
-            });
-            loop$input = _pipe$1;
-            loop$acc = acc;
-            loop$in_string = in_string;
-          } else {
-            let g = $1;
-            let input$1 = $;
-            loop$input = input$1;
-            loop$acc = prepend(g, acc);
-            loop$in_string = in_string;
-          }
-        } else {
-          let g = $1;
-          let input$1 = $;
+      let $ = input.head;
+      if ($ === "#" && state instanceof NotInString) {
+        let input$1 = input.tail;
+        let _pipe = input$1;
+        let _pipe$1 = drop_while(_pipe, (g) => {
+          return g !== "\n";
+        });
+        loop$input = _pipe$1;
+        loop$acc = acc;
+        loop$state = new NotInString();
+      } else if ($ === "\\") {
+        let $1 = input.tail;
+        if ($1 instanceof Empty) {
+          let g = $;
+          let input$1 = $1;
           loop$input = input$1;
           loop$acc = prepend(g, acc);
-          loop$in_string = in_string;
-        }
-      } else {
-        let $1 = input.head;
-        if ($1 === "\\") {
-          let $2 = $.head;
-          if ($2 === '"' && in_string) {
-            let input$1 = $.tail;
-            loop$input = input$1;
-            loop$acc = prepend('"', prepend("\\", acc));
-            loop$in_string = in_string;
+          loop$state = state;
+        } else {
+          let $2 = $1.head;
+          if ($2 === '"') {
+            if (state instanceof InDoubleString) {
+              let input$1 = $1.tail;
+              loop$input = input$1;
+              loop$acc = prepend('"', prepend("\\", acc));
+              loop$state = state;
+            } else if (state instanceof InMultilineDoubleString) {
+              let input$1 = $1.tail;
+              loop$input = input$1;
+              loop$acc = prepend('"', prepend("\\", acc));
+              loop$state = state;
+            } else {
+              let g = $;
+              let input$1 = $1;
+              loop$input = input$1;
+              loop$acc = prepend(g, acc);
+              loop$state = state;
+            }
           } else {
-            let g = $1;
-            let input$1 = $;
+            let g = $;
+            let input$1 = $1;
             loop$input = input$1;
             loop$acc = prepend(g, acc);
-            loop$in_string = in_string;
+            loop$state = state;
           }
-        } else if ($1 === '"') {
-          let input$1 = $;
-          loop$input = input$1;
-          loop$acc = prepend('"', acc);
-          loop$in_string = !in_string;
-        } else if ($1 === "'") {
-          let $2 = $.tail;
-          if ($2 instanceof Empty) {
-            let g = $1;
-            let input$1 = $;
+        }
+      } else if ($ === '"') {
+        let $1 = input.tail;
+        if ($1 instanceof Empty) {
+          if (state instanceof NotInString) {
+            let input$1 = $1;
             loop$input = input$1;
-            loop$acc = prepend(g, acc);
-            loop$in_string = in_string;
+            loop$acc = prepend('"', acc);
+            loop$state = new InDoubleString();
+          } else if (state instanceof InDoubleString) {
+            let input$1 = $1;
+            loop$input = input$1;
+            loop$acc = prepend('"', acc);
+            loop$state = new NotInString();
           } else {
-            let $3 = $.head;
+            let input$1 = $1;
+            loop$input = input$1;
+            loop$acc = prepend('"', acc);
+            loop$state = state;
+          }
+        } else {
+          let $2 = $1.tail;
+          if ($2 instanceof Empty) {
+            if (state instanceof NotInString) {
+              let input$1 = $1;
+              loop$input = input$1;
+              loop$acc = prepend('"', acc);
+              loop$state = new InDoubleString();
+            } else if (state instanceof InDoubleString) {
+              let input$1 = $1;
+              loop$input = input$1;
+              loop$acc = prepend('"', acc);
+              loop$state = new NotInString();
+            } else {
+              let input$1 = $1;
+              loop$input = input$1;
+              loop$acc = prepend('"', acc);
+              loop$state = state;
+            }
+          } else {
+            let $3 = $1.head;
+            if ($3 === '"') {
+              let $4 = $2.head;
+              if ($4 === '"') {
+                if (state instanceof NotInString) {
+                  let input$1 = $2.tail;
+                  loop$input = input$1;
+                  loop$acc = prepend(
+                    '"',
+                    prepend('"', prepend('"', acc))
+                  );
+                  loop$state = new InMultilineDoubleString();
+                } else if (state instanceof InMultilineDoubleString) {
+                  let input$1 = $2.tail;
+                  loop$input = input$1;
+                  loop$acc = prepend(
+                    '"',
+                    prepend('"', prepend('"', acc))
+                  );
+                  loop$state = new NotInString();
+                } else if (state instanceof NotInString) {
+                  let input$1 = $1;
+                  loop$input = input$1;
+                  loop$acc = prepend('"', acc);
+                  loop$state = new InDoubleString();
+                } else if (state instanceof InDoubleString) {
+                  let input$1 = $1;
+                  loop$input = input$1;
+                  loop$acc = prepend('"', acc);
+                  loop$state = new NotInString();
+                } else {
+                  let input$1 = $1;
+                  loop$input = input$1;
+                  loop$acc = prepend('"', acc);
+                  loop$state = state;
+                }
+              } else if (state instanceof NotInString) {
+                let input$1 = $1;
+                loop$input = input$1;
+                loop$acc = prepend('"', acc);
+                loop$state = new InDoubleString();
+              } else if (state instanceof InDoubleString) {
+                let input$1 = $1;
+                loop$input = input$1;
+                loop$acc = prepend('"', acc);
+                loop$state = new NotInString();
+              } else {
+                let input$1 = $1;
+                loop$input = input$1;
+                loop$acc = prepend('"', acc);
+                loop$state = state;
+              }
+            } else if (state instanceof NotInString) {
+              let input$1 = $1;
+              loop$input = input$1;
+              loop$acc = prepend('"', acc);
+              loop$state = new InDoubleString();
+            } else if (state instanceof InDoubleString) {
+              let input$1 = $1;
+              loop$input = input$1;
+              loop$acc = prepend('"', acc);
+              loop$state = new NotInString();
+            } else {
+              let input$1 = $1;
+              loop$input = input$1;
+              loop$acc = prepend('"', acc);
+              loop$state = state;
+            }
+          }
+        }
+      } else if ($ === "'") {
+        let $1 = input.tail;
+        if ($1 instanceof Empty) {
+          if (state instanceof NotInString) {
+            let input$1 = $1;
+            loop$input = input$1;
+            loop$acc = prepend("'", acc);
+            loop$state = new InSingleString();
+          } else if (state instanceof InSingleString) {
+            let input$1 = $1;
+            loop$input = input$1;
+            loop$acc = prepend("'", acc);
+            loop$state = new NotInString();
+          } else {
+            let input$1 = $1;
+            loop$input = input$1;
+            loop$acc = prepend("'", acc);
+            loop$state = state;
+          }
+        } else {
+          let $2 = $1.tail;
+          if ($2 instanceof Empty) {
+            if (state instanceof NotInString) {
+              let input$1 = $1;
+              loop$input = input$1;
+              loop$acc = prepend("'", acc);
+              loop$state = new InSingleString();
+            } else if (state instanceof InSingleString) {
+              let input$1 = $1;
+              loop$input = input$1;
+              loop$acc = prepend("'", acc);
+              loop$state = new NotInString();
+            } else {
+              let input$1 = $1;
+              loop$input = input$1;
+              loop$acc = prepend("'", acc);
+              loop$state = state;
+            }
+          } else {
+            let $3 = $1.head;
             if ($3 === "'") {
               let $4 = $2.head;
               if ($4 === "'") {
-                let input$1 = $2.tail;
+                if (state instanceof NotInString) {
+                  let input$1 = $2.tail;
+                  loop$input = input$1;
+                  loop$acc = prepend(
+                    "'",
+                    prepend("'", prepend("'", acc))
+                  );
+                  loop$state = new InMultilineSingleString();
+                } else if (state instanceof InMultilineSingleString) {
+                  let input$1 = $2.tail;
+                  loop$input = input$1;
+                  loop$acc = prepend(
+                    "'",
+                    prepend("'", prepend("'", acc))
+                  );
+                  loop$state = new NotInString();
+                } else if (state instanceof NotInString) {
+                  let input$1 = $1;
+                  loop$input = input$1;
+                  loop$acc = prepend("'", acc);
+                  loop$state = new InSingleString();
+                } else if (state instanceof InSingleString) {
+                  let input$1 = $1;
+                  loop$input = input$1;
+                  loop$acc = prepend("'", acc);
+                  loop$state = new NotInString();
+                } else {
+                  let input$1 = $1;
+                  loop$input = input$1;
+                  loop$acc = prepend("'", acc);
+                  loop$state = state;
+                }
+              } else if (state instanceof NotInString) {
+                let input$1 = $1;
                 loop$input = input$1;
-                loop$acc = prepend(
-                  "'",
-                  prepend("'", prepend("'", acc))
-                );
-                loop$in_string = !in_string;
+                loop$acc = prepend("'", acc);
+                loop$state = new InSingleString();
+              } else if (state instanceof InSingleString) {
+                let input$1 = $1;
+                loop$input = input$1;
+                loop$acc = prepend("'", acc);
+                loop$state = new NotInString();
               } else {
-                let g = $1;
-                let input$1 = $;
+                let input$1 = $1;
                 loop$input = input$1;
-                loop$acc = prepend(g, acc);
-                loop$in_string = in_string;
+                loop$acc = prepend("'", acc);
+                loop$state = state;
               }
-            } else {
-              let g = $1;
-              let input$1 = $;
+            } else if (state instanceof NotInString) {
+              let input$1 = $1;
               loop$input = input$1;
-              loop$acc = prepend(g, acc);
-              loop$in_string = in_string;
+              loop$acc = prepend("'", acc);
+              loop$state = new InSingleString();
+            } else if (state instanceof InSingleString) {
+              let input$1 = $1;
+              loop$input = input$1;
+              loop$acc = prepend("'", acc);
+              loop$state = new NotInString();
+            } else {
+              let input$1 = $1;
+              loop$input = input$1;
+              loop$acc = prepend("'", acc);
+              loop$state = state;
             }
           }
-        } else if ($1 === "#") {
-          if (in_string) {
-            let input$1 = $;
-            loop$input = input$1;
-            loop$acc = prepend("#", acc);
-            loop$in_string = in_string;
-          } else if (!in_string) {
-            let input$1 = $;
-            let _pipe = input$1;
-            let _pipe$1 = drop_while(_pipe, (g) => {
-              return g !== "\n";
-            });
-            loop$input = _pipe$1;
-            loop$acc = acc;
-            loop$in_string = in_string;
-          } else {
-            let g = $1;
-            let input$1 = $;
-            loop$input = input$1;
-            loop$acc = prepend(g, acc);
-            loop$in_string = in_string;
-          }
-        } else {
-          let g = $1;
-          let input$1 = $;
-          loop$input = input$1;
-          loop$acc = prepend(g, acc);
-          loop$in_string = in_string;
         }
+      } else {
+        let g = $;
+        let input$1 = input.tail;
+        loop$input = input$1;
+        loop$acc = prepend(g, acc);
+        loop$state = state;
       }
     }
   }
@@ -5024,15 +5154,15 @@ function parse_time_ns(loop$input, loop$seconds, loop$ns, loop$digits_count) {
           "let_assert",
           FILEPATH,
           "tom",
-          1202,
+          1236,
           "parse_time_ns",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 37203,
-            end: 37258,
-            pattern_start: 37214,
-            pattern_end: 37228
+            start: 38545,
+            end: 38600,
+            pattern_start: 38556,
+            pattern_end: 38570
           }
         );
       }
@@ -5110,15 +5240,15 @@ function parse_time_ns(loop$input, loop$seconds, loop$ns, loop$digits_count) {
             "let_assert",
             FILEPATH,
             "tom",
-            1202,
+            1236,
             "parse_time_ns",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 37203,
-              end: 37258,
-              pattern_start: 37214,
-              pattern_end: 37228
+              start: 38545,
+              end: 38600,
+              pattern_start: 38556,
+              pattern_end: 38570
             }
           );
         }
@@ -7072,7 +7202,7 @@ function parse_tables(loop$input, loop$toml) {
 }
 function parse(input) {
   let input$1 = graphemes(input);
-  let input$2 = drop_comments(input$1, toList([]), false);
+  let input$2 = drop_comments(input$1, toList([]), new NotInString());
   let input$3 = skip_whitespace(input$2);
   return do$(
     parse_table(input$3, make()),
@@ -7356,12 +7486,36 @@ function decode_partition(toml) {
   }
 }
 function decode_committer(toml) {
+  let _block;
   let $ = get_string(toml, toList(["git", "committer", "name"]));
+  if ($ instanceof Ok) {
+    let n = $[0];
+    if (n !== "") {
+      _block = $;
+    } else {
+      _block = new Error2(void 0);
+    }
+  } else {
+    _block = new Error2(void 0);
+  }
+  let name = _block;
+  let _block$1;
   let $1 = get_string(toml, toList(["git", "committer", "email"]));
-  if ($ instanceof Ok && $1 instanceof Ok) {
-    let name = $[0];
-    let email = $1[0];
-    return new Some([name, email]);
+  if ($1 instanceof Ok) {
+    let e = $1[0];
+    if (e !== "") {
+      _block$1 = $1;
+    } else {
+      _block$1 = new Error2(void 0);
+    }
+  } else {
+    _block$1 = new Error2(void 0);
+  }
+  let email = _block$1;
+  if (name instanceof Ok && email instanceof Ok) {
+    let n = name[0];
+    let e = email[0];
+    return new Some([n, e]);
   } else {
     return new None();
   }
@@ -7615,14 +7769,33 @@ function apply_action_git_defaults(git2) {
         return $;
       }
     })(),
-    (() => {
-      let $ = git2.committer;
-      if ($ instanceof None) {
-        return new Some([bot_name, bot_email]);
-      } else {
-        return $;
-      }
-    })()
+    new Some(
+      (() => {
+        let $ = git2.committer;
+        if ($ instanceof Some) {
+          let name = $[0][0];
+          let email = $[0][1];
+          return [
+            (() => {
+              if (name === "") {
+                return bot_name;
+              } else {
+                return name;
+              }
+            })(),
+            (() => {
+              if (email === "") {
+                return bot_email;
+              } else {
+                return email;
+              }
+            })()
+          ];
+        } else {
+          return [bot_name, bot_email];
+        }
+      })()
+    )
   );
 }
 function resolve2() {
@@ -7809,8 +7982,8 @@ function command(executable, arguments$, directory, options) {
 }
 
 // build/dev/javascript/starlist/starlist/internal/git.mjs
-function git(args) {
-  let $ = command("git", args, ".", toList([]));
+function git(args, opt) {
+  let $ = command("git", args, ".", opt);
   if ($ instanceof Ok) {
     let output = $[0];
     return new Ok(trim(output));
@@ -7827,7 +8000,7 @@ function git(args) {
   }
 }
 function is_shallow() {
-  let $ = git(toList(["rev-parse", "--is-shallow-repository"]));
+  let $ = git(toList(["rev-parse", "--is-shallow-repository"]), toList([]));
   if ($ instanceof Ok) {
     let output = $[0];
     return new Ok(trim(output) === "true");
@@ -7836,10 +8009,10 @@ function is_shallow() {
   }
 }
 function current_branch() {
-  return git(toList(["rev-parse", "--abbrev-ref", "HEAD"]));
+  return git(toList(["rev-parse", "--abbrev-ref", "HEAD"]), toList([]));
 }
 function remote_url() {
-  return git(toList(["remote", "get-url", "origin"]));
+  return git(toList(["remote", "get-url", "origin"]), toList([]));
 }
 function try$2(result, next2) {
   if (result instanceof Ok) {
@@ -7849,30 +8022,26 @@ function try$2(result, next2) {
     return result;
   }
 }
+function try_git(args, opt) {
+  return try$2(git(args, opt), (_) => {
+    return new Ok(void 0);
+  });
+}
 function add3(paths) {
-  return try$2(
-    git(prepend2(paths, "add")),
-    (_) => {
-      return new Ok(void 0);
-    }
-  );
+  return try_git(prepend2(paths, "add"), toList([]));
 }
 function commit(message) {
-  return try$2(
-    git(toList(["commit", "-m", message])),
-    (_) => {
-      return new Ok(void 0);
-    }
+  return try_git(
+    toList(["commit", "-m", message]),
+    toList([new LetBeStdout(), new LetBeStderr()])
   );
 }
 function push(branch2) {
   let $ = remote_url();
   if ($ instanceof Ok) {
-    return try$2(
-      git(toList(["push", "--follow-tags", "origin", branch2])),
-      (_) => {
-        return new Ok(void 0);
-      }
+    return try_git(
+      toList(["push", "--follow-tags", "origin", branch2]),
+      toList([])
     );
   } else {
     return new Ok(void 0);
@@ -7907,37 +8076,27 @@ function pull(flags, is_shallow2) {
       );
     }
     let args$1 = _block$1;
-    return try$2(git(args$1), (_) => {
-      return new Ok(void 0);
-    });
+    return try_git(args$1, toList([]));
   } else {
     return new Ok(void 0);
   }
 }
 function config_set(key, value) {
-  return try$2(
-    git(toList(["config", key, value])),
-    (_) => {
-      return new Ok(void 0);
-    }
-  );
+  return try_git(toList(["config", key, value]), toList([]));
 }
 function set_remote_url(url) {
-  return try$2(
-    git(toList(["remote", "set-url", "origin", url])),
-    (_) => {
-      return new Ok(void 0);
-    }
-  );
+  return try_git(toList(["remote", "set-url", "origin", url]), toList([]));
 }
 
 // build/dev/javascript/starlist/starlist/internal/action/setup.mjs
 function inject_token(url, token4) {
   let $ = starts_with(url, "https://");
   if ($) {
+    info("fixing https: " + url);
     let rest = drop_start(url, string_length("https://"));
     return "https://x-access-token:" + token4 + "@" + rest;
   } else {
+    info("ignoring because not of https");
     return url;
   }
 }
@@ -7963,19 +8122,61 @@ function setup(committer, token4) {
           return try$3(
             config_set("pull.rebase", "false"),
             (_3) => {
-              let $ = remote_url();
-              if ($ instanceof Ok) {
-                let url = $[0];
-                let injected = inject_token(url, token4);
-                let $1 = is_empty2(injected);
-                if ($1) {
+              return try$3(
+                (() => {
+                  let $ = get2("GITHUB_REPOSITORY");
+                  if ($ instanceof Ok) {
+                    let repo = $[0];
+                    let _block;
+                    let $1 = get2("GITHUB_SERVER_URL");
+                    if ($1 instanceof Ok) {
+                      let url2 = $1[0];
+                      _block = url2;
+                    } else {
+                      _block = "https://github.com";
+                    }
+                    let server = _block;
+                    let url = inject_token(server, token4) + "/" + repo + ".git";
+                    info("Set token");
+                    return set_remote_url(url);
+                  } else {
+                    let $1 = remote_url();
+                    if ($1 instanceof Ok) {
+                      let url = $1[0];
+                      let injected = inject_token(url, token4);
+                      let $2 = is_empty2(injected);
+                      if ($2) {
+                        return new Ok(void 0);
+                      } else {
+                        info("Set token");
+                        return set_remote_url(injected);
+                      }
+                    } else {
+                      return new Ok(void 0);
+                    }
+                  }
+                })(),
+                (_4) => {
+                  let $ = remote_url();
+                  if ($ instanceof Ok) {
+                    let url = $[0];
+                    info("URL: " + replace(url, token4, "TOKEN"));
+                    info(
+                      "Origin URL contains token: " + (() => {
+                        let $1 = contains_string(url, token4);
+                        if ($1) {
+                          return "yes";
+                        } else {
+                          return "no";
+                        }
+                      })()
+                    );
+                  } else {
+                    info("No origin URL configured");
+                  }
                   return new Ok(void 0);
-                } else {
-                  return set_remote_url(injected);
                 }
-              } else {
-                return new Ok(void 0);
-              }
+              );
             }
           );
         }
@@ -8945,21 +9146,29 @@ var Response = class extends CustomType {
     this.body = body;
   }
 };
+var Response$Response = (status, headers, body) => new Response(status, headers, body);
+function set_body2(response, body) {
+  return new Response(response.status, response.headers, body);
+}
+function map7(response, transform) {
+  let _pipe = response.body;
+  let _pipe$1 = transform(_pipe);
+  return ((_capture) => {
+    return set_body2(response, _capture);
+  })(_pipe$1);
+}
 
 // build/dev/javascript/gleam_fetch/gleam_fetch_ffi.mjs
 async function raw_send(request) {
   try {
-    return new Ok(await fetch(request));
+    return Result$Ok(await fetch(request));
   } catch (error2) {
-    return new Error2(new NetworkError(error2.toString()));
+    return Result$Error(FetchError$NetworkError(error2.toString()));
   }
 }
 function from_fetch_response(response) {
-  return new Response(
-    response.status,
-    List.fromArray([...response.headers]),
-    response
-  );
+  let headers = [...response.headers].reverse();
+  return Response$Response(response.status, arrayToList2(headers), response);
 }
 function request_common(request) {
   let url = to_string2(to_uri(request));
@@ -8972,7 +9181,8 @@ function request_common(request) {
 }
 function to_fetch_request(request) {
   let [url, options] = request_common(request);
-  if (options.method !== "GET" && options.method !== "HEAD") options.body = request.body;
+  if (options.method !== "GET" && options.method !== "HEAD")
+    options.body = request.body;
   return new globalThis.Request(url, options);
 }
 function make_headers(headersList) {
@@ -8985,9 +9195,16 @@ async function read_text_body(response) {
   try {
     body = await response.body.text();
   } catch (error2) {
-    return new Error2(new UnableToReadBody());
+    return Result$Error(FetchError$UnableToReadBody());
   }
-  return new Ok(response.withFields({ body }));
+  return Result$Ok(map7(response, () => body));
+}
+function arrayToList2(array4) {
+  let list3 = List$Empty();
+  for (const element of array4) {
+    list3 = List$NonEmpty(element, list3);
+  }
+  return list3;
 }
 
 // build/dev/javascript/gleam_fetch/gleam/fetch.mjs
@@ -8997,8 +9214,10 @@ var NetworkError = class extends CustomType {
     this[0] = $0;
   }
 };
+var FetchError$NetworkError = ($0) => new NetworkError($0);
 var UnableToReadBody = class extends CustomType {
 };
+var FetchError$UnableToReadBody = () => new UnableToReadBody();
 function send(request) {
   let _pipe = request;
   let _pipe$1 = to_fetch_request(_pipe);
@@ -10125,8 +10344,8 @@ function handle_success(client, acc, body, max_stars) {
       _block$1 = false;
     }
     let reached_limit = _block$1;
-    debug(
-      "Fetched page, " + to_string(length2(new_edges)) + "/" + to_string(
+    info(
+      "Fetched page " + to_string(length2(new_edges)) + "/" + to_string(
         total
       ) + " stars so far"
     );
@@ -10928,14 +11147,14 @@ function find_size(loop$sizes, loop$size_idx_plus_one, loop$index) {
   while (true) {
     let sizes = loop$sizes;
     let size_idx_plus_one = loop$size_idx_plus_one;
-    let index5 = loop$index;
-    let $ = get1(size_idx_plus_one, sizes) > index5;
+    let index6 = loop$index;
+    let $ = get1(size_idx_plus_one, sizes) > index6;
     if ($) {
       return size_idx_plus_one - 1;
     } else {
       loop$sizes = sizes;
       loop$size_idx_plus_one = size_idx_plus_one + 1;
-      loop$index = index5;
+      loop$index = index6;
     }
   }
 }
@@ -10969,11 +11188,11 @@ function get4(loop$node, loop$shift, loop$index) {
   while (true) {
     let node = loop$node;
     let shift = loop$shift;
-    let index5 = loop$index;
+    let index6 = loop$index;
     if (node instanceof Balanced) {
       let children = node.children;
-      let node_index = bsr(index5, shift);
-      let index$1 = index5 - bsl(node_index, shift);
+      let node_index = bsr(index6, shift);
+      let index$1 = index6 - bsl(node_index, shift);
       let child = get1(node_index + 1, children);
       loop$node = child;
       loop$shift = shift - branch_bits;
@@ -10981,13 +11200,13 @@ function get4(loop$node, loop$shift, loop$index) {
     } else if (node instanceof Unbalanced) {
       let sizes = node.sizes;
       let children = node.children;
-      let start_search_index = bsr(index5, shift);
-      let node_index = find_size(sizes, start_search_index + 1, index5);
+      let start_search_index = bsr(index6, shift);
+      let node_index = find_size(sizes, start_search_index + 1, index6);
       let _block;
       if (node_index === 0) {
-        _block = index5;
+        _block = index6;
       } else {
-        _block = index5 - get1(node_index, sizes);
+        _block = index6 - get1(node_index, sizes);
       }
       let index$1 = _block;
       let child = get1(node_index + 1, children);
@@ -10996,7 +11215,7 @@ function get4(loop$node, loop$shift, loop$index) {
       loop$index = index$1;
     } else {
       let children = node.children;
-      return get1(index5 + 1, children);
+      return get1(index6 + 1, children);
     }
   }
 }
@@ -11137,15 +11356,15 @@ function from_list3(list3) {
     return new Empty2();
   }
 }
-function get5(array4, index5) {
+function get5(array4, index6) {
   if (array4 instanceof Empty2) {
     return error_nil;
   } else {
     let shift = array4.shift;
     let root = array4.root;
-    let $ = 0 <= index5 && index5 < size2(root);
+    let $ = 0 <= index6 && index6 < size2(root);
     if ($) {
-      return new Ok(get4(root, shift, index5));
+      return new Ok(get4(root, shift, index6));
     } else {
       return error_nil;
     }
@@ -11760,13 +11979,13 @@ function do$2(parser, f) {
 function then$2(parser, f) {
   return do$2(parser, f);
 }
-function map9(parser, f) {
+function map10(parser, f) {
   return do$2(parser, (a) => {
     return return$(f(a));
   });
 }
 function replace4(parser, b) {
-  return map9(parser, (_) => {
+  return map10(parser, (_) => {
     return b;
   });
 }
@@ -12092,7 +12311,7 @@ function sequence(parser, sep) {
 function optional2(parser) {
   return one_of2(
     toList([
-      map9(parser, (var0) => {
+      map10(parser, (var0) => {
         return new Some(var0);
       }),
       return$(new None())
@@ -12849,7 +13068,7 @@ function base_parser(old_state) {
         toList([
           (() => {
             let _pipe2 = tag_parser(state);
-            return map9(
+            return map10(
               _pipe2,
               (var0) => {
                 return new Continue2(var0);
@@ -12858,7 +13077,7 @@ function base_parser(old_state) {
           })(),
           (() => {
             let _pipe2 = any();
-            let _pipe$1 = map9(
+            let _pipe$1 = map10(
               _pipe2,
               (token4) => {
                 return new State3(
@@ -12873,7 +13092,7 @@ function base_parser(old_state) {
                 );
               }
             );
-            return map9(
+            return map10(
               _pipe$1,
               (var0) => {
                 return new Continue2(var0);
@@ -12883,7 +13102,7 @@ function base_parser(old_state) {
           (() => {
             let _pipe2 = eof();
             let _pipe$1 = replace4(_pipe2, stringify_current_text(state));
-            return map9(
+            return map10(
               _pipe$1,
               (var0) => {
                 return new Break(var0);
@@ -12894,7 +13113,7 @@ function base_parser(old_state) {
       );
     }
   );
-  return map9(
+  return map10(
     _pipe,
     (state) => {
       return new State3(
@@ -13221,6 +13440,10 @@ function render2(template, assigns, template_cache) {
   );
 }
 
+// build/dev/javascript/starlist/starlist/internal/templates.mjs
+var index5 = "# <%= login %> Star List [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/sindresorhus/awesome)\n\n> :star: generated with [halostatue/starlist](https://github.com/halostatue/starlist)\n\nLast updated <%= updated_at.date %> <%= updated_at.time %>\n\n<%= total %> stars in <%= partition_count %> <%= partition_description %>\n\n## Table of Contents\n\n<% for partition in partitions %>\n- [<%= partition.name %>](<%= partition.filename %>) (<%= partition.count_label %>)\n<% end %>\n";
+var page = "<% if partition %># <%= partition.name %>\n<% else %># <%= login %> Star List [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/sindresorhus/awesome)\n<% end %>\n> :star: generated with [halostatue/starlist](https://github.com/halostatue/starlist)\n\nLast updated <%= updated_at.date %> <%= updated_at.time %>\n\n<%= total %> stars in <%= group_count %> <%= group_description %>\n\n## Table of Contents\n\n<% for group in groups %>\n- [<%= group.name %>](#<%= group.slug %>)\n<% end %>\n\n<% for group in groups %>\n## <%= group.name %>\n\n<%= group.count_label %>\n\n<% for repo in group.repos %>\n- [<%= repo.name %>](<%= repo.url %>)<% if repo.description %>: <%= repo.description %><% end %>\n\n  **Latest Update**: <%= repo.pushed_on.date %> <%= repo.pushed_on.time %>\n  **Stars**: <%= repo.stars %>\n  **Starred On**: <%= repo.starred_on.date %>\n<% if repo.forks %>  **Forks**: <%= repo.forks %>\n<% end %>\n<% if repo.archived_on %>  **Archived On**: <%= repo.archived_on.date %>\n<% end %>\n<% if repo.topic_count %>  **Topics**: <%= repo.topic_links %>\n<% end %>\n<% end %>\n\n<% end %>\n";
+
 // build/dev/javascript/starlist/starlist/internal/renderer.mjs
 var Template2 = class extends CustomType {
   constructor(inner) {
@@ -13228,6 +13451,15 @@ var Template2 = class extends CustomType {
     this.inner = inner;
   }
 };
+function embedded_template(path2) {
+  if (path2 === "templates/TEMPLATE.md.glemp") {
+    return new Ok(page);
+  } else if (path2 === "templates/INDEX.md.glemp") {
+    return new Ok(index5);
+  } else {
+    return new Error2(void 0);
+  }
+}
 function timestamp_to_assigns(ts) {
   let _pipe = new$3();
   let _pipe$1 = add_string(_pipe, "date", ts.date);
@@ -13625,6 +13857,21 @@ function compile3(source, name) {
         )
       )
     );
+  }
+}
+function compile_file(path2) {
+  let $ = read(path2);
+  if ($ instanceof Ok) {
+    let content = $[0];
+    return compile3(content, path2);
+  } else {
+    let $1 = embedded_template(path2);
+    if ($1 instanceof Ok) {
+      let content = $1[0];
+      return compile3(content, path2);
+    } else {
+      return new Error2(new FileError("Cannot read template: " + path2));
+    }
   }
 }
 function var_to_string(var$) {
@@ -14228,15 +14475,28 @@ var SingleTemplate = class extends CustomType {
   }
 };
 var MultiTemplate = class extends CustomType {
-  constructor(data2, index5) {
+  constructor(data2, index6) {
     super();
     this.data = data2;
-    this.index = index5;
+    this.index = index6;
   }
 };
 var package_name = "halostatue/starlist";
-var package_version = "2.0.0";
+var package_version = "2.0.2";
 var auto_partition_threshold = 2e3;
+function log_env_vars(vars) {
+  return each(
+    vars,
+    (name) => {
+      let _block;
+      let _pipe = name;
+      let _pipe$1 = get2(_pipe);
+      _block = unwrap2(_pipe$1, "<unset>");
+      let value = _block;
+      return info(name + ": " + value);
+    }
+  );
+}
 function setup_git(git_cfg, token4) {
   return try$(
     (() => {
@@ -14320,26 +14580,7 @@ function filter_private(response) {
   );
 }
 function compile_template(path2) {
-  let $ = read(path2);
-  if ($ instanceof Ok) {
-    let content = $[0];
-    return compile3(content, path2);
-  } else {
-    let $1 = get2("GITHUB_ACTION_PATH");
-    if ($1 instanceof Ok) {
-      let action_path = $1[0];
-      let fallback = join2(action_path, path2);
-      let $2 = read(fallback);
-      if ($2 instanceof Ok) {
-        let content = $2[0];
-        return compile3(content, fallback);
-      } else {
-        return new Error2(new FileError("Cannot read template: " + path2));
-      }
-    } else {
-      return new Error2(new FileError("Cannot read template: " + path2));
-    }
-  }
+  return compile_file(path2);
 }
 function compile_templates(render4) {
   return try$(
@@ -14649,6 +14890,16 @@ function try_promise(result, next2) {
     return resolve(new Error2(e));
   }
 }
+function boot_info() {
+  info(package_name + " v" + package_version);
+  return log_env_vars(
+    toList([
+      "GITHUB_ACTION_PATH",
+      "GITHUB_ACTION_REPOSITORY",
+      "GITHUB_REPOSITORY"
+    ])
+  );
+}
 function auto_partition(render4, star_count) {
   let $ = render4.partition;
   if ($ instanceof PartitionOff && star_count >= 2e3) {
@@ -14684,15 +14935,15 @@ function run3() {
           "let_assert",
           FILEPATH3,
           "starlist/action",
-          64,
+          84,
           "run",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 1773,
-            end: 1807,
-            pattern_start: 1784,
-            pattern_end: 1795
+            start: 2116,
+            end: 2150,
+            pattern_start: 2127,
+            pattern_end: 2138
           }
         );
       }
@@ -14787,7 +15038,7 @@ function run3() {
 }
 function main() {
   registerProcessHandlers(error, set_failed);
-  info(package_name + " v" + package_version);
+  boot_info();
   map_promise(
     run3(),
     (res) => {

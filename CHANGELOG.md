@@ -1,5 +1,10 @@
 # halostatue/starlist Changelog
 
+## 2.0.2 / 2026-04-01
+
+Really fixed the default template resolution, this time by embedding the
+templates.
+
 ## 2.0.1 / 2026-04-01
 
 Fixed an issue with resolving default templates.

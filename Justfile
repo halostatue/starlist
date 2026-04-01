@@ -3,6 +3,9 @@ _default:
 
 # Build the action bundle
 @build:
+    gleam run -m cog
+    SQUALL_AUTH_TOKEN="$(gh auth token)" gleam run -m squall generate https://api.github.com/graphql
+    gleam format
     gleam build
     gleam run -m build_action
 

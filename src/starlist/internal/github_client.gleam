@@ -153,8 +153,8 @@ fn handle_success(
         None -> False
       }
 
-      core.debug(
-        "Fetched page, "
+      core.info(
+        "Fetched page "
         <> int.to_string(list.length(new_edges))
         <> "/"
         <> int.to_string(total)
