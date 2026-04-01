@@ -10,6 +10,7 @@
 //// 8. Commit and push
 
 import actions/core
+import envoy
 import filepath
 import gleam/int
 import gleam/javascript/promise.{type Promise}
@@ -221,8 +222,19 @@ fn compile_templates(render: config.Render) -> Result(Templates, StarlistError) 
 
 fn compile_template(path: String) -> Result(Template, StarlistError) {
   case simplifile.read(path) {
-    Error(_) -> Error(errors.FileError("Cannot read template: " <> path))
     Ok(content) -> renderer.compile(content, path)
+    Error(_) ->
+      case envoy.get("GITHUB_ACTION_PATH") {
+        Ok(action_path) -> {
+          let fallback = filepath.join(action_path, path)
+          case simplifile.read(fallback) {
+            Ok(content) -> renderer.compile(content, fallback)
+            Error(_) ->
+              Error(errors.FileError("Cannot read template: " <> path))
+          }
+        }
+        Error(_) -> Error(errors.FileError("Cannot read template: " <> path))
+      }
   }
 }
 
