@@ -230,11 +230,16 @@ fn decode_partition(toml: Dict(String, Toml)) -> Partition {
 }
 
 fn decode_committer(toml: Dict(String, Toml)) -> Option(#(String, String)) {
-  case
-    tom.get_string(toml, ["git", "committer", "name"]),
-    tom.get_string(toml, ["git", "committer", "email"])
-  {
-    Ok(name), Ok(email) -> Some(#(name, email))
+  let name = case tom.get_string(toml, ["git", "committer", "name"]) {
+    Ok(n) if n != "" -> Ok(n)
+    _ -> Error(Nil)
+  }
+  let email = case tom.get_string(toml, ["git", "committer", "email"]) {
+    Ok(e) if e != "" -> Ok(e)
+    _ -> Error(Nil)
+  }
+  case name, email {
+    Ok(n), Ok(e) -> Some(#(n, e))
     _, _ -> None
   }
 }

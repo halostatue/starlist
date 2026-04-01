@@ -20,10 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Generate stars list
-        uses: halostatue/starlist@v2.0.0.0.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+      - name: Generate stars list
+        uses: halostatue/starlist@v2.0.2
+        with:
+          token: ${{ secrets.STARLIST_PAT }}
 ```
 
 Stars are fetched, rendered into Markdown grouped by language, and committed

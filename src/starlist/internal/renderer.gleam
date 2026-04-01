@@ -12,15 +12,38 @@ import glemplate/ast
 import glemplate/parser
 import glemplate/renderer
 import glemplate/text as glemplate_text
+import simplifile
 import starlist/internal/errors
 import starlist/internal/star_types.{
   type Language, type Release, type StarredRepo, type TemplateVars,
   type Timestamp, type Topic,
 }
+import starlist/internal/templates
 
 /// Opaque wrapper around a compiled glemplate template.
 pub opaque type Template {
   Template(inner: ast.Template)
+}
+
+/// Compile a template from a file path, falling back to the embedded default
+/// if the file cannot be read.
+pub fn compile_file(path: String) -> Result(Template, errors.StarlistError) {
+  case simplifile.read(path) {
+    Ok(content) -> compile(content, path)
+    Error(_) ->
+      case embedded_template(path) {
+        Ok(content) -> compile(content, path)
+        Error(Nil) -> Error(errors.FileError("Cannot read template: " <> path))
+      }
+  }
+}
+
+fn embedded_template(path: String) -> Result(String, Nil) {
+  case path {
+    "templates/TEMPLATE.md.glemp" -> Ok(templates.page)
+    "templates/INDEX.md.glemp" -> Ok(templates.index)
+    _ -> Error(Nil)
+  }
 }
 
 /// Compile a template string into a renderable form.

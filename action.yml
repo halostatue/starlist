@@ -4,11 +4,10 @@ description: |
 inputs:
   token:
     description: |
-      A GitHub Personal Access Token (PAT) that is not the default actions token. 
-      Classic PATs require no additional OAuth scopes. Fine-grained PATs should be scoped
-      to include the target repository and the permissions
-      `repository:contents:read-write`, `repository:metadata:read-only`, and
-      `account:starring:read-only`.
+      A GitHub Personal Access Token (PAT) used to fetch stars and push changes.
+      The default `GITHUB_TOKEN` is insufficient. Classic PATs require `public_repo`
+      for public repositories or `repo` for private repositories. Fine-grained PATs
+      must be scoped to the target repository with `contents: read and write`.
     required: true
   config_file:
     description: |
