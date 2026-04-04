@@ -237,15 +237,11 @@ var BitArray = class {
   /**
    * Returns this bit array's internal buffer.
    *
-   * @deprecated Use `BitArray.byteAt()` or `BitArray.rawBuffer` instead.
+   * @deprecated
    *
    * @returns {Uint8Array}
    */
   get buffer() {
-    bitArrayPrintDeprecationWarning(
-      "buffer",
-      "Use BitArray.byteAt() or BitArray.rawBuffer instead"
-    );
     if (this.bitOffset !== 0 || this.bitSize % 8 !== 0) {
       throw new globalThis.Error(
         "BitArray.buffer does not support unaligned bit arrays"
@@ -256,15 +252,11 @@ var BitArray = class {
   /**
    * Returns the length in bytes of this bit array's internal buffer.
    *
-   * @deprecated Use `BitArray.bitSize` or `BitArray.byteSize` instead.
+   * @deprecated
    *
    * @returns {number}
    */
   get length() {
-    bitArrayPrintDeprecationWarning(
-      "length",
-      "Use BitArray.bitSize or BitArray.byteSize instead"
-    );
     if (this.bitOffset !== 0 || this.bitSize % 8 !== 0) {
       throw new globalThis.Error(
         "BitArray.length does not support unaligned bit arrays"
@@ -287,16 +279,6 @@ var UtfCodepoint = class {
     this.value = value;
   }
 };
-var isBitArrayDeprecationMessagePrinted = {};
-function bitArrayPrintDeprecationWarning(name, message) {
-  if (isBitArrayDeprecationMessagePrinted[name]) {
-    return;
-  }
-  console.warn(
-    `Deprecated BitArray.${name} property used in JavaScript FFI code. ${message}.`
-  );
-  isBitArrayDeprecationMessagePrinted[name] = true;
-}
 function toBitArray(segments) {
   if (segments.length === 0) {
     return new BitArray(new Uint8Array());
@@ -1047,6 +1029,18 @@ function get2(key) {
     return Result$Error(void 0);
   } else {
     return Result$Ok(value);
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/bool.mjs
+function negate(bool3) {
+  return !bool3;
+}
+function guard(requirement, consequence, alternative) {
+  if (requirement) {
+    return consequence;
+  } else {
+    return alternative();
   }
 }
 
@@ -1963,7 +1957,7 @@ function power(base, exponent) {
     return new Ok(power2(base, exponent));
   }
 }
-function negate(x) {
+function negate2(x) {
   return -1 * x;
 }
 function round(x) {
@@ -1971,7 +1965,7 @@ function round(x) {
   if ($) {
     return round2(x);
   } else {
-    return 0 - round2(negate(x));
+    return 0 - round2(negate2(x));
   }
 }
 
@@ -3025,6 +3019,108 @@ var Unknown = class extends CustomType {
     this.inner = inner;
   }
 };
+function describe_error(error2) {
+  if (error2 instanceof Eacces) {
+    return "Permission denied";
+  } else if (error2 instanceof Eagain) {
+    return "Resource temporarily unavailable";
+  } else if (error2 instanceof Ebadf) {
+    return "Bad file descriptor";
+  } else if (error2 instanceof Ebadmsg) {
+    return "Bad message";
+  } else if (error2 instanceof Ebusy) {
+    return "Resource busy";
+  } else if (error2 instanceof Edeadlk) {
+    return "Resource deadlock avoided";
+  } else if (error2 instanceof Edeadlock) {
+    return "Resource deadlock avoided";
+  } else if (error2 instanceof Edquot) {
+    return "Disc quota exceeded";
+  } else if (error2 instanceof Eexist) {
+    return "File exists";
+  } else if (error2 instanceof Efault) {
+    return "Bad address";
+  } else if (error2 instanceof Efbig) {
+    return "File too large";
+  } else if (error2 instanceof Eftype) {
+    return "Inappropriate file type or format";
+  } else if (error2 instanceof Eintr) {
+    return "Interrupted system call";
+  } else if (error2 instanceof Einval) {
+    return "Invalid argument";
+  } else if (error2 instanceof Eio) {
+    return "Input/output error";
+  } else if (error2 instanceof Eisdir) {
+    return "Is a directory";
+  } else if (error2 instanceof Eloop) {
+    return "Too many levels of symbolic links";
+  } else if (error2 instanceof Emfile) {
+    return "Too many open files";
+  } else if (error2 instanceof Emlink) {
+    return "Too many links";
+  } else if (error2 instanceof Emultihop) {
+    return "Multihop attempted";
+  } else if (error2 instanceof Enametoolong) {
+    return "File name too long";
+  } else if (error2 instanceof Enfile) {
+    return "Too many open files in system";
+  } else if (error2 instanceof Enobufs) {
+    return "No buffer space available";
+  } else if (error2 instanceof Enodev) {
+    return "Operation not supported by device";
+  } else if (error2 instanceof Enolck) {
+    return "No locks available";
+  } else if (error2 instanceof Enolink) {
+    return "Link has been severed";
+  } else if (error2 instanceof Enoent) {
+    return "No such file or directory";
+  } else if (error2 instanceof Enomem) {
+    return "Cannot allocate memory";
+  } else if (error2 instanceof Enospc) {
+    return "No space left on device";
+  } else if (error2 instanceof Enosr) {
+    return "No STREAM resources";
+  } else if (error2 instanceof Enostr) {
+    return "Not a STREAM";
+  } else if (error2 instanceof Enosys) {
+    return "Function not implemented";
+  } else if (error2 instanceof Enotblk) {
+    return "Block device required";
+  } else if (error2 instanceof Enotdir) {
+    return "Not a directory";
+  } else if (error2 instanceof Enotsup) {
+    return "Operation not supported";
+  } else if (error2 instanceof Enxio) {
+    return "Device not configured";
+  } else if (error2 instanceof Eopnotsupp) {
+    return "Operation not supported on socket";
+  } else if (error2 instanceof Eoverflow) {
+    return "Value too large to be stored in data type";
+  } else if (error2 instanceof Eperm) {
+    return "Operation not permitted";
+  } else if (error2 instanceof Epipe) {
+    return "Broken pipe";
+  } else if (error2 instanceof Erange) {
+    return "Result too large";
+  } else if (error2 instanceof Erofs) {
+    return "Read-only file system";
+  } else if (error2 instanceof Espipe) {
+    return "Illegal seek";
+  } else if (error2 instanceof Esrch) {
+    return "No such process";
+  } else if (error2 instanceof Estale) {
+    return "Stale NFS file handle";
+  } else if (error2 instanceof Etxtbsy) {
+    return "Text file busy";
+  } else if (error2 instanceof Exdev) {
+    return "Cross-device link";
+  } else if (error2 instanceof NotUtf8) {
+    return "File not UTF-8 encoded";
+  } else {
+    let inner = error2.inner;
+    return "Unknown error: " + inner;
+  }
+}
 function read(filepath) {
   let $ = readBits(filepath);
   if ($ instanceof Ok) {
@@ -3047,6 +3143,34 @@ function write(filepath, contents) {
 function create_directory_all(dirpath) {
   return createDirAll(dirpath + "/");
 }
+
+// build/dev/javascript/pontil/pontil/errors.mjs
+var InputRequired = class extends CustomType {
+  constructor(name) {
+    super();
+    this.name = name;
+  }
+};
+var InvalidBooleanInput = class extends CustomType {
+  constructor(name) {
+    super();
+    this.name = name;
+  }
+};
+var MissingEnvVar = class extends CustomType {
+  constructor(name) {
+    super();
+    this.name = name;
+  }
+};
+var MissingSummaryEnvVar = class extends CustomType {
+};
+var FileNotFound = class extends CustomType {
+  constructor(path2) {
+    super();
+    this.path = path2;
+  }
+};
 
 // build/dev/javascript/gleam_time/gleam/time/duration.mjs
 var Duration = class extends CustomType {
@@ -3141,31 +3265,7 @@ var nil = /* @__PURE__ */ new Uuid(
   /* @__PURE__ */ toBitArray([sizedInt(0, 128, true)])
 );
 
-// build/dev/javascript/starlist/actions/core_ffi.mjs
-function setExitCode(value) {
-  if (ExitCode$isFailure(value)) {
-    process.exitCode = 1;
-  } else if (ExitCode$isSuccess(value)) {
-    process.exitCode = 0;
-  } else if (typeof value == "number") {
-    process.exitCode = value;
-  }
-}
-
-// build/dev/javascript/starlist/actions/core.mjs
-var InputOptions = class extends CustomType {
-  constructor(required, trim_whitespace) {
-    super();
-    this.required = required;
-    this.trim_whitespace = trim_whitespace;
-  }
-};
-var Failure = class extends CustomType {
-};
-var ExitCode$isFailure = (value) => value instanceof Failure;
-var Success = class extends CustomType {
-};
-var ExitCode$isSuccess = (value) => value instanceof Success;
+// build/dev/javascript/pontil/pontil/types.mjs
 var Title = class extends CustomType {
   constructor($0) {
     super();
@@ -3196,7 +3296,317 @@ var StartColumn = class extends CustomType {
     this[0] = $0;
   }
 };
-var default_input_options = /* @__PURE__ */ new InputOptions(false, true);
+var Failure = class extends CustomType {
+};
+var ExitCode$isFailure = (value) => value instanceof Failure;
+var Success = class extends CustomType {
+};
+var ExitCode$isSuccess = (value) => value instanceof Success;
+var InputOptions = class extends CustomType {
+  constructor(required, trim_whitespace) {
+    super();
+    this.required = required;
+    this.trim_whitespace = trim_whitespace;
+  }
+};
+
+// build/dev/javascript/pontil/pontil_ffi.mjs
+function setExitCode(value) {
+  if (ExitCode$isFailure(value)) {
+    setExitCode_(1);
+  } else if (ExitCode$isSuccess(value)) {
+    setExitCode_(0);
+  } else if (typeof value == "number") {
+    setExitCode_(value);
+  }
+}
+function setExitCode_(value) {
+  if (globalThis?.Deno) {
+    globalThis.Deno.exitCode = value;
+  } else if (globalThis?.process) {
+    globalThis.process.exitCode = value;
+  }
+}
+
+// build/dev/javascript/pontil/pontil/internal/core.mjs
+function annotation_to_command_properties(props) {
+  return guard(
+    negate(is_empty3(props)),
+    new None(),
+    () => {
+      let _pipe = props;
+      let _pipe$1 = fold2(
+        _pipe,
+        make(),
+        (acc, property) => {
+          if (property instanceof Title) {
+            let value = property[0];
+            return insert(acc, "title", value);
+          } else if (property instanceof File) {
+            let value = property[0];
+            return insert(acc, "file", value);
+          } else if (property instanceof StartLine) {
+            let value = property[0];
+            return insert(acc, "startLine", to_string(value));
+          } else if (property instanceof EndLine) {
+            let value = property[0];
+            return insert(acc, "endLine", to_string(value));
+          } else if (property instanceof StartColumn) {
+            let value = property[0];
+            return insert(acc, "startColumn", to_string(value));
+          } else {
+            let value = property[0];
+            return insert(acc, "endColumn", to_string(value));
+          }
+        }
+      );
+      return new Some(_pipe$1);
+    }
+  );
+}
+function escape_data(value) {
+  let _pipe = value;
+  let _pipe$1 = replace(_pipe, "%", "%25");
+  let _pipe$2 = replace(_pipe$1, "\r", "%0D");
+  return replace(_pipe$2, "\n", "%0A");
+}
+function escape_property(value) {
+  let _pipe = value;
+  let _pipe$1 = escape_data(_pipe);
+  let _pipe$2 = replace(_pipe$1, ":", "%3A");
+  return replace(_pipe$2, ",", "%2C");
+}
+function command_properties_to_string(props) {
+  return guard(
+    negate(is_empty(props)),
+    "",
+    () => {
+      let _block;
+      let _pipe = props;
+      let _pipe$1 = fold(
+        _pipe,
+        toList([]),
+        (acc, k, v) => {
+          return prepend(k + "=" + escape_property(v), acc);
+        }
+      );
+      _block = join(_pipe$1, ",");
+      let values3 = _block;
+      return " " + values3;
+    }
+  );
+}
+function issue_command(command2, message, props) {
+  let _block;
+  let _pipe = props;
+  let _pipe$1 = unwrap(_pipe, make());
+  _block = command_properties_to_string(_pipe$1);
+  let properties = _block;
+  return console_log(
+    "::" + command2 + "::" + properties + escape_data(message)
+  );
+}
+function log_issue_with_properties(command2, message, props) {
+  return issue_command(
+    command2,
+    message,
+    annotation_to_command_properties(props)
+  );
+}
+
+// build/dev/javascript/shellout/shellout_ffi.mjs
+var import_node_child_process = require("node:child_process");
+var import_node_fs2 = require("node:fs");
+var import_node_path2 = require("node:path");
+var import_node_process2 = __toESM(require("node:process"), 1);
+var Nil2 = void 0;
+var Signals = {
+  SIGHUP: 1,
+  SIGINT: 2,
+  SIGQUIT: 3,
+  SIGILL: 4,
+  SIGTRAP: 5,
+  SIGABRT: 6,
+  SIGIOT: 6,
+  SIGBUS: 7,
+  SIGFPE: 8,
+  SIGKILL: 9,
+  SIGUSR1: 10,
+  SIGSEGV: 11,
+  SIGUSR2: 12,
+  SIGPIPE: 13,
+  SIGALRM: 14,
+  SIGTERM: 15,
+  SIGSTKFLT: 16,
+  SIGCHLD: 17,
+  SIGCONT: 18,
+  SIGSTOP: 19,
+  SIGTSTP: 20,
+  SIGTTIN: 21,
+  SIGTTOU: 22,
+  SIGURG: 23,
+  SIGXCPU: 24,
+  SIGXFSZ: 25,
+  SIGVTALRM: 26,
+  SIGPROF: 27,
+  SIGWINCH: 28,
+  SIGIO: 29,
+  SIGPOLL: 29,
+  SIGPWR: 30,
+  SIGSYS: 31,
+  SIGRTMIN: 34
+};
+function os_command(command2, args, dir, opts, env_list) {
+  let executable = os_which(command2);
+  executable = Result$isOk(executable) ? executable : os_which(
+    (0, import_node_path2.join)(dir, command2)
+  );
+  if (!Result$isOk(executable)) {
+    return map_error(executable, (error2) => [1, error2]);
+  }
+  let getBool = (dict2, key) => Result$isOk(get(dict2, key));
+  let isDeno = Boolean(globalThis.Deno?.Command);
+  args = args.toArray();
+  let stdin = "inherit";
+  let stdout = isDeno ? "piped" : "pipe";
+  let stderr = stdout;
+  let spawnOpts = { cwd: dir, windowsHide: true };
+  if (!isDeno && getBool(opts, CommandOpt$OverlappedStdio())) {
+    stdin = stdout = "overlapped";
+  }
+  if (getBool(opts, CommandOpt$LetBeStderr())) {
+    stderr = "inherit";
+  }
+  if (getBool(opts, CommandOpt$LetBeStdout())) {
+    import_node_process2.default.on("SIGINT", () => Nil2);
+    stdout = "inherit";
+  }
+  let env = {};
+  for (let e of env_list) {
+    env[e[0]] = e[1];
+  }
+  let result = {};
+  if (isDeno) {
+    spawnOpts = {
+      ...spawnOpts,
+      args,
+      stdin,
+      stdout,
+      stderr,
+      env
+    };
+    try {
+      result = new Deno.Command(command2, spawnOpts).outputSync();
+    } catch {
+    }
+    result.status = result.code ?? null;
+  } else {
+    spawnOpts.stdio = [stdin, stdout, stderr];
+    if (env) {
+      spawnOpts.env = { ...import_node_process2.default.env, ...env };
+    }
+    result = (0, import_node_child_process.spawnSync)(command2, args, spawnOpts);
+  }
+  if (result.error) {
+    result = { status: null };
+  }
+  let output = "";
+  try {
+    output = new TextDecoder().decode(result.stdout);
+  } catch {
+  }
+  try {
+    output += new TextDecoder().decode(result.stderr);
+  } catch {
+  }
+  let status = result.status;
+  if (null === status) {
+    let signal = Signals[result.signal];
+    status = Nil2 !== signal ? signal : 0;
+    status += 384;
+  }
+  if (384 === status && "" === output) {
+    status = 2;
+    output = `The directory "${dir}" does not exist
+`;
+  }
+  return 0 === status ? Result$Ok(output) : Result$Error([status, output]);
+}
+function os_which(command2) {
+  let pathexts = (import_node_process2.default.env.PATHEXT || "").split(";");
+  let paths = (import_node_process2.default.env.PATH || "").replace(/"+/g, "").split(import_node_path2.delimiter).filter(Boolean).map((item) => (0, import_node_path2.join)(item, command2)).concat([command2]).flatMap((item) => pathexts.map((ext) => item + ext));
+  let result = paths.map(
+    (item) => (0, import_node_fs2.statSync)(item, { throwIfNoEntry: false })?.isFile() ? item : Nil2
+  ).find((item) => item !== Nil2);
+  return result !== Nil2 ? Result$Ok(result) : Result$Error(
+    `command \`${command2}\` not found
+`
+  );
+}
+
+// build/dev/javascript/shellout/shellout.mjs
+var LetBeStderr = class extends CustomType {
+};
+var CommandOpt$LetBeStderr = () => new LetBeStderr();
+var LetBeStdout = class extends CustomType {
+};
+var CommandOpt$LetBeStdout = () => new LetBeStdout();
+var OverlappedStdio = class extends CustomType {
+};
+var CommandOpt$OverlappedStdio = () => new OverlappedStdio();
+var SetEnvironment = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+function command(executable, arguments$, directory, options) {
+  let environment = flat_map(
+    options,
+    (option) => {
+      if (option instanceof SetEnvironment) {
+        let env = option[0];
+        return env;
+      } else {
+        return toList([]);
+      }
+    }
+  );
+  let _pipe = options;
+  let _pipe$1 = map3(_pipe, (opt) => {
+    return [opt, true];
+  });
+  let _pipe$2 = from_list(_pipe$1);
+  return ((_capture) => {
+    return os_command(executable, arguments$, directory, _capture, environment);
+  })(_pipe$2);
+}
+
+// build/dev/javascript/pontil/pontil.mjs
+var default_input_options = /* @__PURE__ */ new InputOptions(
+  false,
+  true
+);
+function describe_error2(error2) {
+  if (error2 instanceof InputRequired) {
+    let name = error2.name;
+    return "Input required and not supplied: " + name;
+  } else if (error2 instanceof InvalidBooleanInput) {
+    let name = error2.name;
+    return 'Input does not meet YAML 1.2 "Core Schema" specification: ' + name + "\nSupport boolean input list: `true | True | TRUE | false | False | FALSE`";
+  } else if (error2 instanceof MissingEnvVar) {
+    let name = error2.name;
+    return "Unable to find environment variable: " + name;
+  } else if (error2 instanceof MissingSummaryEnvVar) {
+    return "Unable to find environment variable for $GITHUB_STEP_SUMMARY. Check if your runtime environment supports job summaries.";
+  } else if (error2 instanceof FileNotFound) {
+    let path2 = error2.path;
+    return "Missing file at path: " + path2;
+  } else {
+    let error$1 = error2.error;
+    return describe_error(error$1);
+  }
+}
 function get_input_with_options(name, opts) {
   let _block;
   {
@@ -3220,88 +3630,10 @@ function get_input_with_options(name, opts) {
   let $1 = opts.required;
   let $2 = trimmed_value === "";
   if ($1 && $2) {
-    return new Error2("Input required and not supplied: " + name);
+    return new Error2(new InputRequired(name));
   } else {
     return new Ok(trimmed_value);
   }
-}
-function info(message) {
-  return console_log(message);
-}
-function annotation_to_command_properties(props) {
-  let $ = is_empty3(props);
-  if ($) {
-    return new None();
-  } else {
-    let _pipe = props;
-    let _pipe$1 = fold2(
-      _pipe,
-      make(),
-      (acc, property) => {
-        if (property instanceof Title) {
-          let value = property[0];
-          return insert(acc, "title", value);
-        } else if (property instanceof File) {
-          let value = property[0];
-          return insert(acc, "file", value);
-        } else if (property instanceof StartLine) {
-          let value = property[0];
-          return insert(acc, "startLine", to_string(value));
-        } else if (property instanceof EndLine) {
-          let value = property[0];
-          return insert(acc, "endLine", to_string(value));
-        } else if (property instanceof StartColumn) {
-          let value = property[0];
-          return insert(acc, "startColumn", to_string(value));
-        } else {
-          let value = property[0];
-          return insert(acc, "endColumn", to_string(value));
-        }
-      }
-    );
-    return new Some(_pipe$1);
-  }
-}
-function escape_data(value) {
-  let _pipe = value;
-  let _pipe$1 = replace(_pipe, "%", "%25");
-  let _pipe$2 = replace(_pipe$1, "\r", "%0D");
-  return replace(_pipe$2, "\n", "%0A");
-}
-function escape_property(value) {
-  let _pipe = value;
-  let _pipe$1 = escape_data(_pipe);
-  let _pipe$2 = replace(_pipe$1, ":", "%3A");
-  return replace(_pipe$2, ",", "%2C");
-}
-function command_properties_to_string(props) {
-  let $ = is_empty(props);
-  if ($) {
-    return "";
-  } else {
-    let _block;
-    let _pipe = props;
-    let _pipe$1 = fold(
-      _pipe,
-      toList([]),
-      (acc, k, v) => {
-        return prepend(k + "=" + escape_property(v), acc);
-      }
-    );
-    _block = join(_pipe$1, ",");
-    let values3 = _block;
-    return " " + values3;
-  }
-}
-function issue_command(command2, message, props) {
-  let _block;
-  let _pipe = props;
-  let _pipe$1 = unwrap(_pipe, make());
-  _block = command_properties_to_string(_pipe$1);
-  let properties = _block;
-  return console_log(
-    "::" + command2 + "::" + properties + escape_data(message)
-  );
 }
 function set_secret(secret) {
   let $ = get2("GITHUB_ACTIONS");
@@ -3310,37 +3642,40 @@ function set_secret(secret) {
     if ($1 === "true") {
       return issue_command("add-mask", secret, new None());
     } else {
-      return issue_command("add-mask", "not-in-github-actions", new None());
+      return issue_command(
+        "add-mask",
+        "not-in-github-actions",
+        new None()
+      );
     }
   } else {
     return issue_command("add-mask", "not-in-github-actions", new None());
   }
 }
-function log_issue_with_properties(command2, message, props) {
-  return issue_command(
-    command2,
-    message,
-    annotation_to_command_properties(props)
-  );
+function group_start(name) {
+  return issue_command("group", name, new None());
+}
+function group_end() {
+  return issue_command("endgroup", "", new None());
+}
+function group2(name, action) {
+  group_start(name);
+  let result = action();
+  group_end();
+  return result;
+}
+function info(message) {
+  return console_log(message);
 }
 function error(message) {
   return log_issue_with_properties("error", message, toList([]));
 }
-function warning(message) {
-  return log_issue_with_properties("warning", message, toList([]));
-}
-function issue(command2, message) {
-  return issue_command(command2, message, new None());
-}
-function start_group(name) {
-  return issue("group", name);
-}
-function end_group() {
-  return issue("endgroup", "");
-}
 function set_failed(message) {
   setExitCode(new Failure());
   return error(message);
+}
+function warning(message) {
+  return log_issue_with_properties("warning", message, toList([]));
 }
 function get_input(name) {
   let _pipe = name;
@@ -3597,7 +3932,7 @@ function get_string(toml, key) {
     return $;
   }
 }
-function merge(table, key, old, new$7) {
+function merge2(table, key, old, new$7) {
   if (old instanceof ArrayOfTables && new$7 instanceof ArrayOfTables) {
     let tables = old[0];
     let new$1 = new$7[0];
@@ -3626,7 +3961,7 @@ function insert_loop(table, key, value) {
       let $1 = get(table, k);
       if ($1 instanceof Ok) {
         let old = $1[0];
-        return merge(table, k, old, value);
+        return merge2(table, k, old, value);
       } else {
         return new Ok(insert(table, k, value));
       }
@@ -7289,7 +7624,7 @@ var GitHubApiError = class extends CustomType {
     this.message = message;
   }
 };
-var FileError = class extends CustomType {
+var FileError2 = class extends CustomType {
   constructor(message) {
     super();
     this.message = message;
@@ -7351,12 +7686,12 @@ var Fetch = class extends CustomType {
   }
 };
 var Render = class extends CustomType {
-  constructor(date_time, filename2, partition_filename, group2, partition2, template, index_template) {
+  constructor(date_time, filename2, partition_filename, group3, partition2, template, index_template) {
     super();
     this.date_time = date_time;
     this.filename = filename2;
     this.partition_filename = partition_filename;
-    this.group = group2;
+    this.group = group3;
     this.partition = partition2;
     this.template = template;
     this.index_template = index_template;
@@ -7716,7 +8051,9 @@ function require_token(next2) {
     return next2(t);
   } else {
     let msg = $[0];
-    return new Error2(new ConfigError("Missing token: " + msg));
+    return new Error2(
+      new ConfigError("Missing token: " + describe_error2(msg))
+    );
   }
 }
 function read_toml(next2) {
@@ -7740,7 +8077,7 @@ function read_toml(next2) {
         }
       } else {
         return new Error2(
-          new FileError("Cannot read config file: " + config_file)
+          new FileError2("Cannot read config file: " + config_file)
         );
       }
     }
@@ -7811,174 +8148,6 @@ function resolve2() {
       );
     }
   );
-}
-
-// build/dev/javascript/shellout/shellout_ffi.mjs
-var import_node_child_process = require("node:child_process");
-var import_node_fs2 = require("node:fs");
-var import_node_path2 = require("node:path");
-var import_node_process2 = __toESM(require("node:process"), 1);
-var Nil2 = void 0;
-var Signals = {
-  SIGHUP: 1,
-  SIGINT: 2,
-  SIGQUIT: 3,
-  SIGILL: 4,
-  SIGTRAP: 5,
-  SIGABRT: 6,
-  SIGIOT: 6,
-  SIGBUS: 7,
-  SIGFPE: 8,
-  SIGKILL: 9,
-  SIGUSR1: 10,
-  SIGSEGV: 11,
-  SIGUSR2: 12,
-  SIGPIPE: 13,
-  SIGALRM: 14,
-  SIGTERM: 15,
-  SIGSTKFLT: 16,
-  SIGCHLD: 17,
-  SIGCONT: 18,
-  SIGSTOP: 19,
-  SIGTSTP: 20,
-  SIGTTIN: 21,
-  SIGTTOU: 22,
-  SIGURG: 23,
-  SIGXCPU: 24,
-  SIGXFSZ: 25,
-  SIGVTALRM: 26,
-  SIGPROF: 27,
-  SIGWINCH: 28,
-  SIGIO: 29,
-  SIGPOLL: 29,
-  SIGPWR: 30,
-  SIGSYS: 31,
-  SIGRTMIN: 34
-};
-function os_command(command2, args, dir, opts, env_list) {
-  let executable = os_which(command2);
-  executable = Result$isOk(executable) ? executable : os_which(
-    (0, import_node_path2.join)(dir, command2)
-  );
-  if (!Result$isOk(executable)) {
-    return map_error(executable, (error2) => [1, error2]);
-  }
-  let getBool = (dict2, key) => Result$isOk(get(dict2, key));
-  let isDeno = Boolean(globalThis.Deno?.Command);
-  args = args.toArray();
-  let stdin = "inherit";
-  let stdout = isDeno ? "piped" : "pipe";
-  let stderr = stdout;
-  let spawnOpts = { cwd: dir, windowsHide: true };
-  if (!isDeno && getBool(opts, CommandOpt$OverlappedStdio())) {
-    stdin = stdout = "overlapped";
-  }
-  if (getBool(opts, CommandOpt$LetBeStderr())) {
-    stderr = "inherit";
-  }
-  if (getBool(opts, CommandOpt$LetBeStdout())) {
-    import_node_process2.default.on("SIGINT", () => Nil2);
-    stdout = "inherit";
-  }
-  let env = {};
-  for (let e of env_list) {
-    env[e[0]] = e[1];
-  }
-  let result = {};
-  if (isDeno) {
-    spawnOpts = {
-      ...spawnOpts,
-      args,
-      stdin,
-      stdout,
-      stderr,
-      env
-    };
-    try {
-      result = new Deno.Command(command2, spawnOpts).outputSync();
-    } catch {
-    }
-    result.status = result.code ?? null;
-  } else {
-    spawnOpts.stdio = [stdin, stdout, stderr];
-    if (env) {
-      spawnOpts.env = { ...import_node_process2.default.env, ...env };
-    }
-    result = (0, import_node_child_process.spawnSync)(command2, args, spawnOpts);
-  }
-  if (result.error) {
-    result = { status: null };
-  }
-  let output = "";
-  try {
-    output = new TextDecoder().decode(result.stdout);
-  } catch {
-  }
-  try {
-    output += new TextDecoder().decode(result.stderr);
-  } catch {
-  }
-  let status = result.status;
-  if (null === status) {
-    let signal = Signals[result.signal];
-    status = Nil2 !== signal ? signal : 0;
-    status += 384;
-  }
-  if (384 === status && "" === output) {
-    status = 2;
-    output = `The directory "${dir}" does not exist
-`;
-  }
-  return 0 === status ? Result$Ok(output) : Result$Error([status, output]);
-}
-function os_which(command2) {
-  let pathexts = (import_node_process2.default.env.PATHEXT || "").split(";");
-  let paths = (import_node_process2.default.env.PATH || "").replace(/"+/g, "").split(import_node_path2.delimiter).filter(Boolean).map((item) => (0, import_node_path2.join)(item, command2)).concat([command2]).flatMap((item) => pathexts.map((ext) => item + ext));
-  let result = paths.map(
-    (item) => (0, import_node_fs2.statSync)(item, { throwIfNoEntry: false })?.isFile() ? item : Nil2
-  ).find((item) => item !== Nil2);
-  return result !== Nil2 ? Result$Ok(result) : Result$Error(
-    `command \`${command2}\` not found
-`
-  );
-}
-
-// build/dev/javascript/shellout/shellout.mjs
-var LetBeStderr = class extends CustomType {
-};
-var CommandOpt$LetBeStderr = () => new LetBeStderr();
-var LetBeStdout = class extends CustomType {
-};
-var CommandOpt$LetBeStdout = () => new LetBeStdout();
-var OverlappedStdio = class extends CustomType {
-};
-var CommandOpt$OverlappedStdio = () => new OverlappedStdio();
-var SetEnvironment = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-function command(executable, arguments$, directory, options) {
-  let environment = flat_map(
-    options,
-    (option) => {
-      if (option instanceof SetEnvironment) {
-        let env = option[0];
-        return env;
-      } else {
-        return toList([]);
-      }
-    }
-  );
-  let _pipe = options;
-  let _pipe$1 = map3(_pipe, (opt) => {
-    return [opt, true];
-  });
-  let _pipe$2 = from_list(_pipe$1);
-  return ((_capture) => {
-    return os_command(executable, arguments$, directory, _capture, environment);
-  })(_pipe$2);
 }
 
 // build/dev/javascript/starlist/starlist/internal/git.mjs
@@ -10744,10 +10913,10 @@ function sanitize_key(key) {
 function make_filename(pattern, key) {
   return replace(pattern, "{key}", sanitize_key(key));
 }
-function partition_matches_group(partition2, group2) {
-  if (group2 instanceof GroupByLanguage && partition2 instanceof PartitionByLanguage) {
+function partition_matches_group(partition2, group3) {
+  if (group3 instanceof GroupByLanguage && partition2 instanceof PartitionByLanguage) {
     return true;
-  } else if (group2 instanceof GroupByTopic && partition2 instanceof PartitionByTopic) {
+  } else if (group3 instanceof GroupByTopic && partition2 instanceof PartitionByTopic) {
     return true;
   } else {
     return false;
@@ -10839,18 +11008,18 @@ function group_by_licence(stars) {
     }
   );
 }
-function group_stars(stars, group2) {
-  if (group2 instanceof GroupByLanguage) {
+function group_stars(stars, group3) {
+  if (group3 instanceof GroupByLanguage) {
     return [group_by_language(stars), "languages"];
-  } else if (group2 instanceof GroupByTopic) {
+  } else if (group3 instanceof GroupByTopic) {
     return [group_by_topic(stars), "topics"];
   } else {
     return [group_by_licence(stars), "licences"];
   }
 }
-function scope_vars(base, stars, group2, grouped, partition_ctx) {
+function scope_vars(base, stars, group3, grouped, partition_ctx) {
   if (grouped) {
-    let $ = group_stars(stars, group2);
+    let $ = group_stars(stars, group3);
     let groups;
     let description;
     groups = $[0];
@@ -10901,7 +11070,7 @@ function dict_get(d, key) {
     return toList([]);
   }
 }
-function partition(vars, partition2, group2, partition_filename) {
+function partition(vars, partition2, group3, partition_filename) {
   if (partition2 instanceof PartitionOff) {
     return new Error2(void 0);
   } else {
@@ -10921,7 +11090,7 @@ function partition(vars, partition2, group2, partition_filename) {
         );
       }
     );
-    let grouped = !partition_matches_group(partition2, group2);
+    let grouped = !partition_matches_group(partition2, group3);
     let data2 = map3(
       sorted_keys,
       (key) => {
@@ -10942,7 +11111,7 @@ function partition(vars, partition2, group2, partition_filename) {
           count,
           count_label
         );
-        let scoped = scope_vars(vars, stars, group2, grouped, new Some(ctx));
+        let scoped = scope_vars(vars, stars, group3, grouped, new Some(ctx));
         return new PartitionData(key, filename2, scoped);
       }
     );
@@ -13891,7 +14060,7 @@ function compile_file(path2) {
       let content = $1[0];
       return compile3(content, path2);
     } else {
-      return new Error2(new FileError("Cannot read template: " + path2));
+      return new Error2(new FileError2("Cannot read template: " + path2));
     }
   }
 }
@@ -14054,7 +14223,7 @@ function group_by_licence2(stars) {
     }
   );
 }
-function resolve_response(response, date_time, group2) {
+function resolve_response(response, date_time, group3) {
   let stars = map3(
     response.stars,
     (_capture) => {
@@ -14062,9 +14231,9 @@ function resolve_response(response, date_time, group2) {
     }
   );
   let _block;
-  if (group2 instanceof GroupByLanguage) {
+  if (group3 instanceof GroupByLanguage) {
     _block = [group_by_language2(stars), "languages"];
-  } else if (group2 instanceof GroupByTopic) {
+  } else if (group3 instanceof GroupByTopic) {
     _block = [group_by_topic2(stars), "topics"];
   } else {
     _block = [group_by_licence2(stars), "licences"];
@@ -14439,14 +14608,14 @@ function load_data_file(filename2) {
       return validate_data_version(response);
     } else {
       return new Error2(
-        new FileError(
+        new FileError2(
           "Failed to decode " + filename2 + " as valid QueryResponse JSON"
         )
       );
     }
   } else {
     return new Error2(
-      new FileError(
+      new FileError2(
         "Cannot read " + filename2 + ": file not found or unreadable"
       )
     );
@@ -14458,7 +14627,7 @@ function map_file_error(result, context) {
   } else {
     let err = result[0];
     return new Error2(
-      new FileError(
+      new FileError2(
         "File error " + context + ": " + inspect2(err)
       )
     );
@@ -14503,7 +14672,7 @@ var MultiTemplate = class extends CustomType {
   }
 };
 var package_name = "halostatue/starlist";
-var package_version = "2.0.2";
+var package_version = "2.1.0";
 var auto_partition_threshold = 2e3;
 function log_env_vars(vars) {
   return each(
@@ -14735,7 +14904,7 @@ function ensure_parent(path2) {
   if ($ instanceof Ok) {
     return new Ok(void 0);
   } else {
-    return new Error2(new FileError("Cannot create directory: " + dir));
+    return new Error2(new FileError2("Cannot create directory: " + dir));
   }
 }
 function write_output_files(files) {
@@ -14762,7 +14931,7 @@ function write_output_files(files) {
                 return new Ok(file.filename);
               } else {
                 return new Error2(
-                  new FileError("Failed to write: " + file.filename)
+                  new FileError2("Failed to write: " + file.filename)
                 );
               }
             }
@@ -14807,68 +14976,71 @@ function date_time_to_string(dt) {
   }
 }
 function log_config(cfg) {
-  start_group("Configuration");
-  let fetch2 = cfg.fetch;
-  info(
-    "fetch.source: " + (() => {
-      let $ = fetch2.source;
-      if ($ instanceof Api) {
-        return "api";
-      } else {
-        return "file";
-      }
-    })()
+  return group2(
+    "Configuration",
+    () => {
+      let fetch2 = cfg.fetch;
+      info(
+        "fetch.source: " + (() => {
+          let $ = fetch2.source;
+          if ($ instanceof Api) {
+            return "api";
+          } else {
+            return "file";
+          }
+        })()
+      );
+      info(
+        "fetch.max_stars: " + (() => {
+          let $ = fetch2.max_stars;
+          if ($ instanceof Some) {
+            let n = $[0];
+            return to_string(n);
+          } else {
+            return "unlimited";
+          }
+        })()
+      );
+      let render4 = cfg.render;
+      info("render.filename: " + render4.filename);
+      info("render.template: " + render4.template);
+      info("render.index_template: " + render4.index_template);
+      info("render.partition: " + partition_to_string(render4.partition));
+      info("render.group: " + group_to_string(render4.group));
+      info("render.partition_filename: " + render4.partition_filename);
+      info("render.date_time: " + date_time_to_string(render4.date_time));
+      let git_cfg = cfg.git;
+      info("git.commit_message: " + git_cfg.commit_message);
+      info(
+        "git.pull: " + (() => {
+          let $ = git_cfg.pull;
+          if ($ instanceof Some) {
+            let $1 = $[0];
+            if ($1 === "") {
+              return '""';
+            } else {
+              let f = $1;
+              return '"' + f + '"';
+            }
+          } else {
+            return "disabled";
+          }
+        })()
+      );
+      return info(
+        "git.committer: " + (() => {
+          let $ = git_cfg.committer;
+          if ($ instanceof Some) {
+            let name = $[0][0];
+            let email = $[0][1];
+            return name + " <" + email + ">";
+          } else {
+            return "not set";
+          }
+        })()
+      );
+    }
   );
-  info(
-    "fetch.max_stars: " + (() => {
-      let $ = fetch2.max_stars;
-      if ($ instanceof Some) {
-        let n = $[0];
-        return to_string(n);
-      } else {
-        return "unlimited";
-      }
-    })()
-  );
-  let render4 = cfg.render;
-  info("render.filename: " + render4.filename);
-  info("render.template: " + render4.template);
-  info("render.index_template: " + render4.index_template);
-  info("render.partition: " + partition_to_string(render4.partition));
-  info("render.group: " + group_to_string(render4.group));
-  info("render.partition_filename: " + render4.partition_filename);
-  info("render.date_time: " + date_time_to_string(render4.date_time));
-  let git_cfg = cfg.git;
-  info("git.commit_message: " + git_cfg.commit_message);
-  info(
-    "git.pull: " + (() => {
-      let $ = git_cfg.pull;
-      if ($ instanceof Some) {
-        let $1 = $[0];
-        if ($1 === "") {
-          return '""';
-        } else {
-          let f = $1;
-          return '"' + f + '"';
-        }
-      } else {
-        return "disabled";
-      }
-    })()
-  );
-  info(
-    "git.committer: " + (() => {
-      let $ = git_cfg.committer;
-      if ($ instanceof Some) {
-        let name = $[0][0];
-        let email = $[0][1];
-        return name + " <" + email + ">";
-      } else {
-        return "not set";
-      }
-    })()
-  );
-  return end_group();
 }
 function error_to_string(err) {
   if (err instanceof ConfigError) {
@@ -14877,7 +15049,7 @@ function error_to_string(err) {
   } else if (err instanceof GitHubApiError) {
     let msg = err.message;
     return "GitHub API error: " + msg;
-  } else if (err instanceof FileError) {
+  } else if (err instanceof FileError2) {
     let msg = err.message;
     return "File error: " + msg;
   } else if (err instanceof TemplateError) {
@@ -14955,23 +15127,26 @@ function run3() {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 2090,
-            end: 2124,
-            pattern_start: 2101,
-            pattern_end: 2112
+            start: 2096,
+            end: 2130,
+            pattern_start: 2107,
+            pattern_end: 2118
           }
         );
       }
-      start_group("Git setup");
       return try_promise(
-        setup_git(cfg.git, token4),
+        group2("Git setup", () => {
+          return setup_git(cfg.git, token4);
+        }),
         (_) => {
-          end_group();
-          start_group("Fetch stars");
           return try_await(
-            fetch_stars(cfg.fetch, token4),
+            group2(
+              "Fetch stars",
+              () => {
+                return fetch_stars(cfg.fetch, token4);
+              }
+            ),
             (response) => {
-              end_group();
               let public$ = filter_private(response);
               info(
                 "Writing data.json (" + to_string(public$.fetched) + " public)..."
@@ -14988,14 +15163,14 @@ function run3() {
                         render4.date_time,
                         render4.group
                       );
-                      start_group("Render");
+                      group_start("Render");
                       return try_promise(
                         compile_templates(render4),
                         (templates) => {
                           return try_promise(
                             render_files(render4, templates, vars),
                             (files) => {
-                              end_group();
+                              group_end();
                               info(
                                 "Writing " + to_string(
                                   length2(files)
@@ -15007,41 +15182,43 @@ function run3() {
                                   return try_promise(
                                     add3(written),
                                     (_4) => {
-                                      start_group("Commit");
-                                      let message = cfg.git.commit_message;
-                                      return try_promise(
-                                        commit(message),
-                                        (commit_result) => {
-                                          if (commit_result instanceof Committed) {
-                                            let _block;
-                                            let $1 = current_branch();
-                                            if ($1 instanceof Ok) {
-                                              let b = $1[0];
-                                              _block = b;
-                                            } else {
-                                              _block = "HEAD";
-                                            }
-                                            let branch2 = _block;
-                                            return try_await(
-                                              resolve(
-                                                push(branch2)
-                                              ),
-                                              (_5) => {
-                                                end_group();
+                                      return group2(
+                                        "Commit",
+                                        () => {
+                                          let message = cfg.git.commit_message;
+                                          return try_promise(
+                                            commit(message),
+                                            (commit_result) => {
+                                              if (commit_result instanceof Committed) {
+                                                let _block;
+                                                let $1 = current_branch();
+                                                if ($1 instanceof Ok) {
+                                                  let b = $1[0];
+                                                  _block = b;
+                                                } else {
+                                                  _block = "HEAD";
+                                                }
+                                                let branch2 = _block;
+                                                return try_await(
+                                                  resolve(
+                                                    push(branch2)
+                                                  ),
+                                                  (_5) => {
+                                                    return resolve(
+                                                      new Ok(void 0)
+                                                    );
+                                                  }
+                                                );
+                                              } else {
+                                                info(
+                                                  "Nothing to commit, skipping push."
+                                                );
                                                 return resolve(
                                                   new Ok(void 0)
                                                 );
                                               }
-                                            );
-                                          } else {
-                                            info(
-                                              "Nothing to commit, skipping push."
-                                            );
-                                            end_group();
-                                            return resolve(
-                                              new Ok(void 0)
-                                            );
-                                          }
+                                            }
+                                          );
                                         }
                                       );
                                     }

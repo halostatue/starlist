@@ -3,10 +3,11 @@
 //// Reads action inputs (token, config/config_file), parses TOML,
 //// applies action defaults, returns a resolved Config.
 
-import actions/core
 import gleam/dict
 import gleam/option.{None, Some}
 import gleam/string
+import pontil
+import pontil/types
 import simplifile
 import starlist/config
 import starlist/internal/errors
@@ -33,16 +34,17 @@ fn require_token(
   next: fn(String) -> Result(config.Config, errors.StarlistError),
 ) -> Result(config.Config, errors.StarlistError) {
   case
-    core.get_input_with_options(
+    pontil.get_input_with_options(
       "token",
-      core.InputOptions(required: True, trim_whitespace: True),
+      types.InputOptions(required: True, trim_whitespace: True),
     )
   {
     Ok(t) -> {
-      core.set_secret(t)
+      pontil.set_secret(t)
       next(t)
     }
-    Error(msg) -> Error(errors.ConfigError("Missing token: " <> msg))
+    Error(msg) ->
+      Error(errors.ConfigError("Missing token: " <> pontil.describe_error(msg)))
   }
 }
 
@@ -50,8 +52,8 @@ fn read_toml(
   next: fn(dict.Dict(String, tom.Toml)) ->
     Result(config.Config, errors.StarlistError),
 ) -> Result(config.Config, errors.StarlistError) {
-  let config_input = core.get_input("config")
-  let config_file = core.get_input("config_file")
+  let config_input = pontil.get_input("config")
+  let config_file = pontil.get_input("config_file")
 
   case
     string.is_empty(string.trim(config_input)),

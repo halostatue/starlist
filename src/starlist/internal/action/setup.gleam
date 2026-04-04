@@ -1,8 +1,8 @@
 //// Action-specific git setup — identity configuration and remote URL injection.
 
-import actions/core
 import envoy
 import gleam/string
+import pontil
 import starlist/internal/errors
 import starlist/internal/git
 
@@ -23,7 +23,7 @@ pub fn setup(
         Error(_) -> "https://github.com"
       }
       let url = inject_token(server, token) <> "/" <> repo <> ".git"
-      core.info("Set token")
+      pontil.info("Set token")
       git.set_remote_url(url)
     }
     Error(_) ->
@@ -33,7 +33,7 @@ pub fn setup(
           case string.is_empty(injected) {
             True -> Ok(Nil)
             False -> {
-              core.info("Set token")
+              pontil.info("Set token")
               git.set_remote_url(injected)
             }
           }
@@ -44,8 +44,8 @@ pub fn setup(
 
   case git.remote_url() {
     Ok(url) -> {
-      core.info("URL: " <> string.replace(url, each: token, with: "TOKEN"))
-      core.info(
+      pontil.info("URL: " <> string.replace(url, each: token, with: "TOKEN"))
+      pontil.info(
         "Origin URL contains token: "
         <> case string.contains(url, token) {
           True -> "yes"
@@ -53,7 +53,7 @@ pub fn setup(
         },
       )
     }
-    Error(_) -> core.info("No origin URL configured")
+    Error(_) -> pontil.info("No origin URL configured")
   }
   Ok(Nil)
 }
@@ -61,12 +61,12 @@ pub fn setup(
 fn inject_token(url: String, token: String) -> String {
   case string.starts_with(url, "https://") {
     True -> {
-      core.info("fixing https: " <> url)
+      pontil.info("fixing https: " <> url)
       let rest = string.drop_start(url, string.length("https://"))
       "https://x-access-token:" <> token <> "@" <> rest
     }
     False -> {
-      core.info("ignoring because not of https")
+      pontil.info("ignoring because not of https")
       url
     }
   }
