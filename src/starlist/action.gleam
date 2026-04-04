@@ -9,7 +9,6 @@
 //// 7. Write output files and stage
 //// 8. Commit and push
 
-import actions/core
 import envoy
 import filepath
 import gleam/int
@@ -17,6 +16,7 @@ import gleam/javascript/promise.{type Promise}
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/result
+import pontil
 import simplifile
 import starlist/config
 import starlist/internal/action/config as action_config
@@ -34,18 +34,18 @@ import starlist/internal/star_types.{
 
 const package_name = "halostatue/starlist"
 
-const package_version = "2.0.2"
+const package_version = "2.1.0"
 
 const auto_partition_threshold = 2000
 
 pub fn main() -> Nil {
-  register_process_handlers(core.error, core.set_failed)
+  register_process_handlers(pontil.error, pontil.set_failed)
   boot_info()
 
   promise.map(run(), fn(res) {
     case res {
-      Ok(Nil) -> core.info("Done.")
-      Error(err) -> core.set_failed(error_to_string(err))
+      Ok(Nil) -> pontil.info("Done.")
+      Error(err) -> pontil.set_failed(error_to_string(err))
     }
     Nil
   })
@@ -54,7 +54,7 @@ pub fn main() -> Nil {
 }
 
 fn boot_info() -> Nil {
-  core.info(package_name <> " v" <> package_version)
+  pontil.info(package_name <> " v" <> package_version)
   log_env_vars([
     "GITHUB_ACTION_REPOSITORY",
     "GITHUB_REPOSITORY",
@@ -68,7 +68,7 @@ fn log_env_vars(vars: List(String)) {
       |> envoy.get
       |> result.unwrap(or: "<unset>")
 
-    core.info(name <> ": " <> value)
+    pontil.info(name <> ": " <> value)
   })
 }
 
@@ -83,18 +83,18 @@ fn run() -> Promise(Result(Nil, StarlistError)) {
   let assert Some(token) = cfg.token
 
   // 2. Git setup and pull
-  core.start_group("Git setup")
-  use _ <- try_promise(setup_git(cfg.git, token))
-  core.end_group()
+  use _ <- try_promise(
+    pontil.group("Git setup", fn() { setup_git(cfg.git, token) }),
+  )
 
   // 3. Fetch (or load) stars
-  core.start_group("Fetch stars")
-  use response <- promise.try_await(fetch_stars(cfg.fetch, token))
-  core.end_group()
+  use response <- promise.try_await(
+    pontil.group("Fetch stars", fn() { fetch_stars(cfg.fetch, token) }),
+  )
 
   // 4. Write star data and stage
   let public = filter_private(response)
-  core.info(
+  pontil.info(
     "Writing data.json (" <> int.to_string(public.fetched) <> " public)...",
   )
   use _ <- try_promise(star_data.write_data_file(public, "data.json"))
@@ -105,38 +105,37 @@ fn run() -> Promise(Result(Nil, StarlistError)) {
   let vars = resolver.resolve_response(public, render.date_time, render.group)
 
   // 6. Compile and render templates
-  core.start_group("Render")
+  pontil.group_start("Render")
   use templates <- try_promise(compile_templates(render))
   use files <- try_promise(render_files(render, templates, vars))
-  core.end_group()
+  pontil.group_end()
 
   // 7. Write output files and stage
-  core.info(
+  pontil.info(
     "Writing " <> int.to_string(list.length(files)) <> " output file(s)...",
   )
   use written <- try_promise(write_output_files(files))
   use _ <- try_promise(git.add(written))
 
   // 8. Commit and push
-  core.start_group("Commit")
-  let message = cfg.git.commit_message
-  use commit_result <- try_promise(git.commit(message))
-  case commit_result {
-    git.NothingToCommit -> {
-      core.info("Nothing to commit, skipping push.")
-      core.end_group()
-      promise.resolve(Ok(Nil))
-    }
-    git.Committed -> {
-      let branch = case git.current_branch() {
-        Ok(b) -> b
-        Error(_) -> "HEAD"
+  pontil.group("Commit", fn() {
+    let message = cfg.git.commit_message
+    use commit_result <- try_promise(git.commit(message))
+    case commit_result {
+      git.NothingToCommit -> {
+        pontil.info("Nothing to commit, skipping push.")
+        promise.resolve(Ok(Nil))
       }
-      use _ <- promise.try_await(promise.resolve(git.push(branch)))
-      core.end_group()
-      promise.resolve(Ok(Nil))
+      git.Committed -> {
+        let branch = case git.current_branch() {
+          Ok(b) -> b
+          Error(_) -> "HEAD"
+        }
+        use _ <- promise.try_await(promise.resolve(git.push(branch)))
+        promise.resolve(Ok(Nil))
+      }
     }
-  }
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -166,12 +165,12 @@ fn fetch_stars(
 ) -> Promise(Result(star_types.QueryResponse, StarlistError)) {
   case fetch.source {
     config.Api -> {
-      core.info("Fetching stars from API...")
+      pontil.info("Fetching stars from API...")
       promise.map(
         github_client.fetch_starred_repos(token, fetch.max_stars),
         fn(res) {
           result.map(res, fn(response) {
-            core.info(
+            pontil.info(
               "Fetched "
               <> int.to_string(response.fetched)
               <> "/"
@@ -184,10 +183,10 @@ fn fetch_stars(
       )
     }
     config.File -> {
-      core.info("Loading stars from data.json...")
+      pontil.info("Loading stars from data.json...")
       promise.resolve(
         result.map(star_data.load_data_file("data.json"), fn(response) {
-          core.info(
+          pontil.info(
             "Loaded "
             <> int.to_string(response.fetched)
             <> "/"
@@ -215,7 +214,7 @@ fn filter_private(
 fn auto_partition(render: config.Render, star_count: Int) -> config.Render {
   case render.partition {
     config.PartitionOff if star_count >= auto_partition_threshold -> {
-      core.info(
+      pontil.info(
         "Auto-partitioning by year ("
         <> int.to_string(star_count)
         <> " stars >= "
@@ -373,48 +372,48 @@ fn ensure_parent(path: String) -> Result(Nil, StarlistError) {
 // ---------------------------------------------------------------------------
 
 fn log_config(cfg: config.Config) -> Nil {
-  core.start_group("Configuration")
-  let fetch = cfg.fetch
-  core.info(
-    "fetch.source: "
-    <> case fetch.source {
-      config.Api -> "api"
-      config.File -> "file"
-    },
-  )
-  core.info(
-    "fetch.max_stars: "
-    <> case fetch.max_stars {
-      Some(n) -> int.to_string(n)
-      None -> "unlimited"
-    },
-  )
-  let render = cfg.render
-  core.info("render.filename: " <> render.filename)
-  core.info("render.template: " <> render.template)
-  core.info("render.index_template: " <> render.index_template)
-  core.info("render.partition: " <> partition_to_string(render.partition))
-  core.info("render.group: " <> group_to_string(render.group))
-  core.info("render.partition_filename: " <> render.partition_filename)
-  core.info("render.date_time: " <> date_time_to_string(render.date_time))
-  let git_cfg = cfg.git
-  core.info("git.commit_message: " <> git_cfg.commit_message)
-  core.info(
-    "git.pull: "
-    <> case git_cfg.pull {
-      Some("") -> "\"\""
-      Some(f) -> "\"" <> f <> "\""
-      None -> "disabled"
-    },
-  )
-  core.info(
-    "git.committer: "
-    <> case git_cfg.committer {
-      Some(#(name, email)) -> name <> " <" <> email <> ">"
-      None -> "not set"
-    },
-  )
-  core.end_group()
+  pontil.group("Configuration", fn() {
+    let fetch = cfg.fetch
+    pontil.info(
+      "fetch.source: "
+      <> case fetch.source {
+        config.Api -> "api"
+        config.File -> "file"
+      },
+    )
+    pontil.info(
+      "fetch.max_stars: "
+      <> case fetch.max_stars {
+        Some(n) -> int.to_string(n)
+        None -> "unlimited"
+      },
+    )
+    let render = cfg.render
+    pontil.info("render.filename: " <> render.filename)
+    pontil.info("render.template: " <> render.template)
+    pontil.info("render.index_template: " <> render.index_template)
+    pontil.info("render.partition: " <> partition_to_string(render.partition))
+    pontil.info("render.group: " <> group_to_string(render.group))
+    pontil.info("render.partition_filename: " <> render.partition_filename)
+    pontil.info("render.date_time: " <> date_time_to_string(render.date_time))
+    let git_cfg = cfg.git
+    pontil.info("git.commit_message: " <> git_cfg.commit_message)
+    pontil.info(
+      "git.pull: "
+      <> case git_cfg.pull {
+        Some("") -> "\"\""
+        Some(f) -> "\"" <> f <> "\""
+        None -> "disabled"
+      },
+    )
+    pontil.info(
+      "git.committer: "
+      <> case git_cfg.committer {
+        Some(#(name, email)) -> name <> " <" <> email <> ">"
+        None -> "not set"
+      },
+    )
+  })
 }
 
 fn partition_to_string(p: config.Partition) -> String {

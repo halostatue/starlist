@@ -1,5 +1,9 @@
 # halostatue/starlist Changelog
 
+## 2.1.0 / 2026-04-04
+
+Use [pontil](https://hex.pm/packages/pontil) instead of actions/core.
+
 ## 2.0.2 / 2026-04-03
 
 - Fixed default template resolution by reading embedded templates if the

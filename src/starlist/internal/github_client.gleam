@@ -2,18 +2,16 @@
 ///
 /// Uses squall-generated typed query modules + gleam_fetch for HTTP.
 /// Pagination is cursor-based; rate-limit retries use response headers.
+import gleam/fetch
 import gleam/http/response.{type Response}
 import gleam/int
+import gleam/javascript/promise.{type Promise}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
-
-import gleam/fetch
-import gleam/javascript/promise.{type Promise}
+import pontil
 import squall
-
-import actions/core
 import starlist/graphql/starred_repos.{
   type Repository, type StarredRepositoryEdge,
 }
@@ -153,7 +151,7 @@ fn handle_success(
         None -> False
       }
 
-      core.info(
+      pontil.info(
         "Fetched page "
         <> int.to_string(list.length(new_edges))
         <> "/"
@@ -197,7 +195,7 @@ fn handle_rate_limit(
       )
     False -> {
       let wait_ms = get_backoff_ms(resp.headers)
-      core.warning(
+      pontil.warning(
         "Rate limited (status "
         <> int.to_string(resp.status)
         <> "), waiting "
