@@ -4,6 +4,29 @@ import gleam/json
 import gleam/option.{type Option}
 import squall
 
+pub type OrderDirection {
+  ASC
+  DESC
+}
+
+pub fn order_direction_to_string(value: OrderDirection) -> String {
+  case value {
+    ASC -> "ASC"
+    DESC -> "DESC"
+  }
+}
+
+pub fn order_direction_decoder() -> decode.Decoder(OrderDirection) {
+  decode.string
+  |> decode.then(fn(str) {
+    case str {
+      "ASC" -> decode.success(ASC)
+      "DESC" -> decode.success(DESC)
+      _other -> decode.failure(ASC, "OrderDirection")
+    }
+  })
+}
+
 pub type User {
   User(login: String, starred_repositories: StarredRepositoryConnection)
 }
@@ -178,13 +201,14 @@ pub fn release_decoder() -> decode.Decoder(Release) {
 }
 
 pub type License {
-  License(nickname: Option(String), spdx_id: Option(String))
+  License(spdx_id: Option(String), name: String, nickname: Option(String))
 }
 
 pub fn license_decoder() -> decode.Decoder(License) {
-  use nickname <- decode.field("nickname", decode.optional(decode.string))
   use spdx_id <- decode.field("spdxId", decode.optional(decode.string))
-  decode.success(License(nickname: nickname, spdx_id: spdx_id))
+  use name <- decode.field("name", decode.string)
+  use nickname <- decode.field("nickname", decode.optional(decode.string))
+  decode.success(License(spdx_id: spdx_id, name: name, nickname: nickname))
 }
 
 pub type ParentRepository {
@@ -343,8 +367,9 @@ pub fn release_to_json(input: Release) -> json.Json {
 
 pub fn license_to_json(input: License) -> json.Json {
   json.object([
-    #("nickname", json.nullable(input.nickname, json.string)),
     #("spdxId", json.nullable(input.spdx_id, json.string)),
+    #("name", json.string(input.name)),
+    #("nickname", json.nullable(input.nickname, json.string)),
   ])
 }
 
@@ -409,13 +434,15 @@ pub fn user_starred_repos(
   client: squall.Client,
   login: String,
   cursor: String,
+  order: OrderDirection,
 ) -> Result(Request(String), String) {
   squall.prepare_request(
     client,
-    "query GetUserStarredRepos($login: String!, $cursor: String) {\n  viewer: user(login: $login) {\n    login\n\n    starredRepositories(first: 40, after: $cursor) {\n      isOverLimit\n      totalCount\n\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n\n      edges {\n        starredAt\n\n        node {\n          archivedAt\n          description\n          forkCount\n          homepageUrl\n          url\n          isFork\n          isPrivate\n          isTemplate\n\n          languages(first: 5, orderBy: { direction: DESC, field: SIZE }) {\n            totalCount\n            totalSize\n            edges {\n              node {\n                name\n              }\n              size\n            }\n          }\n\n          latestRelease {\n            name\n            publishedAt\n          }\n\n          licenseInfo {\n            nickname\n            spdxId\n          }\n\n          nameWithOwner\n          parent {\n            nameWithOwner\n          }\n          pushedAt\n\n          repositoryTopics(first: 20) {\n            totalCount\n            nodes {\n              topic {\n                name\n              }\n              url\n            }\n          }\n\n          stargazerCount\n        }\n      }\n    }\n  }\n}\n",
+    "query GetUserStarredRepos($login: String!, $cursor: String, $order: OrderDirection!) {\n  user(login: $login) {\n    login\n\n    starredRepositories(first: 40, after: $cursor, orderBy: { field: STARRED_AT, direction: $order }) {\n      isOverLimit\n      totalCount\n\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n\n      edges {\n        starredAt\n\n        node {\n          archivedAt\n          description\n          forkCount\n          homepageUrl\n          url\n          isFork\n          isPrivate\n          isTemplate\n\n          languages(first: 10, orderBy: { direction: DESC, field: SIZE }) {\n            totalCount\n            totalSize\n            edges {\n              node {\n                name\n              }\n              size\n            }\n          }\n\n          latestRelease {\n            name\n            publishedAt\n          }\n\n          licenseInfo {\n            spdxId\n            name\n            nickname\n          }\n\n          nameWithOwner\n          parent {\n            nameWithOwner\n          }\n          pushedAt\n\n          repositoryTopics(first: 20) {\n            totalCount\n            nodes {\n              topic {\n                name\n              }\n              url\n            }\n          }\n\n          stargazerCount\n        }\n      }\n    }\n  }\n}\n",
     json.object([
       #("login", json.string(login)),
       #("cursor", json.string(cursor)),
+      #("order", json.string(order_direction_to_string(order))),
     ]),
   )
 }

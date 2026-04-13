@@ -4,13 +4,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __copyProps = (to2, from2, except, desc) => {
+var __copyProps = (to3, from2, except, desc) => {
   if (from2 && typeof from2 === "object" || typeof from2 === "function") {
     for (let key of __getOwnPropNames(from2))
-      if (!__hasOwnProp.call(to2, key) && key !== except)
-        __defProp(to2, key, { get: () => from2[key], enumerable: !(desc = __getOwnPropDesc(from2, key)) || desc.enumerable });
+      if (!__hasOwnProp.call(to3, key) && key !== except)
+        __defProp(to3, key, { get: () => from2[key], enumerable: !(desc = __getOwnPropDesc(from2, key)) || desc.enumerable });
   }
-  return to2;
+  return to3;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
   // If the importer is in node compatibility mode or this is not an ESM
@@ -1032,18 +1032,6 @@ function get2(key) {
   }
 }
 
-// build/dev/javascript/gleam_stdlib/gleam/bool.mjs
-function negate(bool3) {
-  return !bool3;
-}
-function guard(requirement, consequence, alternative) {
-  if (requirement) {
-    return consequence;
-  } else {
-    return alternative();
-  }
-}
-
 // build/dev/javascript/gleam_stdlib/gleam/order.mjs
 var Lt = class extends CustomType {
 };
@@ -1052,921 +1040,33 @@ var Eq = class extends CustomType {
 var Gt = class extends CustomType {
 };
 
-// build/dev/javascript/gleam_stdlib/gleam/int.mjs
-function random(max) {
-  let _pipe = random_uniform() * identity(max);
-  let _pipe$1 = floor(_pipe);
-  return round(_pipe$1);
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/string_tree.mjs
-function new$() {
-  return concat(toList([]));
-}
-function append(tree, second) {
-  return add(tree, identity(second));
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/string.mjs
-function is_empty2(str) {
-  return str === "";
-}
-function replace(string4, pattern, substitute) {
-  let _pipe = string4;
-  let _pipe$1 = identity(_pipe);
-  let _pipe$2 = string_replace(_pipe$1, pattern, substitute);
-  return identity(_pipe$2);
-}
-function compare(a, b) {
-  let $ = a === b;
-  if ($) {
-    return new Eq();
-  } else {
-    let $1 = less_than(a, b);
-    if ($1) {
-      return new Lt();
-    } else {
-      return new Gt();
-    }
-  }
-}
-function slice(string4, idx, len) {
-  let $ = len <= 0;
-  if ($) {
-    return "";
-  } else {
-    let $1 = idx < 0;
-    if ($1) {
-      let translated_idx = string_length(string4) + idx;
-      let $2 = translated_idx < 0;
-      if ($2) {
-        return "";
-      } else {
-        return string_grapheme_slice(string4, translated_idx, len);
-      }
-    } else {
-      return string_grapheme_slice(string4, idx, len);
-    }
-  }
-}
-function drop_end(string4, num_graphemes) {
-  let $ = num_graphemes <= 0;
-  if ($) {
-    return string4;
-  } else {
-    return slice(string4, 0, string_length(string4) - num_graphemes);
-  }
-}
-function concat_loop(loop$strings, loop$accumulator) {
-  while (true) {
-    let strings = loop$strings;
-    let accumulator = loop$accumulator;
-    if (strings instanceof Empty) {
-      return accumulator;
-    } else {
-      let string4 = strings.head;
-      let strings$1 = strings.tail;
-      loop$strings = strings$1;
-      loop$accumulator = accumulator + string4;
-    }
-  }
-}
-function concat2(strings) {
-  return concat_loop(strings, "");
-}
-function join_loop(loop$strings, loop$separator, loop$accumulator) {
-  while (true) {
-    let strings = loop$strings;
-    let separator = loop$separator;
-    let accumulator = loop$accumulator;
-    if (strings instanceof Empty) {
-      return accumulator;
-    } else {
-      let string4 = strings.head;
-      let strings$1 = strings.tail;
-      loop$strings = strings$1;
-      loop$separator = separator;
-      loop$accumulator = accumulator + separator + string4;
-    }
-  }
-}
-function join(strings, separator) {
-  if (strings instanceof Empty) {
-    return "";
-  } else {
-    let first$1 = strings.head;
-    let rest = strings.tail;
-    return join_loop(rest, separator, first$1);
-  }
-}
-function trim(string4) {
-  let _pipe = string4;
-  let _pipe$1 = trim_start(_pipe);
-  return trim_end(_pipe$1);
-}
-function split2(x, substring) {
-  if (substring === "") {
-    return graphemes(x);
-  } else {
-    let _pipe = x;
-    let _pipe$1 = identity(_pipe);
-    let _pipe$2 = split(_pipe$1, substring);
-    return map3(_pipe$2, identity);
-  }
-}
-function inspect2(term) {
-  let _pipe = term;
-  let _pipe$1 = inspect(_pipe);
-  return identity(_pipe$1);
-}
-function drop_start(string4, num_graphemes) {
-  let $ = num_graphemes <= 0;
-  if ($) {
-    return string4;
-  } else {
-    let prefix = string_grapheme_slice(string4, 0, num_graphemes);
-    let prefix_size = byte_size(prefix);
-    return string_byte_slice(
-      string4,
-      prefix_size,
-      byte_size(string4) - prefix_size
-    );
-  }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/dynamic/decode.mjs
-var DecodeError = class extends CustomType {
-  constructor(expected, found, path2) {
-    super();
-    this.expected = expected;
-    this.found = found;
-    this.path = path2;
-  }
-};
-var DecodeError$DecodeError = (expected, found, path2) => new DecodeError(expected, found, path2);
-var Decoder = class extends CustomType {
-  constructor(function$) {
-    super();
-    this.function = function$;
-  }
-};
-var dynamic = /* @__PURE__ */ new Decoder(decode_dynamic);
-var bool = /* @__PURE__ */ new Decoder(decode_bool);
-var int2 = /* @__PURE__ */ new Decoder(decode_int);
-var float2 = /* @__PURE__ */ new Decoder(decode_float);
-var string2 = /* @__PURE__ */ new Decoder(decode_string);
-function run(data2, decoder) {
-  let $ = decoder.function(data2);
-  let maybe_invalid_data;
-  let errors;
-  maybe_invalid_data = $[0];
-  errors = $[1];
-  if (errors instanceof Empty) {
-    return new Ok(maybe_invalid_data);
-  } else {
-    return new Error2(errors);
-  }
-}
-function success(data2) {
-  return new Decoder((_) => {
-    return [data2, toList([])];
-  });
-}
-function decode_dynamic(data2) {
-  return [data2, toList([])];
-}
-function map4(decoder, transformer) {
-  return new Decoder(
-    (d) => {
-      let $ = decoder.function(d);
-      let data2;
-      let errors;
-      data2 = $[0];
-      errors = $[1];
-      return [transformer(data2), errors];
-    }
-  );
-}
-function run_decoders(loop$data, loop$failure, loop$decoders) {
-  while (true) {
-    let data2 = loop$data;
-    let failure = loop$failure;
-    let decoders = loop$decoders;
-    if (decoders instanceof Empty) {
-      return failure;
-    } else {
-      let decoder = decoders.head;
-      let decoders$1 = decoders.tail;
-      let $ = decoder.function(data2);
-      let layer;
-      let errors;
-      layer = $;
-      errors = $[1];
-      if (errors instanceof Empty) {
-        return layer;
-      } else {
-        loop$data = data2;
-        loop$failure = failure;
-        loop$decoders = decoders$1;
-      }
-    }
-  }
-}
-function one_of(first, alternatives) {
-  return new Decoder(
-    (dynamic_data) => {
-      let $ = first.function(dynamic_data);
-      let layer;
-      let errors;
-      layer = $;
-      errors = $[1];
-      if (errors instanceof Empty) {
-        return layer;
-      } else {
-        return run_decoders(dynamic_data, layer, alternatives);
-      }
-    }
-  );
-}
-function optional(inner) {
-  return new Decoder(
-    (data2) => {
-      let $ = is_null(data2);
-      if ($) {
-        return [new None(), toList([])];
-      } else {
-        let $1 = inner.function(data2);
-        let data$1;
-        let errors;
-        data$1 = $1[0];
-        errors = $1[1];
-        return [new Some(data$1), errors];
-      }
-    }
-  );
-}
-function decode_error(expected, found) {
-  return toList([
-    new DecodeError(expected, classify_dynamic(found), toList([]))
-  ]);
-}
-function run_dynamic_function(data2, name, f) {
-  let $ = f(data2);
-  if ($ instanceof Ok) {
-    let data$1 = $[0];
-    return [data$1, toList([])];
-  } else {
-    let placeholder = $[0];
-    return [
-      placeholder,
-      toList([new DecodeError(name, classify_dynamic(data2), toList([]))])
-    ];
-  }
-}
-function decode_bool(data2) {
-  let $ = isEqual(identity(true), data2);
-  if ($) {
-    return [true, toList([])];
-  } else {
-    let $1 = isEqual(identity(false), data2);
-    if ($1) {
-      return [false, toList([])];
-    } else {
-      return [false, decode_error("Bool", data2)];
-    }
-  }
-}
-function decode_int(data2) {
-  return run_dynamic_function(data2, "Int", int);
-}
-function decode_float(data2) {
-  return run_dynamic_function(data2, "Float", float);
-}
-function decode_string(data2) {
-  return run_dynamic_function(data2, "String", string);
-}
-function path_segment_to_string(key) {
-  let decoder = one_of(
-    string2,
-    toList([
-      (() => {
-        let _pipe = int2;
-        return map4(_pipe, to_string);
-      })(),
-      (() => {
-        let _pipe = float2;
-        return map4(_pipe, float_to_string);
-      })()
-    ])
-  );
-  let $ = run(key, decoder);
-  if ($ instanceof Ok) {
-    let key$1 = $[0];
-    return key$1;
-  } else {
-    return "<" + classify_dynamic(key) + ">";
-  }
-}
-function list2(inner) {
-  return new Decoder(
-    (data2) => {
-      return list(
-        data2,
-        inner.function,
-        (p, k) => {
-          return push_path(p, toList([k]));
-        },
-        0,
-        toList([])
-      );
-    }
-  );
-}
-function push_path(layer, path2) {
-  let path$1 = map3(
-    path2,
-    (key) => {
-      let _pipe = key;
-      let _pipe$1 = identity(_pipe);
-      return path_segment_to_string(_pipe$1);
-    }
-  );
-  let errors = map3(
-    layer[1],
-    (error2) => {
-      return new DecodeError(
-        error2.expected,
-        error2.found,
-        append3(path$1, error2.path)
-      );
-    }
-  );
-  return [layer[0], errors];
-}
-function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_miss) {
-  while (true) {
-    let path2 = loop$path;
-    let position = loop$position;
-    let inner = loop$inner;
-    let data2 = loop$data;
-    let handle_miss = loop$handle_miss;
-    if (path2 instanceof Empty) {
-      let _pipe = data2;
-      let _pipe$1 = inner(_pipe);
-      return push_path(_pipe$1, reverse(position));
-    } else {
-      let key = path2.head;
-      let path$1 = path2.tail;
-      let $ = index2(data2, key);
-      if ($ instanceof Ok) {
-        let $1 = $[0];
-        if ($1 instanceof Some) {
-          let data$1 = $1[0];
-          loop$path = path$1;
-          loop$position = prepend(key, position);
-          loop$inner = inner;
-          loop$data = data$1;
-          loop$handle_miss = handle_miss;
-        } else {
-          return handle_miss(data2, prepend(key, position));
-        }
-      } else {
-        let kind = $[0];
-        let $1 = inner(data2);
-        let default$;
-        default$ = $1[0];
-        let _pipe = [
-          default$,
-          toList([new DecodeError(kind, classify_dynamic(data2), toList([]))])
-        ];
-        return push_path(_pipe, reverse(position));
-      }
-    }
-  }
-}
-function subfield(field_path, field_decoder, next2) {
-  return new Decoder(
-    (data2) => {
-      let $ = index3(
-        field_path,
-        toList([]),
-        field_decoder.function,
-        data2,
-        (data3, position) => {
-          let $12 = field_decoder.function(data3);
-          let default$;
-          default$ = $12[0];
-          let _pipe = [
-            default$,
-            toList([new DecodeError("Field", "Nothing", toList([]))])
-          ];
-          return push_path(_pipe, reverse(position));
-        }
-      );
-      let out;
-      let errors1;
-      out = $[0];
-      errors1 = $[1];
-      let $1 = next2(out).function(data2);
-      let out$1;
-      let errors2;
-      out$1 = $1[0];
-      errors2 = $1[1];
-      return [out$1, append3(errors1, errors2)];
-    }
-  );
-}
-function field(field_name, field_decoder, next2) {
-  return subfield(toList([field_name]), field_decoder, next2);
-}
-
-// build/dev/javascript/gleam_stdlib/gleam_stdlib.mjs
-var Nil = void 0;
-function identity(x) {
-  return x;
-}
-function parse_int(value) {
-  if (/^[-+]?(\d+)$/.test(value)) {
-    return Result$Ok(parseInt(value));
-  } else {
-    return Result$Error(Nil);
-  }
-}
-function to_string(term) {
-  return term.toString();
-}
-function string_replace(string4, target, substitute) {
-  return string4.replaceAll(target, substitute);
-}
-function string_length(string4) {
-  if (string4 === "") {
-    return 0;
-  }
-  const iterator = graphemes_iterator(string4);
-  if (iterator) {
-    let i = 0;
-    for (const _ of iterator) {
-      i++;
-    }
-    return i;
-  } else {
-    return string4.match(/./gsu).length;
-  }
-}
-function graphemes(string4) {
-  const iterator = graphemes_iterator(string4);
-  if (iterator) {
-    return arrayToList(Array.from(iterator).map((item) => item.segment));
-  } else {
-    return arrayToList(string4.match(/./gsu));
-  }
-}
-var segmenter = void 0;
-function graphemes_iterator(string4) {
-  if (globalThis.Intl && Intl.Segmenter) {
-    segmenter ||= new Intl.Segmenter();
-    return segmenter.segment(string4)[Symbol.iterator]();
-  }
-}
-function pop_codeunit(str) {
-  return [str.charCodeAt(0) | 0, str.slice(1)];
-}
-function lowercase(string4) {
-  return string4.toLowerCase();
-}
-function uppercase(string4) {
-  return string4.toUpperCase();
-}
-function less_than(a, b) {
-  return a < b;
-}
-function add(a, b) {
-  return a + b;
-}
-function split(xs, pattern) {
-  return arrayToList(xs.split(pattern));
-}
-function concat(xs) {
-  let result = "";
-  for (const x of xs) {
-    result = result + x;
-  }
-  return result;
-}
-function string_byte_slice(string4, index6, length5) {
-  return string4.slice(index6, index6 + length5);
-}
-function string_grapheme_slice(string4, idx, len) {
-  if (len <= 0 || idx >= string4.length) {
-    return "";
-  }
-  const iterator = graphemes_iterator(string4);
-  if (iterator) {
-    while (idx-- > 0) {
-      iterator.next();
-    }
-    let result = "";
-    while (len-- > 0) {
-      const v = iterator.next().value;
-      if (v === void 0) {
-        break;
-      }
-      result += v.segment;
-    }
-    return result;
-  } else {
-    return string4.match(/./gsu).slice(idx, idx + len).join("");
-  }
-}
-function string_codeunit_slice(str, from2, length5) {
-  return str.slice(from2, from2 + length5);
-}
-function contains_string(haystack, needle) {
-  return haystack.indexOf(needle) >= 0;
-}
-function starts_with(haystack, needle) {
-  return haystack.startsWith(needle);
-}
-function ends_with(haystack, needle) {
-  return haystack.endsWith(needle);
-}
-var unicode_whitespaces = [
-  " ",
-  // Space
-  "	",
-  // Horizontal tab
-  "\n",
-  // Line feed
-  "\v",
-  // Vertical tab
-  "\f",
-  // Form feed
-  "\r",
-  // Carriage return
-  "\x85",
-  // Next line
-  "\u2028",
-  // Line separator
-  "\u2029"
-  // Paragraph separator
-].join("");
-var trim_start_regex = /* @__PURE__ */ new RegExp(
-  `^[${unicode_whitespaces}]*`
-);
-var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
-function trim_start(string4) {
-  return string4.replace(trim_start_regex, "");
-}
-function trim_end(string4) {
-  return string4.replace(trim_end_regex, "");
-}
-function bit_array_from_string(string4) {
-  return toBitArray([stringBits(string4)]);
-}
-function console_log(term) {
-  console.log(term);
-}
-function bit_array_to_string(bit_array2) {
-  if (bit_array2.bitSize % 8 !== 0) {
-    return Result$Error(Nil);
-  }
-  try {
-    const decoder = new TextDecoder("utf-8", { fatal: true });
-    if (bit_array2.bitOffset === 0) {
-      return Result$Ok(decoder.decode(bit_array2.rawBuffer));
-    } else {
-      const buffer = new Uint8Array(bit_array2.byteSize);
-      for (let i = 0; i < buffer.length; i++) {
-        buffer[i] = bit_array2.byteAt(i);
-      }
-      return Result$Ok(decoder.decode(buffer));
-    }
-  } catch {
-    return Result$Error(Nil);
-  }
-}
-function ceiling(float3) {
-  return Math.ceil(float3);
-}
-function floor(float3) {
-  return Math.floor(float3);
-}
-function round2(float3) {
-  return Math.round(float3);
-}
-function truncate(float3) {
-  return Math.trunc(float3);
-}
-function power2(base, exponent) {
-  return Math.pow(base, exponent);
-}
-function random_uniform() {
-  const random_uniform_result = Math.random();
-  if (random_uniform_result === 1) {
-    return random_uniform();
-  }
-  return random_uniform_result;
-}
-function classify_dynamic(data2) {
-  if (typeof data2 === "string") {
-    return "String";
-  } else if (typeof data2 === "boolean") {
-    return "Bool";
-  } else if (isResult(data2)) {
-    return "Result";
-  } else if (isList(data2)) {
-    return "List";
-  } else if (data2 instanceof BitArray) {
-    return "BitArray";
-  } else if (data2 instanceof Dict) {
-    return "Dict";
-  } else if (Number.isInteger(data2)) {
-    return "Int";
-  } else if (Array.isArray(data2)) {
-    return `Array`;
-  } else if (typeof data2 === "number") {
-    return "Float";
-  } else if (data2 === null) {
-    return "Nil";
-  } else if (data2 === void 0) {
-    return "Nil";
-  } else {
-    const type = typeof data2;
-    return type.charAt(0).toUpperCase() + type.slice(1);
-  }
-}
-function byte_size(string4) {
-  return new TextEncoder().encode(string4).length;
-}
-var MIN_I32 = -(2 ** 31);
-var MAX_I32 = 2 ** 31 - 1;
-var U32 = 2 ** 32;
-var MAX_SAFE = Number.MAX_SAFE_INTEGER;
-var MIN_SAFE = Number.MIN_SAFE_INTEGER;
-function inspect(v) {
-  return new Inspector().inspect(v);
-}
-function float_to_string(float3) {
-  const string4 = float3.toString().replace("+", "");
-  if (string4.indexOf(".") >= 0) {
-    return string4;
-  } else {
-    const index6 = string4.indexOf("e");
-    if (index6 >= 0) {
-      return string4.slice(0, index6) + ".0" + string4.slice(index6);
-    } else {
-      return string4 + ".0";
-    }
-  }
-}
-var Inspector = class {
-  #references = /* @__PURE__ */ new Set();
-  inspect(v) {
-    const t = typeof v;
-    if (v === true) return "True";
-    if (v === false) return "False";
-    if (v === null) return "//js(null)";
-    if (v === void 0) return "Nil";
-    if (t === "string") return this.#string(v);
-    if (t === "bigint" || Number.isInteger(v)) return v.toString();
-    if (t === "number") return float_to_string(v);
-    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
-    if (v instanceof BitArray) return this.#bit_array(v);
-    if (v instanceof RegExp) return `//js(${v})`;
-    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
-    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
-    if (v instanceof Function) {
-      const args = [];
-      for (const i of Array(v.length).keys())
-        args.push(String.fromCharCode(i + 97));
-      return `//fn(${args.join(", ")}) { ... }`;
-    }
-    if (this.#references.size === this.#references.add(v).size) {
-      return "//js(circular reference)";
-    }
-    let printed;
-    if (Array.isArray(v)) {
-      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
-    } else if (isList(v)) {
-      printed = this.#list(v);
-    } else if (v instanceof CustomType) {
-      printed = this.#customType(v);
-    } else if (v instanceof Dict) {
-      printed = this.#dict(v);
-    } else if (v instanceof Set) {
-      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
-    } else {
-      printed = this.#object(v);
-    }
-    this.#references.delete(v);
-    return printed;
-  }
-  #object(v) {
-    const name = Object.getPrototypeOf(v)?.constructor?.name || "Object";
-    const props = [];
-    for (const k of Object.keys(v)) {
-      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
-    }
-    const body = props.length ? " " + props.join(", ") + " " : "";
-    const head = name === "Object" ? "" : name + " ";
-    return `//js(${head}{${body}})`;
-  }
-  #dict(map11) {
-    let body = "dict.from_list([";
-    let first = true;
-    body = fold(map11, body, (body2, key, value) => {
-      if (!first) body2 = body2 + ", ";
-      first = false;
-      return body2 + "#(" + this.inspect(key) + ", " + this.inspect(value) + ")";
-    });
-    return body + "])";
-  }
-  #customType(record) {
-    const props = Object.keys(record).map((label) => {
-      const value = this.inspect(record[label]);
-      return isNaN(parseInt(label)) ? `${label}: ${value}` : value;
-    }).join(", ");
-    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
-  }
-  #list(list3) {
-    if (List$isEmpty(list3)) {
-      return "[]";
-    }
-    let char_out = 'charlist.from_string("';
-    let list_out = "[";
-    let current = list3;
-    while (List$isNonEmpty(current)) {
-      let element = current.head;
-      current = current.tail;
-      if (list_out !== "[") {
-        list_out += ", ";
-      }
-      list_out += this.inspect(element);
-      if (char_out) {
-        if (Number.isInteger(element) && element >= 32 && element <= 126) {
-          char_out += String.fromCharCode(element);
-        } else {
-          char_out = null;
-        }
-      }
-    }
-    if (char_out) {
-      return char_out + '")';
-    } else {
-      return list_out + "]";
-    }
-  }
-  #string(str) {
-    let new_str = '"';
-    for (let i = 0; i < str.length; i++) {
-      const char = str[i];
-      switch (char) {
-        case "\n":
-          new_str += "\\n";
-          break;
-        case "\r":
-          new_str += "\\r";
-          break;
-        case "	":
-          new_str += "\\t";
-          break;
-        case "\f":
-          new_str += "\\f";
-          break;
-        case "\\":
-          new_str += "\\\\";
-          break;
-        case '"':
-          new_str += '\\"';
-          break;
-        default:
-          if (char < " " || char > "~" && char < "\xA0") {
-            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
-          } else {
-            new_str += char;
-          }
-      }
-    }
-    new_str += '"';
-    return new_str;
-  }
-  #utfCodepoint(codepoint2) {
-    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
-  }
-  #bit_array(bits2) {
-    if (bits2.bitSize === 0) {
-      return "<<>>";
-    }
-    let acc = "<<";
-    for (let i = 0; i < bits2.byteSize - 1; i++) {
-      acc += bits2.byteAt(i).toString();
-      acc += ", ";
-    }
-    if (bits2.byteSize * 8 === bits2.bitSize) {
-      acc += bits2.byteAt(bits2.byteSize - 1).toString();
-    } else {
-      const trailingBitsCount = bits2.bitSize % 8;
-      acc += bits2.byteAt(bits2.byteSize - 1) >> 8 - trailingBitsCount;
-      acc += `:size(${trailingBitsCount})`;
-    }
-    acc += ">>";
-    return acc;
-  }
-};
-function index2(data2, key) {
-  if (data2 instanceof Dict) {
-    const result = get(data2, key);
-    return Result$Ok(result.isOk() ? new Some(result[0]) : new None());
-  }
-  if (data2 instanceof WeakMap || data2 instanceof Map) {
-    const token4 = {};
-    const entry = data2.get(key, token4);
-    if (entry === token4) return Result$Ok(new None());
-    return Result$Ok(new Some(entry));
-  }
-  const key_is_int = Number.isInteger(key);
-  if (key_is_int && key >= 0 && key < 8 && isList(data2)) {
-    let i = 0;
-    for (const value of data2) {
-      if (i === key) return Result$Ok(new Some(value));
-      i++;
-    }
-    return Result$Error("Indexable");
-  }
-  if (key_is_int && Array.isArray(data2) || data2 && typeof data2 === "object" || data2 && Object.getPrototypeOf(data2) === Object.prototype) {
-    if (key in data2) return Result$Ok(new Some(data2[key]));
-    return Result$Ok(new None());
-  }
-  return Result$Error(key_is_int ? "Indexable" : "Dict");
-}
-function list(data2, decode2, pushPath, index6, emptyList) {
-  if (!(isList(data2) || Array.isArray(data2))) {
-    const error2 = DecodeError$DecodeError("List", classify_dynamic(data2), emptyList);
-    return [emptyList, arrayToList([error2])];
-  }
-  const decoded = [];
-  for (const element of data2) {
-    const layer = decode2(element);
-    const [out, errors] = layer;
-    if (List$isNonEmpty(errors)) {
-      const [_, errors2] = pushPath(layer, index6.toString());
-      return [emptyList, errors2];
-    }
-    decoded.push(out);
-    index6++;
-  }
-  return [arrayToList(decoded), emptyList];
-}
-function float(data2) {
-  if (typeof data2 === "number") return Result$Ok(data2);
-  return Result$Error(0);
-}
-function int(data2) {
-  if (Number.isInteger(data2)) return Result$Ok(data2);
-  return Result$Error(0);
-}
-function string(data2) {
-  if (typeof data2 === "string") return Result$Ok(data2);
-  return Result$Error("");
-}
-function is_null(data2) {
-  return data2 === null || data2 === void 0;
-}
-function arrayToList(array4) {
-  let list3 = List$Empty();
-  let i = array4.length;
-  while (i--) {
-    list3 = List$NonEmpty(array4[i], list3);
-  }
-  return list3;
-}
-function isList(data2) {
-  return List$isEmpty(data2) || List$isNonEmpty(data2);
-}
-function isResult(data2) {
-  return Result$isOk(data2) || Result$isError(data2);
-}
-
 // build/dev/javascript/gleam_stdlib/gleam/float.mjs
-function power(base, exponent) {
+function power2(base, exponent) {
   let fractional = ceiling(exponent) - exponent > 0;
   let $ = base < 0 && fractional || base === 0 && exponent < 0;
   if ($) {
     return new Error2(void 0);
   } else {
-    return new Ok(power2(base, exponent));
+    return new Ok(power(base, exponent));
   }
 }
-function negate2(x) {
+function negate(x) {
   return -1 * x;
 }
-function round(x) {
+function round2(x) {
   let $ = x >= 0;
   if ($) {
-    return round2(x);
+    return round(x);
   } else {
-    return 0 - round2(negate2(x));
+    return 0 - round(negate(x));
   }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/int.mjs
+function random(max) {
+  let _pipe = random_uniform() * identity(max);
+  let _pipe$1 = floor(_pipe);
+  return round2(_pipe$1);
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/list.mjs
@@ -1999,7 +1099,7 @@ function length_loop(loop$list, loop$count) {
     }
   }
 }
-function length2(list3) {
+function length(list3) {
   return length_loop(list3, 0);
 }
 function reverse_and_prepend(loop$prefix, loop$suffix) {
@@ -2019,8 +1119,26 @@ function reverse_and_prepend(loop$prefix, loop$suffix) {
 function reverse(list3) {
   return reverse_and_prepend(list3, toList([]));
 }
-function is_empty3(list3) {
+function is_empty2(list3) {
   return isEqual(list3, toList([]));
+}
+function contains(loop$list, loop$elem) {
+  while (true) {
+    let list3 = loop$list;
+    let elem = loop$elem;
+    if (list3 instanceof Empty) {
+      return false;
+    } else {
+      let first$1 = list3.head;
+      if (isEqual(first$1, elem)) {
+        return true;
+      } else {
+        let rest$1 = list3.tail;
+        loop$list = rest$1;
+        loop$elem = elem;
+      }
+    }
+  }
 }
 function filter_loop(loop$list, loop$fun, loop$acc) {
   while (true) {
@@ -2107,7 +1225,7 @@ function append_loop(loop$first, loop$second) {
     }
   }
 }
-function append3(first, second) {
+function append(first, second) {
   return append_loop(reverse(first), second);
 }
 function prepend2(list3, item) {
@@ -2212,6 +1330,48 @@ function find(loop$list, loop$is_desired) {
       }
     }
   }
+}
+function find_map(loop$list, loop$fun) {
+  while (true) {
+    let list3 = loop$list;
+    let fun = loop$fun;
+    if (list3 instanceof Empty) {
+      return new Error2(void 0);
+    } else {
+      let first$1 = list3.head;
+      let rest$1 = list3.tail;
+      let $ = fun(first$1);
+      if ($ instanceof Ok) {
+        return $;
+      } else {
+        loop$list = rest$1;
+        loop$fun = fun;
+      }
+    }
+  }
+}
+function zip_loop(loop$one, loop$other, loop$acc) {
+  while (true) {
+    let one = loop$one;
+    let other = loop$other;
+    let acc = loop$acc;
+    if (one instanceof Empty) {
+      return reverse(acc);
+    } else if (other instanceof Empty) {
+      return reverse(acc);
+    } else {
+      let first_one = one.head;
+      let rest_one = one.tail;
+      let first_other = other.head;
+      let rest_other = other.tail;
+      loop$one = rest_one;
+      loop$other = rest_other;
+      loop$acc = prepend([first_one, first_other], acc);
+    }
+  }
+}
+function zip(list3, other) {
+  return zip_loop(list3, other, toList([]));
 }
 function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$prev, loop$acc) {
   while (true) {
@@ -2546,6 +1706,23 @@ function sort(list3, compare4) {
     }
   }
 }
+function key_find(keyword_list, desired_key) {
+  return find_map(
+    keyword_list,
+    (keyword2) => {
+      let key;
+      let value;
+      key = keyword2[0];
+      value = keyword2[1];
+      let $ = isEqual(key, desired_key);
+      if ($) {
+        return new Ok(value);
+      } else {
+        return new Error2(void 0);
+      }
+    }
+  );
+}
 function key_set_loop(loop$list, loop$key, loop$value, loop$inspected) {
   while (true) {
     let list3 = loop$list;
@@ -2573,21 +1750,6 @@ function key_set_loop(loop$list, loop$key, loop$value, loop$inspected) {
 function key_set(list3, key, value) {
   return key_set_loop(list3, key, value, toList([]));
 }
-function each(loop$list, loop$f) {
-  while (true) {
-    let list3 = loop$list;
-    let f = loop$f;
-    if (list3 instanceof Empty) {
-      return void 0;
-    } else {
-      let first$1 = list3.head;
-      let rest$1 = list3.tail;
-      f(first$1);
-      loop$list = rest$1;
-      loop$f = f;
-    }
-  }
-}
 function drop_while(loop$list, loop$predicate) {
   while (true) {
     let list3 = loop$list;
@@ -2608,95 +1770,895 @@ function drop_while(loop$list, loop$predicate) {
   }
 }
 
-// build/dev/javascript/gleam_stdlib/gleam/result.mjs
-function is_ok(result) {
-  if (result instanceof Ok) {
-    return true;
+// build/dev/javascript/gleam_stdlib/gleam/string_tree.mjs
+function new$() {
+  return concat(toList([]));
+}
+function append2(tree, second) {
+  return add(tree, identity(second));
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/string.mjs
+function is_empty3(str) {
+  return str === "";
+}
+function replace(string4, pattern, substitute) {
+  let _pipe = string4;
+  let _pipe$1 = identity(_pipe);
+  let _pipe$2 = string_replace(_pipe$1, pattern, substitute);
+  return identity(_pipe$2);
+}
+function compare3(a, b) {
+  let $ = a === b;
+  if ($) {
+    return new Eq();
   } else {
-    return false;
+    let $1 = less_than(a, b);
+    if ($1) {
+      return new Lt();
+    } else {
+      return new Gt();
+    }
   }
 }
-function map5(result, fun) {
-  if (result instanceof Ok) {
-    let x = result[0];
-    return new Ok(fun(x));
+function slice(string4, idx, len) {
+  let $ = len <= 0;
+  if ($) {
+    return "";
   } else {
-    return result;
+    let $1 = idx < 0;
+    if ($1) {
+      let translated_idx = string_length(string4) + idx;
+      let $2 = translated_idx < 0;
+      if ($2) {
+        return "";
+      } else {
+        return string_grapheme_slice(string4, translated_idx, len);
+      }
+    } else {
+      return string_grapheme_slice(string4, idx, len);
+    }
   }
 }
-function map_error(result, fun) {
-  if (result instanceof Ok) {
-    return result;
+function drop_end(string4, num_graphemes) {
+  let $ = num_graphemes <= 0;
+  if ($) {
+    return string4;
   } else {
-    let error2 = result[0];
-    return new Error2(fun(error2));
+    return slice(string4, 0, string_length(string4) - num_graphemes);
   }
 }
-function try$(result, fun) {
-  if (result instanceof Ok) {
-    let x = result[0];
-    return fun(x);
-  } else {
-    return result;
+function append3(first, second) {
+  return first + second;
+}
+function concat_loop(loop$strings, loop$accumulator) {
+  while (true) {
+    let strings = loop$strings;
+    let accumulator = loop$accumulator;
+    if (strings instanceof Empty) {
+      return accumulator;
+    } else {
+      let string4 = strings.head;
+      let strings$1 = strings.tail;
+      loop$strings = strings$1;
+      loop$accumulator = accumulator + string4;
+    }
   }
 }
-function unwrap2(result, default$) {
-  if (result instanceof Ok) {
-    let v = result[0];
-    return v;
-  } else {
-    return default$;
+function concat2(strings) {
+  return concat_loop(strings, "");
+}
+function join_loop(loop$strings, loop$separator, loop$accumulator) {
+  while (true) {
+    let strings = loop$strings;
+    let separator = loop$separator;
+    let accumulator = loop$accumulator;
+    if (strings instanceof Empty) {
+      return accumulator;
+    } else {
+      let string4 = strings.head;
+      let strings$1 = strings.tail;
+      loop$strings = strings$1;
+      loop$separator = separator;
+      loop$accumulator = accumulator + separator + string4;
+    }
   }
 }
-function replace_error(result, error2) {
-  if (result instanceof Ok) {
-    return result;
+function join(strings, separator) {
+  if (strings instanceof Empty) {
+    return "";
   } else {
-    return new Error2(error2);
+    let first$1 = strings.head;
+    let rest = strings.tail;
+    return join_loop(rest, separator, first$1);
+  }
+}
+function trim(string4) {
+  let _pipe = string4;
+  let _pipe$1 = trim_start(_pipe);
+  return trim_end(_pipe$1);
+}
+function split2(x, substring) {
+  if (substring === "") {
+    return graphemes(x);
+  } else {
+    let _pipe = x;
+    let _pipe$1 = identity(_pipe);
+    let _pipe$2 = split(_pipe$1, substring);
+    return map3(_pipe$2, identity);
+  }
+}
+function inspect2(term) {
+  let _pipe = term;
+  let _pipe$1 = inspect(_pipe);
+  return identity(_pipe$1);
+}
+function drop_start(string4, num_graphemes) {
+  let $ = num_graphemes <= 0;
+  if ($) {
+    return string4;
+  } else {
+    let prefix = string_grapheme_slice(string4, 0, num_graphemes);
+    let prefix_size = byte_size(prefix);
+    return string_byte_slice(
+      string4,
+      prefix_size,
+      byte_size(string4) - prefix_size
+    );
   }
 }
 
-// build/dev/javascript/filepath/filepath.mjs
-function remove_trailing_slash(path2) {
-  let $ = ends_with(path2, "/");
-  if ($) {
-    return drop_end(path2, 1);
+// build/dev/javascript/gleam_stdlib/gleam/dynamic/decode.mjs
+var DecodeError = class extends CustomType {
+  constructor(expected, found, path2) {
+    super();
+    this.expected = expected;
+    this.found = found;
+    this.path = path2;
+  }
+};
+var DecodeError$DecodeError = (expected, found, path2) => new DecodeError(expected, found, path2);
+var Decoder = class extends CustomType {
+  constructor(function$) {
+    super();
+    this.function = function$;
+  }
+};
+var dynamic = /* @__PURE__ */ new Decoder(decode_dynamic);
+var bool = /* @__PURE__ */ new Decoder(decode_bool);
+var int2 = /* @__PURE__ */ new Decoder(decode_int);
+var float2 = /* @__PURE__ */ new Decoder(decode_float);
+var string2 = /* @__PURE__ */ new Decoder(decode_string);
+function run(data2, decoder) {
+  let $ = decoder.function(data2);
+  let maybe_invalid_data;
+  let errors;
+  maybe_invalid_data = $[0];
+  errors = $[1];
+  if (errors instanceof Empty) {
+    return new Ok(maybe_invalid_data);
   } else {
-    return path2;
+    return new Error2(errors);
   }
 }
-function get_directory_name(loop$path, loop$acc, loop$segment) {
+function success(data2) {
+  return new Decoder((_) => {
+    return [data2, toList([])];
+  });
+}
+function decode_dynamic(data2) {
+  return [data2, toList([])];
+}
+function map4(decoder, transformer) {
+  return new Decoder(
+    (d) => {
+      let $ = decoder.function(d);
+      let data2;
+      let errors;
+      data2 = $[0];
+      errors = $[1];
+      return [transformer(data2), errors];
+    }
+  );
+}
+function run_decoders(loop$data, loop$failure, loop$decoders) {
   while (true) {
-    let path2 = loop$path;
-    let acc = loop$acc;
-    let segment = loop$segment;
-    if (path2 instanceof Empty) {
-      return acc;
+    let data2 = loop$data;
+    let failure2 = loop$failure;
+    let decoders = loop$decoders;
+    if (decoders instanceof Empty) {
+      return failure2;
     } else {
-      let $ = path2.head;
-      if ($ === "/") {
-        let rest = path2.tail;
-        loop$path = rest;
-        loop$acc = acc + segment;
-        loop$segment = "/";
+      let decoder = decoders.head;
+      let decoders$1 = decoders.tail;
+      let $ = decoder.function(data2);
+      let layer;
+      let errors;
+      layer = $;
+      errors = $[1];
+      if (errors instanceof Empty) {
+        return layer;
       } else {
-        let first = $;
-        let rest = path2.tail;
-        loop$path = rest;
-        loop$acc = acc;
-        loop$segment = segment + first;
+        loop$data = data2;
+        loop$failure = failure2;
+        loop$decoders = decoders$1;
       }
     }
   }
 }
-function directory_name(path2) {
-  let path$1 = remove_trailing_slash(path2);
-  if (path$1.startsWith("/")) {
-    let rest = path$1.slice(1);
-    return get_directory_name(graphemes(rest), "/", "");
+function one_of(first, alternatives) {
+  return new Decoder(
+    (dynamic_data) => {
+      let $ = first.function(dynamic_data);
+      let layer;
+      let errors;
+      layer = $;
+      errors = $[1];
+      if (errors instanceof Empty) {
+        return layer;
+      } else {
+        return run_decoders(dynamic_data, layer, alternatives);
+      }
+    }
+  );
+}
+function optional(inner) {
+  return new Decoder(
+    (data2) => {
+      let $ = is_null(data2);
+      if ($) {
+        return [new None(), toList([])];
+      } else {
+        let $1 = inner.function(data2);
+        let data$1;
+        let errors;
+        data$1 = $1[0];
+        errors = $1[1];
+        return [new Some(data$1), errors];
+      }
+    }
+  );
+}
+function decode_error(expected, found) {
+  return toList([
+    new DecodeError(expected, classify_dynamic(found), toList([]))
+  ]);
+}
+function run_dynamic_function(data2, name, f) {
+  let $ = f(data2);
+  if ($ instanceof Ok) {
+    let data$1 = $[0];
+    return [data$1, toList([])];
   } else {
-    return get_directory_name(graphemes(path$1), "", "");
+    let placeholder = $[0];
+    return [
+      placeholder,
+      toList([new DecodeError(name, classify_dynamic(data2), toList([]))])
+    ];
   }
+}
+function decode_bool(data2) {
+  let $ = isEqual(identity(true), data2);
+  if ($) {
+    return [true, toList([])];
+  } else {
+    let $1 = isEqual(identity(false), data2);
+    if ($1) {
+      return [false, toList([])];
+    } else {
+      return [false, decode_error("Bool", data2)];
+    }
+  }
+}
+function decode_int(data2) {
+  return run_dynamic_function(data2, "Int", int);
+}
+function decode_float(data2) {
+  return run_dynamic_function(data2, "Float", float);
+}
+function decode_string(data2) {
+  return run_dynamic_function(data2, "String", string);
+}
+function path_segment_to_string(key) {
+  let decoder = one_of(
+    string2,
+    toList([
+      (() => {
+        let _pipe = int2;
+        return map4(_pipe, to_string);
+      })(),
+      (() => {
+        let _pipe = float2;
+        return map4(_pipe, float_to_string);
+      })()
+    ])
+  );
+  let $ = run(key, decoder);
+  if ($ instanceof Ok) {
+    let key$1 = $[0];
+    return key$1;
+  } else {
+    return "<" + classify_dynamic(key) + ">";
+  }
+}
+function list2(inner) {
+  return new Decoder(
+    (data2) => {
+      return list(
+        data2,
+        inner.function,
+        (p, k) => {
+          return push_path(p, toList([k]));
+        },
+        0,
+        toList([])
+      );
+    }
+  );
+}
+function push_path(layer, path2) {
+  let path$1 = map3(
+    path2,
+    (key) => {
+      let _pipe = key;
+      let _pipe$1 = identity(_pipe);
+      return path_segment_to_string(_pipe$1);
+    }
+  );
+  let errors = map3(
+    layer[1],
+    (error2) => {
+      return new DecodeError(
+        error2.expected,
+        error2.found,
+        append(path$1, error2.path)
+      );
+    }
+  );
+  return [layer[0], errors];
+}
+function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_miss) {
+  while (true) {
+    let path2 = loop$path;
+    let position = loop$position;
+    let inner = loop$inner;
+    let data2 = loop$data;
+    let handle_miss = loop$handle_miss;
+    if (path2 instanceof Empty) {
+      let _pipe = data2;
+      let _pipe$1 = inner(_pipe);
+      return push_path(_pipe$1, reverse(position));
+    } else {
+      let key = path2.head;
+      let path$1 = path2.tail;
+      let $ = index2(data2, key);
+      if ($ instanceof Ok) {
+        let $1 = $[0];
+        if ($1 instanceof Some) {
+          let data$1 = $1[0];
+          loop$path = path$1;
+          loop$position = prepend(key, position);
+          loop$inner = inner;
+          loop$data = data$1;
+          loop$handle_miss = handle_miss;
+        } else {
+          return handle_miss(data2, prepend(key, position));
+        }
+      } else {
+        let kind = $[0];
+        let $1 = inner(data2);
+        let default$;
+        default$ = $1[0];
+        let _pipe = [
+          default$,
+          toList([new DecodeError(kind, classify_dynamic(data2), toList([]))])
+        ];
+        return push_path(_pipe, reverse(position));
+      }
+    }
+  }
+}
+function subfield(field_path, field_decoder, next2) {
+  return new Decoder(
+    (data2) => {
+      let $ = index3(
+        field_path,
+        toList([]),
+        field_decoder.function,
+        data2,
+        (data3, position) => {
+          let $12 = field_decoder.function(data3);
+          let default$;
+          default$ = $12[0];
+          let _pipe = [
+            default$,
+            toList([new DecodeError("Field", "Nothing", toList([]))])
+          ];
+          return push_path(_pipe, reverse(position));
+        }
+      );
+      let out;
+      let errors1;
+      out = $[0];
+      errors1 = $[1];
+      let $1 = next2(out).function(data2);
+      let out$1;
+      let errors2;
+      out$1 = $1[0];
+      errors2 = $1[1];
+      return [out$1, append(errors1, errors2)];
+    }
+  );
+}
+function field(field_name, field_decoder, next2) {
+  return subfield(toList([field_name]), field_decoder, next2);
+}
+
+// build/dev/javascript/gleam_stdlib/gleam_stdlib.mjs
+var Nil = void 0;
+function identity(x) {
+  return x;
+}
+function parse_int(value) {
+  if (/^[-+]?(\d+)$/.test(value)) {
+    return Result$Ok(parseInt(value));
+  } else {
+    return Result$Error(Nil);
+  }
+}
+function to_string(term) {
+  return term.toString();
+}
+function string_replace(string4, target, substitute) {
+  return string4.replaceAll(target, substitute);
+}
+function string_length(string4) {
+  if (string4 === "") {
+    return 0;
+  }
+  const iterator = graphemes_iterator(string4);
+  if (iterator) {
+    let i = 0;
+    for (const _ of iterator) {
+      i++;
+    }
+    return i;
+  } else {
+    return string4.match(/./gsu).length;
+  }
+}
+function graphemes(string4) {
+  const iterator = graphemes_iterator(string4);
+  if (iterator) {
+    return arrayToList(Array.from(iterator).map((item) => item.segment));
+  } else {
+    return arrayToList(string4.match(/./gsu));
+  }
+}
+var segmenter = void 0;
+function graphemes_iterator(string4) {
+  if (globalThis.Intl && Intl.Segmenter) {
+    segmenter ||= new Intl.Segmenter();
+    return segmenter.segment(string4)[Symbol.iterator]();
+  }
+}
+function pop_codeunit(str) {
+  return [str.charCodeAt(0) | 0, str.slice(1)];
+}
+function lowercase(string4) {
+  return string4.toLowerCase();
+}
+function uppercase(string4) {
+  return string4.toUpperCase();
+}
+function less_than(a, b) {
+  return a < b;
+}
+function add(a, b) {
+  return a + b;
+}
+function split(xs, pattern) {
+  return arrayToList(xs.split(pattern));
+}
+function concat(xs) {
+  let result = "";
+  for (const x of xs) {
+    result = result + x;
+  }
+  return result;
+}
+function string_byte_slice(string4, index6, length5) {
+  return string4.slice(index6, index6 + length5);
+}
+function string_grapheme_slice(string4, idx, len) {
+  if (len <= 0 || idx >= string4.length) {
+    return "";
+  }
+  const iterator = graphemes_iterator(string4);
+  if (iterator) {
+    while (idx-- > 0) {
+      iterator.next();
+    }
+    let result = "";
+    while (len-- > 0) {
+      const v = iterator.next().value;
+      if (v === void 0) {
+        break;
+      }
+      result += v.segment;
+    }
+    return result;
+  } else {
+    return string4.match(/./gsu).slice(idx, idx + len).join("");
+  }
+}
+function string_codeunit_slice(str, from2, length5) {
+  return str.slice(from2, from2 + length5);
+}
+function contains_string(haystack, needle) {
+  return haystack.indexOf(needle) >= 0;
+}
+function starts_with(haystack, needle) {
+  return haystack.startsWith(needle);
+}
+function ends_with(haystack, needle) {
+  return haystack.endsWith(needle);
+}
+var unicode_whitespaces = [
+  " ",
+  // Space
+  "	",
+  // Horizontal tab
+  "\n",
+  // Line feed
+  "\v",
+  // Vertical tab
+  "\f",
+  // Form feed
+  "\r",
+  // Carriage return
+  "\x85",
+  // Next line
+  "\u2028",
+  // Line separator
+  "\u2029"
+  // Paragraph separator
+].join("");
+var trim_start_regex = /* @__PURE__ */ new RegExp(
+  `^[${unicode_whitespaces}]*`
+);
+var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
+function trim_start(string4) {
+  return string4.replace(trim_start_regex, "");
+}
+function trim_end(string4) {
+  return string4.replace(trim_end_regex, "");
+}
+function bit_array_from_string(string4) {
+  return toBitArray([stringBits(string4)]);
+}
+function console_log(term) {
+  console.log(term);
+}
+function bit_array_to_string(bit_array2) {
+  if (bit_array2.bitSize % 8 !== 0) {
+    return Result$Error(Nil);
+  }
+  try {
+    const decoder = new TextDecoder("utf-8", { fatal: true });
+    if (bit_array2.bitOffset === 0) {
+      return Result$Ok(decoder.decode(bit_array2.rawBuffer));
+    } else {
+      const buffer = new Uint8Array(bit_array2.byteSize);
+      for (let i = 0; i < buffer.length; i++) {
+        buffer[i] = bit_array2.byteAt(i);
+      }
+      return Result$Ok(decoder.decode(buffer));
+    }
+  } catch {
+    return Result$Error(Nil);
+  }
+}
+function ceiling(float3) {
+  return Math.ceil(float3);
+}
+function floor(float3) {
+  return Math.floor(float3);
+}
+function round(float3) {
+  return Math.round(float3);
+}
+function truncate(float3) {
+  return Math.trunc(float3);
+}
+function power(base, exponent) {
+  return Math.pow(base, exponent);
+}
+function random_uniform() {
+  const random_uniform_result = Math.random();
+  if (random_uniform_result === 1) {
+    return random_uniform();
+  }
+  return random_uniform_result;
+}
+function classify_dynamic(data2) {
+  if (typeof data2 === "string") {
+    return "String";
+  } else if (typeof data2 === "boolean") {
+    return "Bool";
+  } else if (isResult(data2)) {
+    return "Result";
+  } else if (isList(data2)) {
+    return "List";
+  } else if (data2 instanceof BitArray) {
+    return "BitArray";
+  } else if (data2 instanceof Dict) {
+    return "Dict";
+  } else if (Number.isInteger(data2)) {
+    return "Int";
+  } else if (Array.isArray(data2)) {
+    return `Array`;
+  } else if (typeof data2 === "number") {
+    return "Float";
+  } else if (data2 === null) {
+    return "Nil";
+  } else if (data2 === void 0) {
+    return "Nil";
+  } else {
+    const type = typeof data2;
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  }
+}
+function byte_size(string4) {
+  return new TextEncoder().encode(string4).length;
+}
+var MIN_I32 = -(2 ** 31);
+var MAX_I32 = 2 ** 31 - 1;
+var U32 = 2 ** 32;
+var MAX_SAFE = Number.MAX_SAFE_INTEGER;
+var MIN_SAFE = Number.MIN_SAFE_INTEGER;
+function inspect(v) {
+  return new Inspector().inspect(v);
+}
+function float_to_string(float3) {
+  const string4 = float3.toString().replace("+", "");
+  if (string4.indexOf(".") >= 0) {
+    return string4;
+  } else {
+    const index6 = string4.indexOf("e");
+    if (index6 >= 0) {
+      return string4.slice(0, index6) + ".0" + string4.slice(index6);
+    } else {
+      return string4 + ".0";
+    }
+  }
+}
+var Inspector = class {
+  #references = /* @__PURE__ */ new Set();
+  inspect(v) {
+    const t = typeof v;
+    if (v === true) return "True";
+    if (v === false) return "False";
+    if (v === null) return "//js(null)";
+    if (v === void 0) return "Nil";
+    if (t === "string") return this.#string(v);
+    if (t === "bigint" || Number.isInteger(v)) return v.toString();
+    if (t === "number") return float_to_string(v);
+    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
+    if (v instanceof BitArray) return this.#bit_array(v);
+    if (v instanceof RegExp) return `//js(${v})`;
+    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
+    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
+    if (v instanceof Function) {
+      const args = [];
+      for (const i of Array(v.length).keys())
+        args.push(String.fromCharCode(i + 97));
+      return `//fn(${args.join(", ")}) { ... }`;
+    }
+    if (this.#references.size === this.#references.add(v).size) {
+      return "//js(circular reference)";
+    }
+    let printed;
+    if (Array.isArray(v)) {
+      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
+    } else if (isList(v)) {
+      printed = this.#list(v);
+    } else if (v instanceof CustomType) {
+      printed = this.#customType(v);
+    } else if (v instanceof Dict) {
+      printed = this.#dict(v);
+    } else if (v instanceof Set) {
+      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
+    } else {
+      printed = this.#object(v);
+    }
+    this.#references.delete(v);
+    return printed;
+  }
+  #object(v) {
+    const name = Object.getPrototypeOf(v)?.constructor?.name || "Object";
+    const props = [];
+    for (const k of Object.keys(v)) {
+      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
+    }
+    const body = props.length ? " " + props.join(", ") + " " : "";
+    const head = name === "Object" ? "" : name + " ";
+    return `//js(${head}{${body}})`;
+  }
+  #dict(map12) {
+    let body = "dict.from_list([";
+    let first = true;
+    body = fold(map12, body, (body2, key, value) => {
+      if (!first) body2 = body2 + ", ";
+      first = false;
+      return body2 + "#(" + this.inspect(key) + ", " + this.inspect(value) + ")";
+    });
+    return body + "])";
+  }
+  #customType(record) {
+    const props = Object.keys(record).map((label) => {
+      const value = this.inspect(record[label]);
+      return isNaN(parseInt(label)) ? `${label}: ${value}` : value;
+    }).join(", ");
+    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
+  }
+  #list(list3) {
+    if (List$isEmpty(list3)) {
+      return "[]";
+    }
+    let char_out = 'charlist.from_string("';
+    let list_out = "[";
+    let current = list3;
+    while (List$isNonEmpty(current)) {
+      let element = current.head;
+      current = current.tail;
+      if (list_out !== "[") {
+        list_out += ", ";
+      }
+      list_out += this.inspect(element);
+      if (char_out) {
+        if (Number.isInteger(element) && element >= 32 && element <= 126) {
+          char_out += String.fromCharCode(element);
+        } else {
+          char_out = null;
+        }
+      }
+    }
+    if (char_out) {
+      return char_out + '")';
+    } else {
+      return list_out + "]";
+    }
+  }
+  #string(str) {
+    let new_str = '"';
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      switch (char) {
+        case "\n":
+          new_str += "\\n";
+          break;
+        case "\r":
+          new_str += "\\r";
+          break;
+        case "	":
+          new_str += "\\t";
+          break;
+        case "\f":
+          new_str += "\\f";
+          break;
+        case "\\":
+          new_str += "\\\\";
+          break;
+        case '"':
+          new_str += '\\"';
+          break;
+        default:
+          if (char < " " || char > "~" && char < "\xA0") {
+            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          } else {
+            new_str += char;
+          }
+      }
+    }
+    new_str += '"';
+    return new_str;
+  }
+  #utfCodepoint(codepoint2) {
+    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
+  }
+  #bit_array(bits2) {
+    if (bits2.bitSize === 0) {
+      return "<<>>";
+    }
+    let acc = "<<";
+    for (let i = 0; i < bits2.byteSize - 1; i++) {
+      acc += bits2.byteAt(i).toString();
+      acc += ", ";
+    }
+    if (bits2.byteSize * 8 === bits2.bitSize) {
+      acc += bits2.byteAt(bits2.byteSize - 1).toString();
+    } else {
+      const trailingBitsCount = bits2.bitSize % 8;
+      acc += bits2.byteAt(bits2.byteSize - 1) >> 8 - trailingBitsCount;
+      acc += `:size(${trailingBitsCount})`;
+    }
+    acc += ">>";
+    return acc;
+  }
+};
+function index2(data2, key) {
+  if (data2 instanceof Dict) {
+    const result = get(data2, key);
+    return Result$Ok(result.isOk() ? new Some(result[0]) : new None());
+  }
+  if (data2 instanceof WeakMap || data2 instanceof Map) {
+    const token4 = {};
+    const entry = data2.get(key, token4);
+    if (entry === token4) return Result$Ok(new None());
+    return Result$Ok(new Some(entry));
+  }
+  const key_is_int = Number.isInteger(key);
+  if (key_is_int && key >= 0 && key < 8 && isList(data2)) {
+    let i = 0;
+    for (const value of data2) {
+      if (i === key) return Result$Ok(new Some(value));
+      i++;
+    }
+    return Result$Error("Indexable");
+  }
+  if (key_is_int && Array.isArray(data2) || data2 && typeof data2 === "object" || data2 && Object.getPrototypeOf(data2) === Object.prototype) {
+    if (key in data2) return Result$Ok(new Some(data2[key]));
+    return Result$Ok(new None());
+  }
+  return Result$Error(key_is_int ? "Indexable" : "Dict");
+}
+function list(data2, decode2, pushPath, index6, emptyList) {
+  if (!(isList(data2) || Array.isArray(data2))) {
+    const error2 = DecodeError$DecodeError("List", classify_dynamic(data2), emptyList);
+    return [emptyList, arrayToList([error2])];
+  }
+  const decoded = [];
+  for (const element of data2) {
+    const layer = decode2(element);
+    const [out, errors] = layer;
+    if (List$isNonEmpty(errors)) {
+      const [_, errors2] = pushPath(layer, index6.toString());
+      return [emptyList, errors2];
+    }
+    decoded.push(out);
+    index6++;
+  }
+  return [arrayToList(decoded), emptyList];
+}
+function float(data2) {
+  if (typeof data2 === "number") return Result$Ok(data2);
+  return Result$Error(0);
+}
+function int(data2) {
+  if (Number.isInteger(data2)) return Result$Ok(data2);
+  return Result$Error(0);
+}
+function string(data2) {
+  if (typeof data2 === "string") return Result$Ok(data2);
+  return Result$Error("");
+}
+function is_null(data2) {
+  return data2 === null || data2 === void 0;
+}
+function arrayToList(array4) {
+  let list3 = List$Empty();
+  let i = array4.length;
+  while (i--) {
+    list3 = List$NonEmpty(array4[i], list3);
+  }
+  return list3;
+}
+function isList(data2) {
+  return List$isEmpty(data2) || List$isNonEmpty(data2);
+}
+function isResult(data2) {
+  return Result$isOk(data2) || Result$isError(data2);
 }
 
 // build/dev/javascript/gleam_javascript/gleam_javascript_ffi.mjs
@@ -2745,6 +2707,1356 @@ function try_await(promise, callback) {
   );
 }
 
+// build/dev/javascript/gleam_stdlib/gleam/result.mjs
+function is_ok(result) {
+  if (result instanceof Ok) {
+    return true;
+  } else {
+    return false;
+  }
+}
+function map6(result, fun) {
+  if (result instanceof Ok) {
+    let x = result[0];
+    return new Ok(fun(x));
+  } else {
+    return result;
+  }
+}
+function map_error(result, fun) {
+  if (result instanceof Ok) {
+    return result;
+  } else {
+    let error2 = result[0];
+    return new Error2(fun(error2));
+  }
+}
+function try$(result, fun) {
+  if (result instanceof Ok) {
+    let x = result[0];
+    return fun(x);
+  } else {
+    return result;
+  }
+}
+function unwrap2(result, default$) {
+  if (result instanceof Ok) {
+    let v = result[0];
+    return v;
+  } else {
+    return default$;
+  }
+}
+function replace_error(result, error2) {
+  if (result instanceof Ok) {
+    return result;
+  } else {
+    return new Error2(error2);
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/uri.mjs
+var Uri = class extends CustomType {
+  constructor(scheme, userinfo, host, port, path2, query, fragment) {
+    super();
+    this.scheme = scheme;
+    this.userinfo = userinfo;
+    this.host = host;
+    this.port = port;
+    this.path = path2;
+    this.query = query;
+    this.fragment = fragment;
+  }
+};
+var empty = /* @__PURE__ */ new Uri(
+  /* @__PURE__ */ new None(),
+  /* @__PURE__ */ new None(),
+  /* @__PURE__ */ new None(),
+  /* @__PURE__ */ new None(),
+  "",
+  /* @__PURE__ */ new None(),
+  /* @__PURE__ */ new None()
+);
+function is_valid_host_within_brackets_char(char) {
+  return 48 >= char && char <= 57 || 65 >= char && char <= 90 || 97 >= char && char <= 122 || char === 58 || char === 46;
+}
+function parse_fragment(rest, pieces) {
+  return new Ok(
+    new Uri(
+      pieces.scheme,
+      pieces.userinfo,
+      pieces.host,
+      pieces.port,
+      pieces.path,
+      pieces.query,
+      new Some(rest)
+    )
+  );
+}
+function parse_query_with_question_mark_loop(loop$original, loop$uri_string, loop$pieces, loop$size) {
+  while (true) {
+    let original = loop$original;
+    let uri_string = loop$uri_string;
+    let pieces = loop$pieces;
+    let size3 = loop$size;
+    if (uri_string.startsWith("#")) {
+      if (size3 === 0) {
+        let rest = uri_string.slice(1);
+        return parse_fragment(rest, pieces);
+      } else {
+        let rest = uri_string.slice(1);
+        let query = string_codeunit_slice(original, 0, size3);
+        let pieces$1 = new Uri(
+          pieces.scheme,
+          pieces.userinfo,
+          pieces.host,
+          pieces.port,
+          pieces.path,
+          new Some(query),
+          pieces.fragment
+        );
+        return parse_fragment(rest, pieces$1);
+      }
+    } else if (uri_string === "") {
+      return new Ok(
+        new Uri(
+          pieces.scheme,
+          pieces.userinfo,
+          pieces.host,
+          pieces.port,
+          pieces.path,
+          new Some(original),
+          pieces.fragment
+        )
+      );
+    } else {
+      let $ = pop_codeunit(uri_string);
+      let rest;
+      rest = $[1];
+      loop$original = original;
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$size = size3 + 1;
+    }
+  }
+}
+function parse_query_with_question_mark(uri_string, pieces) {
+  return parse_query_with_question_mark_loop(uri_string, uri_string, pieces, 0);
+}
+function parse_path_loop(loop$original, loop$uri_string, loop$pieces, loop$size) {
+  while (true) {
+    let original = loop$original;
+    let uri_string = loop$uri_string;
+    let pieces = loop$pieces;
+    let size3 = loop$size;
+    if (uri_string.startsWith("?")) {
+      let rest = uri_string.slice(1);
+      let path2 = string_codeunit_slice(original, 0, size3);
+      let pieces$1 = new Uri(
+        pieces.scheme,
+        pieces.userinfo,
+        pieces.host,
+        pieces.port,
+        path2,
+        pieces.query,
+        pieces.fragment
+      );
+      return parse_query_with_question_mark(rest, pieces$1);
+    } else if (uri_string.startsWith("#")) {
+      let rest = uri_string.slice(1);
+      let path2 = string_codeunit_slice(original, 0, size3);
+      let pieces$1 = new Uri(
+        pieces.scheme,
+        pieces.userinfo,
+        pieces.host,
+        pieces.port,
+        path2,
+        pieces.query,
+        pieces.fragment
+      );
+      return parse_fragment(rest, pieces$1);
+    } else if (uri_string === "") {
+      return new Ok(
+        new Uri(
+          pieces.scheme,
+          pieces.userinfo,
+          pieces.host,
+          pieces.port,
+          original,
+          pieces.query,
+          pieces.fragment
+        )
+      );
+    } else {
+      let $ = pop_codeunit(uri_string);
+      let rest;
+      rest = $[1];
+      loop$original = original;
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$size = size3 + 1;
+    }
+  }
+}
+function parse_path(uri_string, pieces) {
+  return parse_path_loop(uri_string, uri_string, pieces, 0);
+}
+function parse_port_loop(loop$uri_string, loop$pieces, loop$port) {
+  while (true) {
+    let uri_string = loop$uri_string;
+    let pieces = loop$pieces;
+    let port = loop$port;
+    if (uri_string.startsWith("0")) {
+      let rest = uri_string.slice(1);
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$port = port * 10;
+    } else if (uri_string.startsWith("1")) {
+      let rest = uri_string.slice(1);
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$port = port * 10 + 1;
+    } else if (uri_string.startsWith("2")) {
+      let rest = uri_string.slice(1);
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$port = port * 10 + 2;
+    } else if (uri_string.startsWith("3")) {
+      let rest = uri_string.slice(1);
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$port = port * 10 + 3;
+    } else if (uri_string.startsWith("4")) {
+      let rest = uri_string.slice(1);
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$port = port * 10 + 4;
+    } else if (uri_string.startsWith("5")) {
+      let rest = uri_string.slice(1);
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$port = port * 10 + 5;
+    } else if (uri_string.startsWith("6")) {
+      let rest = uri_string.slice(1);
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$port = port * 10 + 6;
+    } else if (uri_string.startsWith("7")) {
+      let rest = uri_string.slice(1);
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$port = port * 10 + 7;
+    } else if (uri_string.startsWith("8")) {
+      let rest = uri_string.slice(1);
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$port = port * 10 + 8;
+    } else if (uri_string.startsWith("9")) {
+      let rest = uri_string.slice(1);
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$port = port * 10 + 9;
+    } else if (uri_string.startsWith("?")) {
+      let rest = uri_string.slice(1);
+      let pieces$1 = new Uri(
+        pieces.scheme,
+        pieces.userinfo,
+        pieces.host,
+        new Some(port),
+        pieces.path,
+        pieces.query,
+        pieces.fragment
+      );
+      return parse_query_with_question_mark(rest, pieces$1);
+    } else if (uri_string.startsWith("#")) {
+      let rest = uri_string.slice(1);
+      let pieces$1 = new Uri(
+        pieces.scheme,
+        pieces.userinfo,
+        pieces.host,
+        new Some(port),
+        pieces.path,
+        pieces.query,
+        pieces.fragment
+      );
+      return parse_fragment(rest, pieces$1);
+    } else if (uri_string.startsWith("/")) {
+      let pieces$1 = new Uri(
+        pieces.scheme,
+        pieces.userinfo,
+        pieces.host,
+        new Some(port),
+        pieces.path,
+        pieces.query,
+        pieces.fragment
+      );
+      return parse_path(uri_string, pieces$1);
+    } else if (uri_string === "") {
+      return new Ok(
+        new Uri(
+          pieces.scheme,
+          pieces.userinfo,
+          pieces.host,
+          new Some(port),
+          pieces.path,
+          pieces.query,
+          pieces.fragment
+        )
+      );
+    } else {
+      return new Error2(void 0);
+    }
+  }
+}
+function parse_port(uri_string, pieces) {
+  if (uri_string.startsWith(":0")) {
+    let rest = uri_string.slice(2);
+    return parse_port_loop(rest, pieces, 0);
+  } else if (uri_string.startsWith(":1")) {
+    let rest = uri_string.slice(2);
+    return parse_port_loop(rest, pieces, 1);
+  } else if (uri_string.startsWith(":2")) {
+    let rest = uri_string.slice(2);
+    return parse_port_loop(rest, pieces, 2);
+  } else if (uri_string.startsWith(":3")) {
+    let rest = uri_string.slice(2);
+    return parse_port_loop(rest, pieces, 3);
+  } else if (uri_string.startsWith(":4")) {
+    let rest = uri_string.slice(2);
+    return parse_port_loop(rest, pieces, 4);
+  } else if (uri_string.startsWith(":5")) {
+    let rest = uri_string.slice(2);
+    return parse_port_loop(rest, pieces, 5);
+  } else if (uri_string.startsWith(":6")) {
+    let rest = uri_string.slice(2);
+    return parse_port_loop(rest, pieces, 6);
+  } else if (uri_string.startsWith(":7")) {
+    let rest = uri_string.slice(2);
+    return parse_port_loop(rest, pieces, 7);
+  } else if (uri_string.startsWith(":8")) {
+    let rest = uri_string.slice(2);
+    return parse_port_loop(rest, pieces, 8);
+  } else if (uri_string.startsWith(":9")) {
+    let rest = uri_string.slice(2);
+    return parse_port_loop(rest, pieces, 9);
+  } else if (uri_string === ":") {
+    return new Ok(pieces);
+  } else if (uri_string === "") {
+    return new Ok(pieces);
+  } else if (uri_string.startsWith("?")) {
+    let rest = uri_string.slice(1);
+    return parse_query_with_question_mark(rest, pieces);
+  } else if (uri_string.startsWith(":?")) {
+    let rest = uri_string.slice(2);
+    return parse_query_with_question_mark(rest, pieces);
+  } else if (uri_string.startsWith("#")) {
+    let rest = uri_string.slice(1);
+    return parse_fragment(rest, pieces);
+  } else if (uri_string.startsWith(":#")) {
+    let rest = uri_string.slice(2);
+    return parse_fragment(rest, pieces);
+  } else if (uri_string.startsWith("/")) {
+    return parse_path(uri_string, pieces);
+  } else if (uri_string.startsWith(":")) {
+    let rest = uri_string.slice(1);
+    if (rest.startsWith("/")) {
+      return parse_path(rest, pieces);
+    } else {
+      return new Error2(void 0);
+    }
+  } else {
+    return new Error2(void 0);
+  }
+}
+function parse_host_outside_of_brackets_loop(loop$original, loop$uri_string, loop$pieces, loop$size) {
+  while (true) {
+    let original = loop$original;
+    let uri_string = loop$uri_string;
+    let pieces = loop$pieces;
+    let size3 = loop$size;
+    if (uri_string === "") {
+      return new Ok(
+        new Uri(
+          pieces.scheme,
+          pieces.userinfo,
+          new Some(original),
+          pieces.port,
+          pieces.path,
+          pieces.query,
+          pieces.fragment
+        )
+      );
+    } else if (uri_string.startsWith(":")) {
+      let host = string_codeunit_slice(original, 0, size3);
+      let pieces$1 = new Uri(
+        pieces.scheme,
+        pieces.userinfo,
+        new Some(host),
+        pieces.port,
+        pieces.path,
+        pieces.query,
+        pieces.fragment
+      );
+      return parse_port(uri_string, pieces$1);
+    } else if (uri_string.startsWith("/")) {
+      let host = string_codeunit_slice(original, 0, size3);
+      let pieces$1 = new Uri(
+        pieces.scheme,
+        pieces.userinfo,
+        new Some(host),
+        pieces.port,
+        pieces.path,
+        pieces.query,
+        pieces.fragment
+      );
+      return parse_path(uri_string, pieces$1);
+    } else if (uri_string.startsWith("?")) {
+      let rest = uri_string.slice(1);
+      let host = string_codeunit_slice(original, 0, size3);
+      let pieces$1 = new Uri(
+        pieces.scheme,
+        pieces.userinfo,
+        new Some(host),
+        pieces.port,
+        pieces.path,
+        pieces.query,
+        pieces.fragment
+      );
+      return parse_query_with_question_mark(rest, pieces$1);
+    } else if (uri_string.startsWith("#")) {
+      let rest = uri_string.slice(1);
+      let host = string_codeunit_slice(original, 0, size3);
+      let pieces$1 = new Uri(
+        pieces.scheme,
+        pieces.userinfo,
+        new Some(host),
+        pieces.port,
+        pieces.path,
+        pieces.query,
+        pieces.fragment
+      );
+      return parse_fragment(rest, pieces$1);
+    } else {
+      let $ = pop_codeunit(uri_string);
+      let rest;
+      rest = $[1];
+      loop$original = original;
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$size = size3 + 1;
+    }
+  }
+}
+function parse_host_within_brackets_loop(loop$original, loop$uri_string, loop$pieces, loop$size) {
+  while (true) {
+    let original = loop$original;
+    let uri_string = loop$uri_string;
+    let pieces = loop$pieces;
+    let size3 = loop$size;
+    if (uri_string === "") {
+      return new Ok(
+        new Uri(
+          pieces.scheme,
+          pieces.userinfo,
+          new Some(uri_string),
+          pieces.port,
+          pieces.path,
+          pieces.query,
+          pieces.fragment
+        )
+      );
+    } else if (uri_string.startsWith("]")) {
+      if (size3 === 0) {
+        let rest = uri_string.slice(1);
+        return parse_port(rest, pieces);
+      } else {
+        let rest = uri_string.slice(1);
+        let host = string_codeunit_slice(original, 0, size3 + 1);
+        let pieces$1 = new Uri(
+          pieces.scheme,
+          pieces.userinfo,
+          new Some(host),
+          pieces.port,
+          pieces.path,
+          pieces.query,
+          pieces.fragment
+        );
+        return parse_port(rest, pieces$1);
+      }
+    } else if (uri_string.startsWith("/")) {
+      if (size3 === 0) {
+        return parse_path(uri_string, pieces);
+      } else {
+        let host = string_codeunit_slice(original, 0, size3);
+        let pieces$1 = new Uri(
+          pieces.scheme,
+          pieces.userinfo,
+          new Some(host),
+          pieces.port,
+          pieces.path,
+          pieces.query,
+          pieces.fragment
+        );
+        return parse_path(uri_string, pieces$1);
+      }
+    } else if (uri_string.startsWith("?")) {
+      if (size3 === 0) {
+        let rest = uri_string.slice(1);
+        return parse_query_with_question_mark(rest, pieces);
+      } else {
+        let rest = uri_string.slice(1);
+        let host = string_codeunit_slice(original, 0, size3);
+        let pieces$1 = new Uri(
+          pieces.scheme,
+          pieces.userinfo,
+          new Some(host),
+          pieces.port,
+          pieces.path,
+          pieces.query,
+          pieces.fragment
+        );
+        return parse_query_with_question_mark(rest, pieces$1);
+      }
+    } else if (uri_string.startsWith("#")) {
+      if (size3 === 0) {
+        let rest = uri_string.slice(1);
+        return parse_fragment(rest, pieces);
+      } else {
+        let rest = uri_string.slice(1);
+        let host = string_codeunit_slice(original, 0, size3);
+        let pieces$1 = new Uri(
+          pieces.scheme,
+          pieces.userinfo,
+          new Some(host),
+          pieces.port,
+          pieces.path,
+          pieces.query,
+          pieces.fragment
+        );
+        return parse_fragment(rest, pieces$1);
+      }
+    } else {
+      let $ = pop_codeunit(uri_string);
+      let char;
+      let rest;
+      char = $[0];
+      rest = $[1];
+      let $1 = is_valid_host_within_brackets_char(char);
+      if ($1) {
+        loop$original = original;
+        loop$uri_string = rest;
+        loop$pieces = pieces;
+        loop$size = size3 + 1;
+      } else {
+        return parse_host_outside_of_brackets_loop(
+          original,
+          original,
+          pieces,
+          0
+        );
+      }
+    }
+  }
+}
+function parse_host_within_brackets(uri_string, pieces) {
+  return parse_host_within_brackets_loop(uri_string, uri_string, pieces, 0);
+}
+function parse_host_outside_of_brackets(uri_string, pieces) {
+  return parse_host_outside_of_brackets_loop(uri_string, uri_string, pieces, 0);
+}
+function parse_host(uri_string, pieces) {
+  if (uri_string.startsWith("[")) {
+    return parse_host_within_brackets(uri_string, pieces);
+  } else if (uri_string.startsWith(":")) {
+    let pieces$1 = new Uri(
+      pieces.scheme,
+      pieces.userinfo,
+      new Some(""),
+      pieces.port,
+      pieces.path,
+      pieces.query,
+      pieces.fragment
+    );
+    return parse_port(uri_string, pieces$1);
+  } else if (uri_string === "") {
+    return new Ok(
+      new Uri(
+        pieces.scheme,
+        pieces.userinfo,
+        new Some(""),
+        pieces.port,
+        pieces.path,
+        pieces.query,
+        pieces.fragment
+      )
+    );
+  } else {
+    return parse_host_outside_of_brackets(uri_string, pieces);
+  }
+}
+function parse_userinfo_loop(loop$original, loop$uri_string, loop$pieces, loop$size) {
+  while (true) {
+    let original = loop$original;
+    let uri_string = loop$uri_string;
+    let pieces = loop$pieces;
+    let size3 = loop$size;
+    if (uri_string.startsWith("@")) {
+      if (size3 === 0) {
+        let rest = uri_string.slice(1);
+        return parse_host(rest, pieces);
+      } else {
+        let rest = uri_string.slice(1);
+        let userinfo = string_codeunit_slice(original, 0, size3);
+        let pieces$1 = new Uri(
+          pieces.scheme,
+          new Some(userinfo),
+          pieces.host,
+          pieces.port,
+          pieces.path,
+          pieces.query,
+          pieces.fragment
+        );
+        return parse_host(rest, pieces$1);
+      }
+    } else if (uri_string === "") {
+      return parse_host(original, pieces);
+    } else if (uri_string.startsWith("/")) {
+      return parse_host(original, pieces);
+    } else if (uri_string.startsWith("?")) {
+      return parse_host(original, pieces);
+    } else if (uri_string.startsWith("#")) {
+      return parse_host(original, pieces);
+    } else {
+      let $ = pop_codeunit(uri_string);
+      let rest;
+      rest = $[1];
+      loop$original = original;
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$size = size3 + 1;
+    }
+  }
+}
+function parse_authority_pieces(string4, pieces) {
+  return parse_userinfo_loop(string4, string4, pieces, 0);
+}
+function parse_authority_with_slashes(uri_string, pieces) {
+  if (uri_string === "//") {
+    return new Ok(
+      new Uri(
+        pieces.scheme,
+        pieces.userinfo,
+        new Some(""),
+        pieces.port,
+        pieces.path,
+        pieces.query,
+        pieces.fragment
+      )
+    );
+  } else if (uri_string.startsWith("//")) {
+    let rest = uri_string.slice(2);
+    return parse_authority_pieces(rest, pieces);
+  } else {
+    return parse_path(uri_string, pieces);
+  }
+}
+function parse_scheme_loop(loop$original, loop$uri_string, loop$pieces, loop$size) {
+  while (true) {
+    let original = loop$original;
+    let uri_string = loop$uri_string;
+    let pieces = loop$pieces;
+    let size3 = loop$size;
+    if (uri_string.startsWith("/")) {
+      if (size3 === 0) {
+        return parse_authority_with_slashes(uri_string, pieces);
+      } else {
+        let scheme = string_codeunit_slice(original, 0, size3);
+        let pieces$1 = new Uri(
+          new Some(lowercase(scheme)),
+          pieces.userinfo,
+          pieces.host,
+          pieces.port,
+          pieces.path,
+          pieces.query,
+          pieces.fragment
+        );
+        return parse_authority_with_slashes(uri_string, pieces$1);
+      }
+    } else if (uri_string.startsWith("?")) {
+      if (size3 === 0) {
+        let rest = uri_string.slice(1);
+        return parse_query_with_question_mark(rest, pieces);
+      } else {
+        let rest = uri_string.slice(1);
+        let scheme = string_codeunit_slice(original, 0, size3);
+        let pieces$1 = new Uri(
+          new Some(lowercase(scheme)),
+          pieces.userinfo,
+          pieces.host,
+          pieces.port,
+          pieces.path,
+          pieces.query,
+          pieces.fragment
+        );
+        return parse_query_with_question_mark(rest, pieces$1);
+      }
+    } else if (uri_string.startsWith("#")) {
+      if (size3 === 0) {
+        let rest = uri_string.slice(1);
+        return parse_fragment(rest, pieces);
+      } else {
+        let rest = uri_string.slice(1);
+        let scheme = string_codeunit_slice(original, 0, size3);
+        let pieces$1 = new Uri(
+          new Some(lowercase(scheme)),
+          pieces.userinfo,
+          pieces.host,
+          pieces.port,
+          pieces.path,
+          pieces.query,
+          pieces.fragment
+        );
+        return parse_fragment(rest, pieces$1);
+      }
+    } else if (uri_string.startsWith(":")) {
+      if (size3 === 0) {
+        return new Error2(void 0);
+      } else {
+        let rest = uri_string.slice(1);
+        let scheme = string_codeunit_slice(original, 0, size3);
+        let pieces$1 = new Uri(
+          new Some(lowercase(scheme)),
+          pieces.userinfo,
+          pieces.host,
+          pieces.port,
+          pieces.path,
+          pieces.query,
+          pieces.fragment
+        );
+        return parse_authority_with_slashes(rest, pieces$1);
+      }
+    } else if (uri_string === "") {
+      return new Ok(
+        new Uri(
+          pieces.scheme,
+          pieces.userinfo,
+          pieces.host,
+          pieces.port,
+          original,
+          pieces.query,
+          pieces.fragment
+        )
+      );
+    } else {
+      let $ = pop_codeunit(uri_string);
+      let rest;
+      rest = $[1];
+      loop$original = original;
+      loop$uri_string = rest;
+      loop$pieces = pieces;
+      loop$size = size3 + 1;
+    }
+  }
+}
+function to_string2(uri) {
+  let _block;
+  let $ = uri.fragment;
+  if ($ instanceof Some) {
+    let fragment = $[0];
+    _block = toList(["#", fragment]);
+  } else {
+    _block = toList([]);
+  }
+  let parts = _block;
+  let _block$1;
+  let $1 = uri.query;
+  if ($1 instanceof Some) {
+    let query = $1[0];
+    _block$1 = prepend("?", prepend(query, parts));
+  } else {
+    _block$1 = parts;
+  }
+  let parts$1 = _block$1;
+  let parts$2 = prepend(uri.path, parts$1);
+  let _block$2;
+  let $2 = uri.host;
+  let $3 = starts_with(uri.path, "/");
+  if ($2 instanceof Some && !$3) {
+    let host = $2[0];
+    if (host !== "") {
+      _block$2 = prepend("/", parts$2);
+    } else {
+      _block$2 = parts$2;
+    }
+  } else {
+    _block$2 = parts$2;
+  }
+  let parts$3 = _block$2;
+  let _block$3;
+  let $4 = uri.host;
+  let $5 = uri.port;
+  if ($4 instanceof Some && $5 instanceof Some) {
+    let port = $5[0];
+    _block$3 = prepend(":", prepend(to_string(port), parts$3));
+  } else {
+    _block$3 = parts$3;
+  }
+  let parts$4 = _block$3;
+  let _block$4;
+  let $6 = uri.scheme;
+  let $7 = uri.userinfo;
+  let $8 = uri.host;
+  if ($6 instanceof Some) {
+    if ($7 instanceof Some) {
+      if ($8 instanceof Some) {
+        let s = $6[0];
+        let u = $7[0];
+        let h = $8[0];
+        _block$4 = prepend(
+          s,
+          prepend(
+            "://",
+            prepend(u, prepend("@", prepend(h, parts$4)))
+          )
+        );
+      } else {
+        let s = $6[0];
+        _block$4 = prepend(s, prepend(":", parts$4));
+      }
+    } else if ($8 instanceof Some) {
+      let s = $6[0];
+      let h = $8[0];
+      _block$4 = prepend(s, prepend("://", prepend(h, parts$4)));
+    } else {
+      let s = $6[0];
+      _block$4 = prepend(s, prepend(":", parts$4));
+    }
+  } else if ($7 instanceof None && $8 instanceof Some) {
+    let h = $8[0];
+    _block$4 = prepend("//", prepend(h, parts$4));
+  } else {
+    _block$4 = parts$4;
+  }
+  let parts$5 = _block$4;
+  return concat2(parts$5);
+}
+function parse(uri_string) {
+  return parse_scheme_loop(uri_string, uri_string, empty, 0);
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/bool.mjs
+function guard(requirement, consequence, alternative) {
+  if (requirement) {
+    return consequence;
+  } else {
+    return alternative();
+  }
+}
+
+// build/dev/javascript/gleam_http/gleam/http.mjs
+var Get = class extends CustomType {
+};
+var Post = class extends CustomType {
+};
+var Head = class extends CustomType {
+};
+var Put = class extends CustomType {
+};
+var Delete = class extends CustomType {
+};
+var Trace = class extends CustomType {
+};
+var Connect = class extends CustomType {
+};
+var Options = class extends CustomType {
+};
+var Patch = class extends CustomType {
+};
+var Http = class extends CustomType {
+};
+var Https = class extends CustomType {
+};
+function method_to_string(method) {
+  if (method instanceof Get) {
+    return "GET";
+  } else if (method instanceof Post) {
+    return "POST";
+  } else if (method instanceof Head) {
+    return "HEAD";
+  } else if (method instanceof Put) {
+    return "PUT";
+  } else if (method instanceof Delete) {
+    return "DELETE";
+  } else if (method instanceof Trace) {
+    return "TRACE";
+  } else if (method instanceof Connect) {
+    return "CONNECT";
+  } else if (method instanceof Options) {
+    return "OPTIONS";
+  } else if (method instanceof Patch) {
+    return "PATCH";
+  } else {
+    let method$1 = method[0];
+    return method$1;
+  }
+}
+function scheme_to_string(scheme) {
+  if (scheme instanceof Http) {
+    return "http";
+  } else {
+    return "https";
+  }
+}
+function scheme_from_string(scheme) {
+  let $ = lowercase(scheme);
+  if ($ === "http") {
+    return new Ok(new Http());
+  } else if ($ === "https") {
+    return new Ok(new Https());
+  } else {
+    return new Error2(void 0);
+  }
+}
+
+// build/dev/javascript/gleam_http/gleam/http/request.mjs
+var Request = class extends CustomType {
+  constructor(method, headers, body, scheme, host, port, path2, query) {
+    super();
+    this.method = method;
+    this.headers = headers;
+    this.body = body;
+    this.scheme = scheme;
+    this.host = host;
+    this.port = port;
+    this.path = path2;
+    this.query = query;
+  }
+};
+function to_uri(request) {
+  return new Uri(
+    new Some(scheme_to_string(request.scheme)),
+    new None(),
+    new Some(request.host),
+    request.port,
+    request.path,
+    request.query,
+    new None()
+  );
+}
+function from_uri(uri) {
+  return try$(
+    (() => {
+      let _pipe = uri.scheme;
+      let _pipe$1 = unwrap(_pipe, "");
+      return scheme_from_string(_pipe$1);
+    })(),
+    (scheme) => {
+      return try$(
+        (() => {
+          let _pipe = uri.host;
+          return to_result(_pipe, void 0);
+        })(),
+        (host) => {
+          let req = new Request(
+            new Get(),
+            toList([]),
+            "",
+            scheme,
+            host,
+            uri.port,
+            uri.path,
+            uri.query
+          );
+          return new Ok(req);
+        }
+      );
+    }
+  );
+}
+function set_header(request, key, value) {
+  let headers = key_set(request.headers, lowercase(key), value);
+  return new Request(
+    request.method,
+    headers,
+    request.body,
+    request.scheme,
+    request.host,
+    request.port,
+    request.path,
+    request.query
+  );
+}
+function set_body(req, body) {
+  return new Request(
+    req.method,
+    req.headers,
+    body,
+    req.scheme,
+    req.host,
+    req.port,
+    req.path,
+    req.query
+  );
+}
+function set_method(req, method) {
+  return new Request(
+    method,
+    req.headers,
+    req.body,
+    req.scheme,
+    req.host,
+    req.port,
+    req.path,
+    req.query
+  );
+}
+function to(url) {
+  let _pipe = url;
+  let _pipe$1 = parse(_pipe);
+  return try$(_pipe$1, from_uri);
+}
+
+// build/dev/javascript/gleam_http/gleam/http/response.mjs
+var Response = class extends CustomType {
+  constructor(status, headers, body) {
+    super();
+    this.status = status;
+    this.headers = headers;
+    this.body = body;
+  }
+};
+var Response$Response = (status, headers, body) => new Response(status, headers, body);
+function set_body2(response, body) {
+  return new Response(response.status, response.headers, body);
+}
+function map7(response, transform) {
+  let _pipe = response.body;
+  let _pipe$1 = transform(_pipe);
+  return ((_capture) => {
+    return set_body2(response, _capture);
+  })(_pipe$1);
+}
+
+// build/dev/javascript/gleam_fetch/gleam_fetch_ffi.mjs
+async function raw_send(request) {
+  try {
+    return Result$Ok(await fetch(request));
+  } catch (error2) {
+    return Result$Error(FetchError$NetworkError(error2.toString()));
+  }
+}
+function from_fetch_response(response) {
+  let headers = [...response.headers].reverse();
+  return Response$Response(response.status, arrayToList2(headers), response);
+}
+function request_common(request) {
+  let url = to_string2(to_uri(request));
+  let method = method_to_string(request.method).toUpperCase();
+  let options = {
+    headers: make_headers(request.headers),
+    method
+  };
+  return [url, options];
+}
+function to_fetch_request(request) {
+  let [url, options] = request_common(request);
+  if (options.method !== "GET" && options.method !== "HEAD")
+    options.body = request.body;
+  return new globalThis.Request(url, options);
+}
+function make_headers(headersList) {
+  let headers = new globalThis.Headers();
+  for (let [k, v] of headersList) headers.append(k.toLowerCase(), v);
+  return headers;
+}
+async function read_text_body(response) {
+  let body;
+  try {
+    body = await response.body.text();
+  } catch (error2) {
+    return Result$Error(FetchError$UnableToReadBody());
+  }
+  return Result$Ok(map7(response, () => body));
+}
+function arrayToList2(array4) {
+  let list3 = List$Empty();
+  for (const element of array4) {
+    list3 = List$NonEmpty(element, list3);
+  }
+  return list3;
+}
+
+// build/dev/javascript/gleam_fetch/gleam/fetch.mjs
+var NetworkError = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var FetchError$NetworkError = ($0) => new NetworkError($0);
+var UnableToReadBody = class extends CustomType {
+};
+var FetchError$UnableToReadBody = () => new UnableToReadBody();
+function send(request) {
+  let _pipe = request;
+  let _pipe$1 = to_fetch_request(_pipe);
+  let _pipe$2 = raw_send(_pipe$1);
+  return try_await(
+    _pipe$2,
+    (resp) => {
+      return resolve(new Ok(from_fetch_response(resp)));
+    }
+  );
+}
+
+// build/dev/javascript/shellout/shellout_ffi.mjs
+var import_node_child_process = require("node:child_process");
+var import_node_fs = require("node:fs");
+var import_node_path = require("node:path");
+var import_node_process = __toESM(require("node:process"), 1);
+var Nil2 = void 0;
+var Signals = {
+  SIGHUP: 1,
+  SIGINT: 2,
+  SIGQUIT: 3,
+  SIGILL: 4,
+  SIGTRAP: 5,
+  SIGABRT: 6,
+  SIGIOT: 6,
+  SIGBUS: 7,
+  SIGFPE: 8,
+  SIGKILL: 9,
+  SIGUSR1: 10,
+  SIGSEGV: 11,
+  SIGUSR2: 12,
+  SIGPIPE: 13,
+  SIGALRM: 14,
+  SIGTERM: 15,
+  SIGSTKFLT: 16,
+  SIGCHLD: 17,
+  SIGCONT: 18,
+  SIGSTOP: 19,
+  SIGTSTP: 20,
+  SIGTTIN: 21,
+  SIGTTOU: 22,
+  SIGURG: 23,
+  SIGXCPU: 24,
+  SIGXFSZ: 25,
+  SIGVTALRM: 26,
+  SIGPROF: 27,
+  SIGWINCH: 28,
+  SIGIO: 29,
+  SIGPOLL: 29,
+  SIGPWR: 30,
+  SIGSYS: 31,
+  SIGRTMIN: 34
+};
+function os_command(command2, args, dir, opts, env_list) {
+  let executable = os_which(command2);
+  executable = Result$isOk(executable) ? executable : os_which(
+    (0, import_node_path.join)(dir, command2)
+  );
+  if (!Result$isOk(executable)) {
+    return map_error(executable, (error2) => [1, error2]);
+  }
+  let getBool = (dict2, key) => Result$isOk(get(dict2, key));
+  let isDeno = Boolean(globalThis.Deno?.Command);
+  args = args.toArray();
+  let stdin = "inherit";
+  let stdout = isDeno ? "piped" : "pipe";
+  let stderr = stdout;
+  let spawnOpts = { cwd: dir, windowsHide: true };
+  if (!isDeno && getBool(opts, CommandOpt$OverlappedStdio())) {
+    stdin = stdout = "overlapped";
+  }
+  if (getBool(opts, CommandOpt$LetBeStderr())) {
+    stderr = "inherit";
+  }
+  if (getBool(opts, CommandOpt$LetBeStdout())) {
+    import_node_process.default.on("SIGINT", () => Nil2);
+    stdout = "inherit";
+  }
+  let env = {};
+  for (let e of env_list) {
+    env[e[0]] = e[1];
+  }
+  let result = {};
+  if (isDeno) {
+    spawnOpts = {
+      ...spawnOpts,
+      args,
+      stdin,
+      stdout,
+      stderr,
+      env
+    };
+    try {
+      result = new Deno.Command(command2, spawnOpts).outputSync();
+    } catch {
+    }
+    result.status = result.code ?? null;
+  } else {
+    spawnOpts.stdio = [stdin, stdout, stderr];
+    if (env) {
+      spawnOpts.env = { ...import_node_process.default.env, ...env };
+    }
+    result = (0, import_node_child_process.spawnSync)(command2, args, spawnOpts);
+  }
+  if (result.error) {
+    result = { status: null };
+  }
+  let output = "";
+  try {
+    output = new TextDecoder().decode(result.stdout);
+  } catch {
+  }
+  try {
+    output += new TextDecoder().decode(result.stderr);
+  } catch {
+  }
+  let status = result.status;
+  if (null === status) {
+    let signal = Signals[result.signal];
+    status = Nil2 !== signal ? signal : 0;
+    status += 384;
+  }
+  if (384 === status && "" === output) {
+    status = 2;
+    output = `The directory "${dir}" does not exist
+`;
+  }
+  return 0 === status ? Result$Ok(output) : Result$Error([status, output]);
+}
+function os_which(command2) {
+  let pathexts = (import_node_process.default.env.PATHEXT || "").split(";");
+  let paths = (import_node_process.default.env.PATH || "").replace(/"+/g, "").split(import_node_path.delimiter).filter(Boolean).map((item) => (0, import_node_path.join)(item, command2)).concat([command2]).flatMap((item) => pathexts.map((ext) => item + ext));
+  let result = paths.map(
+    (item) => (0, import_node_fs.statSync)(item, { throwIfNoEntry: false })?.isFile() ? item : Nil2
+  ).find((item) => item !== Nil2);
+  return result !== Nil2 ? Result$Ok(result) : Result$Error(
+    `command \`${command2}\` not found
+`
+  );
+}
+
+// build/dev/javascript/shellout/shellout.mjs
+var LetBeStderr = class extends CustomType {
+};
+var CommandOpt$LetBeStderr = () => new LetBeStderr();
+var LetBeStdout = class extends CustomType {
+};
+var CommandOpt$LetBeStdout = () => new LetBeStdout();
+var OverlappedStdio = class extends CustomType {
+};
+var CommandOpt$OverlappedStdio = () => new OverlappedStdio();
+var SetEnvironment = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+function command(executable, arguments$, directory, options) {
+  let environment = flat_map(
+    options,
+    (option) => {
+      if (option instanceof SetEnvironment) {
+        let env = option[0];
+        return env;
+      } else {
+        return toList([]);
+      }
+    }
+  );
+  let _pipe = options;
+  let _pipe$1 = map3(_pipe, (opt) => {
+    return [opt, true];
+  });
+  let _pipe$2 = from_list(_pipe$1);
+  return ((_capture) => {
+    return os_command(executable, arguments$, directory, _capture, environment);
+  })(_pipe$2);
+}
+
+// build/dev/javascript/filepath/filepath.mjs
+function relative(loop$path) {
+  while (true) {
+    let path2 = loop$path;
+    if (path2.startsWith("/")) {
+      let path$1 = path2.slice(1);
+      loop$path = path$1;
+    } else {
+      return path2;
+    }
+  }
+}
+function remove_trailing_slash(path2) {
+  let $ = ends_with(path2, "/");
+  if ($) {
+    return drop_end(path2, 1);
+  } else {
+    return path2;
+  }
+}
+function join2(left, right) {
+  let _block;
+  if (right === "/") {
+    _block = left;
+  } else if (right.startsWith("/")) {
+    if (left === "") {
+      _block = relative(right);
+    } else if (left === "/") {
+      _block = right;
+    } else {
+      let _pipe2 = remove_trailing_slash(left);
+      let _pipe$1 = append3(_pipe2, "/");
+      _block = append3(_pipe$1, relative(right));
+    }
+  } else if (left === "") {
+    _block = relative(right);
+  } else if (left === "/") {
+    _block = left + right;
+  } else {
+    let _pipe2 = remove_trailing_slash(left);
+    let _pipe$1 = append3(_pipe2, "/");
+    _block = append3(_pipe$1, relative(right));
+  }
+  let _pipe = _block;
+  return remove_trailing_slash(_pipe);
+}
+function get_directory_name(loop$path, loop$acc, loop$segment) {
+  while (true) {
+    let path2 = loop$path;
+    let acc = loop$acc;
+    let segment = loop$segment;
+    if (path2 instanceof Empty) {
+      return acc;
+    } else {
+      let $ = path2.head;
+      if ($ === "/") {
+        let rest = path2.tail;
+        loop$path = rest;
+        loop$acc = acc + segment;
+        loop$segment = "/";
+      } else {
+        let first = $;
+        let rest = path2.tail;
+        loop$path = rest;
+        loop$acc = acc;
+        loop$segment = segment + first;
+      }
+    }
+  }
+}
+function directory_name(path2) {
+  let path$1 = remove_trailing_slash(path2);
+  if (path$1.startsWith("/")) {
+    let rest = path$1.slice(1);
+    return get_directory_name(graphemes(rest), "/", "");
+  } else {
+    return get_directory_name(graphemes(path$1), "", "");
+  }
+}
+
 // build/dev/javascript/gleam_stdlib/gleam/set.mjs
 var Set2 = class extends CustomType {
   constructor(dict2) {
@@ -2753,7 +4065,7 @@ var Set2 = class extends CustomType {
   }
 };
 var token = void 0;
-function contains(set2, member) {
+function contains2(set2, member) {
   let _pipe = set2.dict;
   let _pipe$1 = get(_pipe, member);
   return is_ok(_pipe$1);
@@ -2770,18 +4082,18 @@ function from_list2(members) {
 }
 
 // build/dev/javascript/simplifile/simplifile_js.mjs
-var import_node_fs = __toESM(require("node:fs"), 1);
-var import_node_path = __toESM(require("node:path"), 1);
-var import_node_process = __toESM(require("node:process"), 1);
+var import_node_fs2 = __toESM(require("node:fs"), 1);
+var import_node_path2 = __toESM(require("node:path"), 1);
+var import_node_process2 = __toESM(require("node:process"), 1);
 function readBits(filepath) {
   return gleamResult(() => {
-    const contents = import_node_fs.default.readFileSync(import_node_path.default.normalize(filepath));
+    const contents = import_node_fs2.default.readFileSync(import_node_path2.default.normalize(filepath));
     return new BitArray(new Uint8Array(contents));
   });
 }
 function writeBits(filepath, contents) {
   return gleamResult(
-    () => import_node_fs.default.writeFileSync(import_node_path.default.normalize(filepath), toUint8Array(contents))
+    () => import_node_fs2.default.writeFileSync(import_node_path2.default.normalize(filepath), toUint8Array(contents))
   );
 }
 function toUint8Array(contents) {
@@ -2799,11 +4111,11 @@ function toUint8Array(contents) {
 }
 function createDirAll(filepath) {
   return gleamResult(() => {
-    import_node_fs.default.mkdirSync(import_node_path.default.normalize(filepath), { recursive: true });
+    import_node_fs2.default.mkdirSync(import_node_path2.default.normalize(filepath), { recursive: true });
   });
 }
 function currentDirectory() {
-  return gleamResult(() => import_node_process.default.cwd());
+  return gleamResult(() => import_node_process2.default.cwd());
 }
 function gleamResult(op) {
   try {
@@ -3144,34 +4456,6 @@ function create_directory_all(dirpath) {
   return createDirAll(dirpath + "/");
 }
 
-// build/dev/javascript/pontil/pontil/errors.mjs
-var InputRequired = class extends CustomType {
-  constructor(name) {
-    super();
-    this.name = name;
-  }
-};
-var InvalidBooleanInput = class extends CustomType {
-  constructor(name) {
-    super();
-    this.name = name;
-  }
-};
-var MissingEnvVar = class extends CustomType {
-  constructor(name) {
-    super();
-    this.name = name;
-  }
-};
-var MissingSummaryEnvVar = class extends CustomType {
-};
-var FileNotFound = class extends CustomType {
-  constructor(path2) {
-    super();
-    this.path = path2;
-  }
-};
-
 // build/dev/javascript/gleam_time/gleam/time/duration.mjs
 var Duration = class extends CustomType {
   constructor(seconds2, nanoseconds2) {
@@ -3180,7 +4464,7 @@ var Duration = class extends CustomType {
     this.nanoseconds = nanoseconds2;
   }
 };
-var empty = /* @__PURE__ */ new Duration(0, 0);
+var empty2 = /* @__PURE__ */ new Duration(0, 0);
 function normalise(duration) {
   let multiplier = 1e9;
   let nanoseconds$1 = remainderInt(duration.nanoseconds, multiplier);
@@ -3252,7 +4536,7 @@ var November = class extends CustomType {
 };
 var December = class extends CustomType {
 };
-var utc_offset = empty;
+var utc_offset = empty2;
 
 // build/dev/javascript/youid/youid/uuid.mjs
 var Uuid = class extends CustomType {
@@ -3265,7 +4549,35 @@ var nil = /* @__PURE__ */ new Uuid(
   /* @__PURE__ */ toBitArray([sizedInt(0, 128, true)])
 );
 
-// build/dev/javascript/pontil/pontil/types.mjs
+// build/dev/javascript/pontil_core/pontil/core/command.mjs
+var InputRequired = class extends CustomType {
+};
+var PreserveInputSpaces = class extends CustomType {
+};
+var FileError = class extends CustomType {
+  constructor(error2) {
+    super();
+    this.error = error2;
+  }
+};
+var FileNotFound = class extends CustomType {
+  constructor(path2) {
+    super();
+    this.path = path2;
+  }
+};
+var MissingRequiredInput = class extends CustomType {
+  constructor(name) {
+    super();
+    this.name = name;
+  }
+};
+var InvalidBooleanInput = class extends CustomType {
+  constructor(name) {
+    super();
+    this.name = name;
+  }
+};
 var Title = class extends CustomType {
   constructor($0) {
     super();
@@ -3302,65 +4614,29 @@ var ExitCode$isFailure = (value) => value instanceof Failure;
 var Success = class extends CustomType {
 };
 var ExitCode$isSuccess = (value) => value instanceof Success;
-var InputOptions = class extends CustomType {
-  constructor(required, trim_whitespace) {
-    super();
-    this.required = required;
-    this.trim_whitespace = trim_whitespace;
-  }
-};
-
-// build/dev/javascript/pontil/pontil_ffi.mjs
-function setExitCode(value) {
-  if (ExitCode$isFailure(value)) {
-    setExitCode_(1);
-  } else if (ExitCode$isSuccess(value)) {
-    setExitCode_(0);
-  } else if (typeof value == "number") {
-    setExitCode_(value);
-  }
-}
-function setExitCode_(value) {
-  if (globalThis?.Deno) {
-    globalThis.Deno.exitCode = value;
-  } else if (globalThis?.process) {
-    globalThis.process.exitCode = value;
-  }
-}
-
-// build/dev/javascript/pontil/pontil/internal/core.mjs
 function annotation_to_command_properties(props) {
-  return guard(
-    negate(is_empty3(props)),
-    new None(),
-    () => {
-      let _pipe = props;
-      let _pipe$1 = fold2(
-        _pipe,
-        make(),
-        (acc, property) => {
-          if (property instanceof Title) {
-            let value = property[0];
-            return insert(acc, "title", value);
-          } else if (property instanceof File) {
-            let value = property[0];
-            return insert(acc, "file", value);
-          } else if (property instanceof StartLine) {
-            let value = property[0];
-            return insert(acc, "startLine", to_string(value));
-          } else if (property instanceof EndLine) {
-            let value = property[0];
-            return insert(acc, "endLine", to_string(value));
-          } else if (property instanceof StartColumn) {
-            let value = property[0];
-            return insert(acc, "startColumn", to_string(value));
-          } else {
-            let value = property[0];
-            return insert(acc, "endColumn", to_string(value));
-          }
-        }
-      );
-      return new Some(_pipe$1);
+  return map3(
+    props,
+    (property) => {
+      if (property instanceof Title) {
+        let value = property[0];
+        return ["title", value];
+      } else if (property instanceof File) {
+        let value = property[0];
+        return ["file", value];
+      } else if (property instanceof StartLine) {
+        let value = property[0];
+        return ["startLine", to_string(value)];
+      } else if (property instanceof EndLine) {
+        let value = property[0];
+        return ["endLine", to_string(value)];
+      } else if (property instanceof StartColumn) {
+        let value = property[0];
+        return ["startColumn", to_string(value)];
+      } else {
+        let value = property[0];
+        return ["endColumn", to_string(value)];
+      }
     }
   );
 }
@@ -3378,16 +4654,15 @@ function escape_property(value) {
 }
 function command_properties_to_string(props) {
   return guard(
-    negate(is_empty(props)),
+    is_empty2(props),
     "",
     () => {
       let _block;
       let _pipe = props;
-      let _pipe$1 = fold(
+      let _pipe$1 = map3(
         _pipe,
-        toList([]),
-        (acc, k, v) => {
-          return prepend(k + "=" + escape_property(v), acc);
+        (kv) => {
+          return kv[0] + "=" + escape_property(kv[1]);
         }
       );
       _block = join(_pipe$1, ",");
@@ -3396,218 +4671,53 @@ function command_properties_to_string(props) {
     }
   );
 }
-function issue_command(command2, message, props) {
-  let _block;
-  let _pipe = props;
-  let _pipe$1 = unwrap(_pipe, make());
-  _block = command_properties_to_string(_pipe$1);
-  let properties = _block;
-  return console_log(
-    "::" + command2 + "::" + properties + escape_data(message)
-  );
+function issue_command(cmd, msg, props) {
+  let properties = command_properties_to_string(props);
+  return console_log("::" + cmd + properties + "::" + escape_data(msg));
 }
-function log_issue_with_properties(command2, message, props) {
-  return issue_command(
-    command2,
-    message,
-    annotation_to_command_properties(props)
-  );
+function issue_log_command(cmd, msg, props) {
+  let props$1 = annotation_to_command_properties(props);
+  return issue_command(cmd, msg, props$1);
 }
 
-// build/dev/javascript/shellout/shellout_ffi.mjs
-var import_node_child_process = require("node:child_process");
-var import_node_fs2 = require("node:fs");
-var import_node_path2 = require("node:path");
-var import_node_process2 = __toESM(require("node:process"), 1);
-var Nil2 = void 0;
-var Signals = {
-  SIGHUP: 1,
-  SIGINT: 2,
-  SIGQUIT: 3,
-  SIGILL: 4,
-  SIGTRAP: 5,
-  SIGABRT: 6,
-  SIGIOT: 6,
-  SIGBUS: 7,
-  SIGFPE: 8,
-  SIGKILL: 9,
-  SIGUSR1: 10,
-  SIGSEGV: 11,
-  SIGUSR2: 12,
-  SIGPIPE: 13,
-  SIGALRM: 14,
-  SIGTERM: 15,
-  SIGSTKFLT: 16,
-  SIGCHLD: 17,
-  SIGCONT: 18,
-  SIGSTOP: 19,
-  SIGTSTP: 20,
-  SIGTTIN: 21,
-  SIGTTOU: 22,
-  SIGURG: 23,
-  SIGXCPU: 24,
-  SIGXFSZ: 25,
-  SIGVTALRM: 26,
-  SIGPROF: 27,
-  SIGWINCH: 28,
-  SIGIO: 29,
-  SIGPOLL: 29,
-  SIGPWR: 30,
-  SIGSYS: 31,
-  SIGRTMIN: 34
-};
-function os_command(command2, args, dir, opts, env_list) {
-  let executable = os_which(command2);
-  executable = Result$isOk(executable) ? executable : os_which(
-    (0, import_node_path2.join)(dir, command2)
-  );
-  if (!Result$isOk(executable)) {
-    return map_error(executable, (error2) => [1, error2]);
+// build/dev/javascript/pontil_core/pontil_core_ffi.mjs
+function setExitCode(value) {
+  if (ExitCode$isFailure(value)) {
+    setExitCode_(1);
+  } else if (ExitCode$isSuccess(value)) {
+    setExitCode_(0);
+  } else if (typeof value == "number") {
+    setExitCode_(value);
   }
-  let getBool = (dict2, key) => Result$isOk(get(dict2, key));
-  let isDeno = Boolean(globalThis.Deno?.Command);
-  args = args.toArray();
-  let stdin = "inherit";
-  let stdout = isDeno ? "piped" : "pipe";
-  let stderr = stdout;
-  let spawnOpts = { cwd: dir, windowsHide: true };
-  if (!isDeno && getBool(opts, CommandOpt$OverlappedStdio())) {
-    stdin = stdout = "overlapped";
-  }
-  if (getBool(opts, CommandOpt$LetBeStderr())) {
-    stderr = "inherit";
-  }
-  if (getBool(opts, CommandOpt$LetBeStdout())) {
-    import_node_process2.default.on("SIGINT", () => Nil2);
-    stdout = "inherit";
-  }
-  let env = {};
-  for (let e of env_list) {
-    env[e[0]] = e[1];
-  }
-  let result = {};
-  if (isDeno) {
-    spawnOpts = {
-      ...spawnOpts,
-      args,
-      stdin,
-      stdout,
-      stderr,
-      env
-    };
-    try {
-      result = new Deno.Command(command2, spawnOpts).outputSync();
-    } catch {
-    }
-    result.status = result.code ?? null;
-  } else {
-    spawnOpts.stdio = [stdin, stdout, stderr];
-    if (env) {
-      spawnOpts.env = { ...import_node_process2.default.env, ...env };
-    }
-    result = (0, import_node_child_process.spawnSync)(command2, args, spawnOpts);
-  }
-  if (result.error) {
-    result = { status: null };
-  }
-  let output = "";
-  try {
-    output = new TextDecoder().decode(result.stdout);
-  } catch {
-  }
-  try {
-    output += new TextDecoder().decode(result.stderr);
-  } catch {
-  }
-  let status = result.status;
-  if (null === status) {
-    let signal = Signals[result.signal];
-    status = Nil2 !== signal ? signal : 0;
-    status += 384;
-  }
-  if (384 === status && "" === output) {
-    status = 2;
-    output = `The directory "${dir}" does not exist
-`;
-  }
-  return 0 === status ? Result$Ok(output) : Result$Error([status, output]);
 }
-function os_which(command2) {
-  let pathexts = (import_node_process2.default.env.PATHEXT || "").split(";");
-  let paths = (import_node_process2.default.env.PATH || "").replace(/"+/g, "").split(import_node_path2.delimiter).filter(Boolean).map((item) => (0, import_node_path2.join)(item, command2)).concat([command2]).flatMap((item) => pathexts.map((ext) => item + ext));
-  let result = paths.map(
-    (item) => (0, import_node_fs2.statSync)(item, { throwIfNoEntry: false })?.isFile() ? item : Nil2
-  ).find((item) => item !== Nil2);
-  return result !== Nil2 ? Result$Ok(result) : Result$Error(
-    `command \`${command2}\` not found
-`
-  );
+function setExitCode_(value) {
+  if (globalThis?.Deno) {
+    globalThis.Deno.exitCode = value;
+  } else if (globalThis?.process) {
+    globalThis.process.exitCode = value;
+  }
 }
 
-// build/dev/javascript/shellout/shellout.mjs
-var LetBeStderr = class extends CustomType {
-};
-var CommandOpt$LetBeStderr = () => new LetBeStderr();
-var LetBeStdout = class extends CustomType {
-};
-var CommandOpt$LetBeStdout = () => new LetBeStdout();
-var OverlappedStdio = class extends CustomType {
-};
-var CommandOpt$OverlappedStdio = () => new OverlappedStdio();
-var SetEnvironment = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-function command(executable, arguments$, directory, options) {
-  let environment = flat_map(
-    options,
-    (option) => {
-      if (option instanceof SetEnvironment) {
-        let env = option[0];
-        return env;
-      } else {
-        return toList([]);
-      }
-    }
-  );
-  let _pipe = options;
-  let _pipe$1 = map3(_pipe, (opt) => {
-    return [opt, true];
-  });
-  let _pipe$2 = from_list(_pipe$1);
-  return ((_capture) => {
-    return os_command(executable, arguments$, directory, _capture, environment);
-  })(_pipe$2);
-}
-
-// build/dev/javascript/pontil/pontil.mjs
-var default_input_options = /* @__PURE__ */ new InputOptions(
-  false,
-  true
-);
+// build/dev/javascript/pontil_core/pontil/core.mjs
 function describe_error2(error2) {
-  if (error2 instanceof InputRequired) {
+  if (error2 instanceof FileError) {
+    let error$1 = error2.error;
+    return describe_error(error$1);
+  } else if (error2 instanceof FileNotFound) {
+    let path2 = error2.path;
+    return "Missing file at path: " + path2;
+  } else if (error2 instanceof MissingRequiredInput) {
     let name = error2.name;
     return "Input required and not supplied: " + name;
   } else if (error2 instanceof InvalidBooleanInput) {
     let name = error2.name;
     return 'Input does not meet YAML 1.2 "Core Schema" specification: ' + name + "\nSupport boolean input list: `true | True | TRUE | false | False | FALSE`";
-  } else if (error2 instanceof MissingEnvVar) {
+  } else {
     let name = error2.name;
     return "Unable to find environment variable: " + name;
-  } else if (error2 instanceof MissingSummaryEnvVar) {
-    return "Unable to find environment variable for $GITHUB_STEP_SUMMARY. Check if your runtime environment supports job summaries.";
-  } else if (error2 instanceof FileNotFound) {
-    let path2 = error2.path;
-    return "Missing file at path: " + path2;
-  } else {
-    let error$1 = error2.error;
-    return describe_error(error$1);
   }
 }
-function get_input_with_options(name, opts) {
+function get_input_opts(name, opts) {
   let _block;
   {
     let _block$12;
@@ -3620,43 +4730,51 @@ function get_input_with_options(name, opts) {
   }
   let value = _block;
   let _block$1;
-  let $ = opts.trim_whitespace;
+  let $ = contains(opts, new PreserveInputSpaces());
   if ($) {
-    _block$1 = trim(value);
-  } else {
     _block$1 = value;
+  } else {
+    _block$1 = trim(value);
   }
   let trimmed_value = _block$1;
-  let $1 = opts.required;
+  let $1 = contains(opts, new InputRequired());
   let $2 = trimmed_value === "";
   if ($1 && $2) {
-    return new Error2(new InputRequired(name));
+    return new Error2(new MissingRequiredInput(name));
   } else {
     return new Ok(trimmed_value);
   }
+}
+function get_input(name) {
+  let _pipe = name;
+  let _pipe$1 = get_input_opts(_pipe, toList([]));
+  return unwrap2(_pipe$1, "");
 }
 function set_secret(secret) {
   let $ = get2("GITHUB_ACTIONS");
   if ($ instanceof Ok) {
     let $1 = $[0];
     if ($1 === "true") {
-      return issue_command("add-mask", secret, new None());
+      issue_command("add-mask", secret, toList([]));
     } else {
-      return issue_command(
-        "add-mask",
-        "not-in-github-actions",
-        new None()
-      );
+      issue_command("add-mask", "not-in-github-actions", toList([]));
     }
   } else {
-    return issue_command("add-mask", "not-in-github-actions", new None());
+    issue_command("add-mask", "not-in-github-actions", toList([]));
   }
+  return secret;
+}
+function info(message) {
+  return console_log(message);
+}
+function warning(message) {
+  return issue_log_command("warning", message, toList([]));
 }
 function group_start(name) {
-  return issue_command("group", name, new None());
+  return issue_command("group", name, toList([]));
 }
 function group_end() {
-  return issue_command("endgroup", "", new None());
+  return issue_command("endgroup", "", toList([]));
 }
 function group2(name, action) {
   group_start(name);
@@ -3664,23 +4782,126 @@ function group2(name, action) {
   group_end();
   return result;
 }
-function info(message) {
-  return console_log(message);
-}
-function error(message) {
-  return log_issue_with_properties("error", message, toList([]));
-}
 function set_failed(message) {
   setExitCode(new Failure());
-  return error(message);
+  return issue_log_command("error", message, toList([]));
 }
-function warning(message) {
-  return log_issue_with_properties("warning", message, toList([]));
+
+// build/dev/javascript/pontil/pontil/errors.mjs
+var CoreError = class extends CustomType {
+  constructor(error2) {
+    super();
+    this.error = error2;
+  }
+};
+var FetchError = class extends CustomType {
+  constructor(error2) {
+    super();
+    this.error = error2;
+  }
+};
+
+// build/dev/javascript/pontil/pontil/internal/utils.mjs
+function try_promise(result, next2) {
+  if (result instanceof Ok) {
+    let v = result[0];
+    return next2(v);
+  } else {
+    let e = result[0];
+    return resolve(new Error2(e));
+  }
 }
-function get_input(name) {
-  let _pipe = name;
-  let _pipe$1 = get_input_with_options(_pipe, default_input_options);
-  return unwrap2(_pipe$1, "");
+function map_core_error(result) {
+  if (result instanceof Ok) {
+    return result;
+  } else {
+    let e = result[0];
+    return new Error2(new CoreError(e));
+  }
+}
+
+// build/dev/javascript/pontil/pontil_ffi.mjs
+function promiseFinally(promise, fn) {
+  return promise.finally(fn);
+}
+function registerProcessHandlers(exceptionFn, rejectionFn) {
+  process.on("unhandledRejection", (reason) => {
+    const msg = reason instanceof Error ? reason.message : String(reason);
+    rejectionFn(`Unhandled rejection: ${msg}`);
+  });
+  process.on("uncaughtException", (err) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    exceptionFn(`Uncaught exception: ${msg}`);
+  });
+}
+
+// build/dev/javascript/pontil/pontil.mjs
+var InputRequired2 = class extends CustomType {
+};
+function describe_fetch_error(error2) {
+  if (error2 instanceof NetworkError) {
+    let msg = error2[0];
+    return "Network error: " + msg;
+  } else if (error2 instanceof UnableToReadBody) {
+    return "Unable to read response body";
+  } else {
+    return "Invalid JSON in response body";
+  }
+}
+function describe_error3(error2) {
+  if (error2 instanceof CoreError) {
+    let error$1 = error2.error;
+    return describe_error2(error$1);
+  } else if (error2 instanceof FetchError) {
+    let error$1 = error2.error;
+    return describe_fetch_error(error$1);
+  } else {
+    return "OIDC token response did not contain a token value";
+  }
+}
+function get_input2(name) {
+  return get_input(name);
+}
+function set_secret2(secret) {
+  return set_secret(secret);
+}
+function group3(name, do$3) {
+  return group2(name, do$3);
+}
+function set_failed2(message) {
+  return set_failed(message);
+}
+function info2(message) {
+  return info(message);
+}
+function warning2(message) {
+  return warning(message);
+}
+function register_default_process_handlers() {
+  return registerProcessHandlers(set_failed2, set_failed2);
+}
+function try_promise2(result, next2) {
+  return try_promise(result, next2);
+}
+function group_async(name, do$3) {
+  group_start(name);
+  return promiseFinally(do$3(), group_end);
+}
+function map_input_opts(opts) {
+  return map3(
+    opts,
+    (opt) => {
+      if (opt instanceof InputRequired2) {
+        return new InputRequired();
+      } else {
+        return new PreserveInputSpaces();
+      }
+    }
+  );
+}
+function get_input_opts2(name, opts) {
+  let _pipe = get_input_opts(name, map_input_opts(opts));
+  return map_core_error(_pipe);
 }
 
 // build/dev/javascript/tom/tom.mjs
@@ -3932,12 +5153,30 @@ function get_string(toml, key) {
     return $;
   }
 }
-function merge2(table, key, old, new$7) {
-  if (old instanceof ArrayOfTables && new$7 instanceof ArrayOfTables) {
+function get_table(toml, key) {
+  let $ = get3(toml, key);
+  if ($ instanceof Ok) {
+    let $1 = $[0];
+    if ($1 instanceof Table) {
+      let i = $1[0];
+      return new Ok(i);
+    } else if ($1 instanceof InlineTable) {
+      let i = $1[0];
+      return new Ok(i);
+    } else {
+      let other = $1;
+      return new Error2(new WrongType(key, "Table", classify(other)));
+    }
+  } else {
+    return $;
+  }
+}
+function merge2(table, key, old, new$8) {
+  if (old instanceof ArrayOfTables && new$8 instanceof ArrayOfTables) {
     let tables = old[0];
-    let new$1 = new$7[0];
+    let new$1 = new$8[0];
     return new Ok(
-      insert(table, key, new ArrayOfTables(append3(new$1, tables)))
+      insert(table, key, new ArrayOfTables(append(new$1, tables)))
     );
   } else {
     return new Error2(toList([key]));
@@ -4810,7 +6049,7 @@ function parse_exponent(loop$input, loop$n, loop$n_sign, loop$ex, loop$ex_sign) 
         })()
       );
       let _block$1;
-      let $ = power(10, exponent);
+      let $ = power2(10, exponent);
       if ($ instanceof Ok) {
         let multiplier2 = $[0];
         _block$1 = multiplier2;
@@ -4917,7 +6156,7 @@ function parse_exponent(loop$input, loop$n, loop$n_sign, loop$ex, loop$ex_sign) 
           })()
         );
         let _block$1;
-        let $1 = power(10, exponent);
+        let $1 = power2(10, exponent);
         if ($1 instanceof Ok) {
           let multiplier2 = $1[0];
           _block$1 = multiplier2;
@@ -5480,7 +6719,7 @@ function parse_time_ns(loop$input, loop$seconds, loop$ns, loop$digits_count) {
     let digits_count = loop$digits_count;
     if (input instanceof Empty) {
       let exponent = identity(9 - digits_count);
-      let $ = power(10, exponent);
+      let $ = power2(10, exponent);
       let multiplier;
       if ($ instanceof Ok) {
         multiplier = $[0];
@@ -5566,7 +6805,7 @@ function parse_time_ns(loop$input, loop$seconds, loop$ns, loop$digits_count) {
         loop$digits_count = digits_count + 1;
       } else {
         let exponent = identity(9 - digits_count);
-        let $1 = power(10, exponent);
+        let $1 = power2(10, exponent);
         let multiplier;
         if ($1 instanceof Ok) {
           multiplier = $1[0];
@@ -7535,7 +8774,7 @@ function parse_tables(loop$input, loop$toml) {
     }
   }
 }
-function parse(input) {
+function parse3(input) {
   let input$1 = graphemes(input);
   let input$2 = drop_comments(input$1, toList([]), new NotInString());
   let input$3 = skip_whitespace(input$2);
@@ -7611,7 +8850,7 @@ function parse_array(input, elements) {
   }
 }
 
-// build/dev/javascript/starlist/starlist/internal/errors.mjs
+// build/dev/javascript/starlist/starlist/errors.mjs
 var ConfigError = class extends CustomType {
   constructor(message) {
     super();
@@ -7636,7 +8875,7 @@ var TemplateError = class extends CustomType {
     this.message = message;
   }
 };
-var MarkdownError = class extends CustomType {
+var RenderError = class extends CustomType {
   constructor(message) {
     super();
     this.message = message;
@@ -7663,45 +8902,91 @@ var VersionMismatchError = class extends CustomType {
     this.found = found;
   }
 };
+function to_string3(err) {
+  if (err instanceof ConfigError) {
+    let msg = err.message;
+    return "Configuration error: " + msg;
+  } else if (err instanceof GitHubApiError) {
+    let msg = err.message;
+    return "GitHub API error: " + msg;
+  } else if (err instanceof FileError2) {
+    let msg = err.message;
+    return "File error: " + msg;
+  } else if (err instanceof TemplateError) {
+    let msg = err.message;
+    return "Template error: " + msg;
+  } else if (err instanceof RenderError) {
+    let msg = err.message;
+    return "Markdown error: " + msg;
+  } else if (err instanceof GitError) {
+    let command2 = err.command;
+    let exit_code = err.exit_code;
+    let message = err.message;
+    return "Git error (exit " + to_string(exit_code) + ") running '" + command2 + "': " + message;
+  } else if (err instanceof SecurityError) {
+    let msg = err.message;
+    return "Security error: " + msg;
+  } else {
+    let expected = err.expected;
+    let found = err.found;
+    return "Data version mismatch: expected " + to_string(expected) + ", found " + to_string(
+      found
+    );
+  }
+}
 
 // build/dev/javascript/starlist/starlist/config.mjs
 var Config = class extends CustomType {
-  constructor(token4, fetch2, render4, git2) {
+  constructor(token4, data2, fetch2, render4, git2) {
     super();
     this.token = token4;
+    this.data = data2;
     this.fetch = fetch2;
     this.render = render4;
     this.git = git2;
+  }
+};
+var Data = class extends CustomType {
+  constructor(path2) {
+    super();
+    this.path = path2;
   }
 };
 var Api = class extends CustomType {
 };
 var File2 = class extends CustomType {
 };
+var Descending2 = class extends CustomType {
+};
+var Ascending2 = class extends CustomType {
+};
 var Fetch = class extends CustomType {
-  constructor(source, max_stars) {
+  constructor(source, login, max_stars, order) {
     super();
     this.source = source;
+    this.login = login;
     this.max_stars = max_stars;
+    this.order = order;
   }
 };
 var Render = class extends CustomType {
-  constructor(date_time, filename2, partition_filename, group3, partition2, template, index_template) {
+  constructor(date_time, filename2, output_dir, partition_filename, group4, partition2, template, index_template) {
     super();
     this.date_time = date_time;
     this.filename = filename2;
+    this.output_dir = output_dir;
     this.partition_filename = partition_filename;
-    this.group = group3;
+    this.group = group4;
     this.partition = partition2;
     this.template = template;
     this.index_template = index_template;
   }
 };
 var Git = class extends CustomType {
-  constructor(commit_message, pull2, committer) {
+  constructor(commit_message, pull3, committer) {
     super();
     this.commit_message = commit_message;
-    this.pull = pull2;
+    this.pull = pull3;
     this.committer = committer;
   }
 };
@@ -7736,10 +9021,44 @@ var PartitionByYear = class extends CustomType {
 };
 var PartitionByYearMonth = class extends CustomType {
 };
+var source_enum = /* @__PURE__ */ toList([
+  ["api", /* @__PURE__ */ new Api()],
+  ["file", /* @__PURE__ */ new File2()]
+]);
+var order_enum = /* @__PURE__ */ toList([
+  ["descending", /* @__PURE__ */ new Descending2()],
+  ["ascending", /* @__PURE__ */ new Ascending2()]
+]);
+var group_enum = /* @__PURE__ */ toList([
+  ["language", /* @__PURE__ */ new GroupByLanguage()],
+  ["licence", /* @__PURE__ */ new GroupByLicence()],
+  ["license", /* @__PURE__ */ new GroupByLicence()],
+  ["topic", /* @__PURE__ */ new GroupByTopic()]
+]);
+var partition_enum = /* @__PURE__ */ toList([
+  ["language", /* @__PURE__ */ new PartitionByLanguage()],
+  ["off", /* @__PURE__ */ new PartitionOff()],
+  ["topic", /* @__PURE__ */ new PartitionByTopic()],
+  ["year", /* @__PURE__ */ new PartitionByYear()],
+  ["year-month", /* @__PURE__ */ new PartitionByYearMonth()]
+]);
+var date_time_styles = /* @__PURE__ */ toList([
+  "full",
+  "long",
+  "medium",
+  "short"
+]);
+function default_data() {
+  return new Data("data.json");
+}
+function default_fetch() {
+  return new Fetch(new Api(), new None(), new None(), new Ascending2());
+}
 function default_render() {
   return new Render(
     new IsoDateTime("UTC"),
     "README.md",
+    ".",
     "stars/{key}.md",
     new GroupByLanguage(),
     new PartitionOff(),
@@ -7754,403 +9073,429 @@ function default_git() {
     new None()
   );
 }
-function decode_fetch(toml) {
-  return new Fetch(
-    (() => {
-      let $ = get_string(toml, toList(["fetch", "source"]));
-      if ($ instanceof Ok) {
-        let $1 = $[0];
-        if ($1 === "file") {
-          return new File2();
-        } else {
-          return new Api();
-        }
-      } else {
-        return new Api();
-      }
-    })(),
-    (() => {
-      let $ = get_int(toml, toList(["fetch", "max_stars"]));
-      if ($ instanceof Ok) {
-        let n = $[0];
-        return new Some(n);
-      } else {
-        return new None();
-      }
-    })()
-  );
+function toml_key(key) {
+  return join(key, ".");
 }
-function decode_group(toml) {
-  let $ = get_string(toml, toList(["render", "group"]));
-  if ($ instanceof Ok) {
-    let $1 = $[0];
-    if ($1 === "language") {
-      return new GroupByLanguage();
-    } else if ($1 === "topic") {
-      return new GroupByTopic();
-    } else if ($1 === "licence") {
-      return new GroupByLicence();
-    } else if ($1 === "license") {
-      return new GroupByLicence();
-    } else {
-      return new GroupByLanguage();
-    }
-  } else {
-    return new GroupByLanguage();
-  }
-}
-function decode_partition(toml) {
-  let $ = get_string(toml, toList(["render", "partition"]));
-  if ($ instanceof Ok) {
-    let $1 = $[0];
-    if ($1 === "language") {
-      return new PartitionByLanguage();
-    } else if ($1 === "topic") {
-      return new PartitionByTopic();
-    } else if ($1 === "year") {
-      return new PartitionByYear();
-    } else if ($1 === "year-month") {
-      return new PartitionByYearMonth();
-    } else if ($1 === "off") {
-      return new PartitionOff();
-    } else {
-      return new PartitionOff();
-    }
-  } else {
-    return new PartitionOff();
-  }
-}
-function decode_committer(toml) {
-  let _block;
-  let $ = get_string(toml, toList(["git", "committer", "name"]));
-  if ($ instanceof Ok) {
-    let n = $[0];
-    if (n !== "") {
-      _block = $;
-    } else {
-      _block = new Error2(void 0);
-    }
-  } else {
-    _block = new Error2(void 0);
-  }
-  let name = _block;
-  let _block$1;
-  let $1 = get_string(toml, toList(["git", "committer", "email"]));
-  if ($1 instanceof Ok) {
-    let e = $1[0];
-    if (e !== "") {
-      _block$1 = $1;
-    } else {
-      _block$1 = new Error2(void 0);
-    }
-  } else {
-    _block$1 = new Error2(void 0);
-  }
-  let email = _block$1;
-  if (name instanceof Ok && email instanceof Ok) {
-    let n = name[0];
-    let e = email[0];
-    return new Some([n, e]);
-  } else {
-    return new None();
-  }
-}
-function toml_string(toml, key, default$) {
-  let $ = get_string(toml, key);
-  if ($ instanceof Ok) {
-    let v = $[0];
-    return v;
-  } else {
-    return default$;
-  }
-}
-function decode_git(toml) {
-  let base = default_git();
-  return new Git(
-    toml_string(toml, toList(["git", "commit_message"]), base.commit_message),
-    (() => {
-      let $ = get_string(toml, toList(["git", "pull"]));
-      if ($ instanceof Ok) {
-        let v = $[0];
-        return new Some(v);
-      } else {
-        return new None();
-      }
-    })(),
-    decode_committer(toml)
-  );
-}
-function decode_date_time(toml) {
-  let time_zone = toml_string(
-    toml,
-    toList(["render", "date_time", "time_zone"]),
-    "UTC"
-  );
-  let $ = get_string(toml, toList(["render", "date_time", "locale"]));
-  if ($ instanceof Ok) {
-    let locale = $[0];
-    return new LocaleDateTime(
-      locale,
-      time_zone,
-      toml_string(toml, toList(["render", "date_time", "date_style"]), "short"),
-      toml_string(toml, toList(["render", "date_time", "time_style"]), "short")
-    );
-  } else {
-    return new IsoDateTime(time_zone);
-  }
-}
-function decode_render(toml) {
-  let base = default_render();
-  return new Render(
-    decode_date_time(toml),
-    toml_string(toml, toList(["render", "output"]), base.filename),
-    toml_string(
-      toml,
-      toList(["render", "partition_output"]),
-      base.partition_filename
-    ),
-    decode_group(toml),
-    decode_partition(toml),
-    toml_string(toml, toList(["render", "template"]), base.template),
-    toml_string(toml, toList(["render", "index_template"]), base.index_template)
-  );
-}
-function parse_error_string(error2) {
+function toml_parse_error(error2) {
   if (error2 instanceof Unexpected) {
     let got = error2.got;
     let expected = error2.expected;
     return "unexpected '" + got + "', expected " + expected;
   } else {
     let key = error2.key;
-    return "duplicate key: " + join(key, ".");
+    return "duplicate key: " + toml_key(key);
   }
 }
 function parse_toml(input) {
-  let $ = is_empty2(trim(input));
+  let $ = is_empty3(trim(input));
   if ($) {
     return new Ok(make());
   } else {
-    let $1 = parse(input);
+    let $1 = parse3(input);
     if ($1 instanceof Ok) {
       return $1;
     } else {
       let e = $1[0];
       return new Error2(
-        new ConfigError("Invalid TOML: " + parse_error_string(e))
+        new ConfigError("Invalid TOML: " + toml_parse_error(e))
       );
     }
   }
 }
-function is_absolute(path2) {
-  return starts_with(path2, "/");
+function toml_get_error(error2) {
+  let _block;
+  if (error2 instanceof NotFound) {
+    let key = error2.key;
+    _block = "Expected " + toml_key(key) + " to be present but was missing";
+  } else {
+    let key = error2.key;
+    let expected = error2.expected;
+    let got = error2.got;
+    _block = "Expected " + toml_key(key) + " to be a TOML " + expected + " but got " + got;
+  }
+  let message = _block;
+  return new Error2(new ConfigError(message));
 }
-function collapse_segments(loop$acc, loop$segments) {
-  while (true) {
-    let acc = loop$acc;
-    let segments = loop$segments;
-    if (segments instanceof Empty) {
-      return new Ok(reverse(acc));
+function is_table(toml, key, callback) {
+  let $ = get_table(toml, split2(key, "."));
+  if ($ instanceof Ok) {
+    let table = $[0];
+    return callback(table);
+  } else {
+    let $1 = $[0];
+    if ($1 instanceof NotFound) {
+      return callback(make());
     } else {
-      let $ = segments.head;
-      if ($ === ".") {
-        let rest = segments.tail;
-        loop$acc = acc;
-        loop$segments = rest;
-      } else if ($ === "") {
-        let rest = segments.tail;
-        loop$acc = acc;
-        loop$segments = rest;
-      } else if ($ === "..") {
-        let rest = segments.tail;
-        if (acc instanceof Empty) {
-          return new Error2(void 0);
-        } else {
-          let tail = acc.tail;
-          loop$acc = tail;
-          loop$segments = rest;
-        }
-      } else {
-        let seg = $;
-        let rest = segments.tail;
-        loop$acc = prepend(seg, acc);
-        loop$segments = rest;
-      }
+      let error2 = $1;
+      return toml_get_error(error2);
     }
   }
 }
-function normalize(path2) {
-  let _block;
-  let $1 = starts_with(path2, "/");
-  if ($1) {
-    _block = ["/", drop_start(path2, 1)];
-  } else {
-    _block = ["", path2];
-  }
-  let $ = _block;
-  let prefix;
-  let to_split;
-  prefix = $[0];
-  to_split = $[1];
-  let _block$1;
-  let _pipe = split2(to_split, "/");
-  _block$1 = ((_capture) => {
-    return collapse_segments(toList([]), _capture);
-  })(
-    _pipe
-  );
-  let segments = _block$1;
-  if (segments instanceof Ok) {
-    let parts = segments[0];
-    return new Ok(prefix + join(parts, "/"));
-  } else {
-    return segments;
-  }
-}
-function validate_path(path2, repo_root, label) {
-  let _block;
-  let $ = is_absolute(path2);
-  if ($) {
-    _block = path2;
-  } else {
-    _block = repo_root + "/" + path2;
-  }
-  let resolved = _block;
-  let $1 = normalize(resolved);
-  if ($1 instanceof Ok) {
-    let expanded = $1[0];
-    let $2 = starts_with(expanded, repo_root);
-    if ($2) {
-      return new Ok(expanded);
+function get_enum(toml, key, values3, default$, callback) {
+  let $ = get_string(toml, split2(key, "."));
+  if ($ instanceof Ok) {
+    let value = $[0];
+    let $1 = key_find(values3, value);
+    if ($1 instanceof Ok) {
+      let enum$ = $1[0];
+      return callback(enum$);
     } else {
       return new Error2(
-        new SecurityError(
-          label + " path '" + path2 + "' resolves outside repository root"
+        new ConfigError(
+          "Expected " + key + " to be one of " + inspect2(
+            map3(values3, (v) => {
+              return v[0];
+            })
+          ) + " but was " + inspect2(value)
         )
       );
     }
   } else {
-    return new Error2(
-      new SecurityError(
-        label + " path '" + path2 + "' contains invalid traversal"
-      )
-    );
-  }
-}
-
-// build/dev/javascript/starlist/starlist/internal/action/config.mjs
-var bot_name = "github-actions[bot]";
-var bot_email = "41898282+github-actions[bot]@users.noreply.github.com";
-function require_token(next2) {
-  let $ = get_input_with_options(
-    "token",
-    new InputOptions(true, true)
-  );
-  if ($ instanceof Ok) {
-    let t = $[0];
-    set_secret(t);
-    return next2(t);
-  } else {
-    let msg = $[0];
-    return new Error2(
-      new ConfigError("Missing token: " + describe_error2(msg))
-    );
-  }
-}
-function read_toml(next2) {
-  let config_input = get_input("config");
-  let config_file = get_input("config_file");
-  let $ = is_empty2(trim(config_input));
-  let $1 = is_empty2(trim(config_file));
-  if ($) {
-    if ($1) {
-      return next2(make());
+    let $1 = $[0];
+    if ($1 instanceof NotFound) {
+      return callback(default$);
     } else {
-      let $2 = read(config_file);
-      if ($2 instanceof Ok) {
-        let content = $2[0];
-        let $3 = parse_toml(content);
-        if ($3 instanceof Ok) {
-          let toml = $3[0];
-          return next2(toml);
-        } else {
-          return $3;
+      let error2 = $1;
+      return toml_get_error(error2);
+    }
+  }
+}
+function get_opt_pos_int(toml, key, callback) {
+  let $ = get_int(toml, key);
+  if ($ instanceof Ok) {
+    let value = $[0];
+    if (value > 0) {
+      return callback(new Some(value));
+    } else {
+      let value2 = $[0];
+      return new Error2(
+        new ConfigError(
+          "Expected " + toml_key(key) + " to be a positive integer but was " + inspect2(
+            value2
+          )
+        )
+      );
+    }
+  } else {
+    let $1 = $[0];
+    if ($1 instanceof NotFound) {
+      return callback(new None());
+    } else {
+      let error2 = $1;
+      return toml_get_error(error2);
+    }
+  }
+}
+function get_string2(toml, key, default$, callback) {
+  let $ = get_string(toml, split2(key, "."));
+  if ($ instanceof Ok) {
+    let value = $[0];
+    return callback(value);
+  } else {
+    let $1 = $[0];
+    if ($1 instanceof NotFound) {
+      return callback(default$);
+    } else {
+      let error2 = $1;
+      return toml_get_error(error2);
+    }
+  }
+}
+function decode_data(toml) {
+  let base = default_data();
+  return is_table(
+    toml,
+    "data",
+    (_) => {
+      return get_string2(
+        toml,
+        "data.path",
+        base.path,
+        (path2) => {
+          return new Ok(new Data(path2));
         }
+      );
+    }
+  );
+}
+function decode_committer(toml, callback) {
+  return is_table(
+    toml,
+    "git.committer",
+    (table) => {
+      let $ = is_empty(table);
+      if ($) {
+        return callback(new None());
       } else {
-        return new Error2(
-          new FileError2("Cannot read config file: " + config_file)
+        return get_string2(
+          toml,
+          "git.committer.name",
+          "",
+          (name) => {
+            return get_string2(
+              toml,
+              "git.committer.email",
+              "",
+              (email) => {
+                if (name === "" && email === "") {
+                  return callback(new None());
+                } else {
+                  let n = name;
+                  let e = email;
+                  if (n !== "" && e !== "") {
+                    return callback(new Some([n, e]));
+                  } else {
+                    return new Error2(
+                      new ConfigError(
+                        "git.committer requires both name and email, or neither"
+                      )
+                    );
+                  }
+                }
+              }
+            );
+          }
         );
       }
     }
-  } else if ($1) {
-    let $2 = parse_toml(config_input);
-    if ($2 instanceof Ok) {
-      let toml = $2[0];
-      return next2(toml);
-    } else {
-      return $2;
-    }
-  } else {
-    return new Error2(
-      new ConfigError("Cannot specify both 'config' and 'config_file'")
-    );
-  }
-}
-function apply_action_git_defaults(git2) {
-  return new Git(
-    git2.commit_message,
-    (() => {
-      let $ = git2.pull;
-      if ($ instanceof None) {
-        return new Some("");
-      } else {
-        return $;
-      }
-    })(),
-    new Some(
-      (() => {
-        let $ = git2.committer;
-        if ($ instanceof Some) {
-          let name = $[0][0];
-          let email = $[0][1];
-          return [
-            (() => {
-              if (name === "") {
-                return bot_name;
-              } else {
-                return name;
-              }
-            })(),
-            (() => {
-              if (email === "") {
-                return bot_email;
-              } else {
-                return email;
-              }
-            })()
-          ];
-        } else {
-          return [bot_name, bot_email];
-        }
-      })()
-    )
   );
 }
-function resolve2() {
-  return require_token(
-    (token4) => {
-      return read_toml(
-        (toml) => {
-          let fetch2 = decode_fetch(toml);
-          let render4 = decode_render(toml);
-          let git2 = apply_action_git_defaults(decode_git(toml));
-          return new Ok(new Config(new Some(token4), fetch2, render4, git2));
+function get_opt_string(toml, key, callback) {
+  let $ = get_string(toml, split2(key, "."));
+  if ($ instanceof Ok) {
+    let value = $[0];
+    return callback(new Some(value));
+  } else {
+    let $1 = $[0];
+    if ($1 instanceof NotFound) {
+      return callback(new None());
+    } else {
+      let error2 = $1;
+      return toml_get_error(error2);
+    }
+  }
+}
+function decode_git(toml) {
+  let base = default_git();
+  return is_table(
+    toml,
+    "git",
+    (_) => {
+      return decode_committer(
+        toml,
+        (committer) => {
+          return get_string2(
+            toml,
+            "git.commit_message",
+            base.commit_message,
+            (commit_message) => {
+              return get_opt_string(
+                toml,
+                "git.pull",
+                (pull3) => {
+                  return new Ok(new Git(commit_message, pull3, committer));
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  );
+}
+function decode_fetch(toml) {
+  let base = default_fetch();
+  return is_table(
+    toml,
+    "fetch",
+    (_) => {
+      return get_enum(
+        toml,
+        "fetch.source",
+        source_enum,
+        base.source,
+        (source) => {
+          return get_enum(
+            toml,
+            "fetch.order",
+            order_enum,
+            base.order,
+            (order) => {
+              return get_opt_string(
+                toml,
+                "fetch.login",
+                (login) => {
+                  let _block;
+                  if (login instanceof Some) {
+                    let $ = login[0];
+                    if ($ === "@me") {
+                      _block = new None();
+                    } else {
+                      _block = login;
+                    }
+                  } else {
+                    _block = login;
+                  }
+                  let login$1 = _block;
+                  return get_opt_pos_int(
+                    toml,
+                    toList(["fetch", "max_stars"]),
+                    (max_stars) => {
+                      return new Ok(
+                        new Fetch(source, login$1, max_stars, order)
+                      );
+                    }
+                  );
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  );
+}
+function decode_date_time(toml, default$, callback) {
+  return is_table(
+    toml,
+    "render.date_time",
+    (table) => {
+      return guard(
+        is_empty(table),
+        callback(default$),
+        () => {
+          return get_string2(
+            toml,
+            "render.date_time.time_zone",
+            "UTC",
+            (time_zone) => {
+              let $ = get_string(
+                toml,
+                split2("render.date_time.locale", ".")
+              );
+              if ($ instanceof Ok) {
+                let locale = $[0];
+                let styles_enum = zip(date_time_styles, date_time_styles);
+                return get_enum(
+                  toml,
+                  "render.date_time.date_style",
+                  styles_enum,
+                  "short",
+                  (date_style) => {
+                    return get_enum(
+                      toml,
+                      "render.date_time.time_style",
+                      styles_enum,
+                      "short",
+                      (time_style) => {
+                        return callback(
+                          new LocaleDateTime(
+                            locale,
+                            time_zone,
+                            date_style,
+                            time_style
+                          )
+                        );
+                      }
+                    );
+                  }
+                );
+              } else {
+                let $1 = $[0];
+                if ($1 instanceof NotFound) {
+                  return callback(new IsoDateTime(time_zone));
+                } else {
+                  let error2 = $1;
+                  return toml_get_error(error2);
+                }
+              }
+            }
+          );
+        }
+      );
+    }
+  );
+}
+function decode_render(toml) {
+  let base = default_render();
+  return is_table(
+    toml,
+    "render",
+    (_) => {
+      return decode_date_time(
+        toml,
+        base.date_time,
+        (date_time) => {
+          return get_enum(
+            toml,
+            "render.group",
+            group_enum,
+            base.group,
+            (group4) => {
+              return get_enum(
+                toml,
+                "render.partition",
+                partition_enum,
+                base.partition,
+                (partition2) => {
+                  return get_string2(
+                    toml,
+                    "render.output_dir",
+                    base.output_dir,
+                    (output_dir) => {
+                      return get_string2(
+                        toml,
+                        "render.output",
+                        base.filename,
+                        (filename2) => {
+                          return get_string2(
+                            toml,
+                            "render.partition_output",
+                            base.partition_filename,
+                            (partition_filename) => {
+                              return get_string2(
+                                toml,
+                                "render.template",
+                                base.template,
+                                (template) => {
+                                  return get_string2(
+                                    toml,
+                                    "render.index_template",
+                                    base.index_template,
+                                    (index_template) => {
+                                      return new Ok(
+                                        new Render(
+                                          date_time,
+                                          filename2,
+                                          output_dir,
+                                          partition_filename,
+                                          group4,
+                                          partition2,
+                                          template,
+                                          index_template
+                                        )
+                                      );
+                                    }
+                                  );
+                                }
+                              );
+                            }
+                          );
+                        }
+                      );
+                    }
+                  );
+                }
+              );
+            }
+          );
         }
       );
     }
   );
 }
 
-// build/dev/javascript/starlist/starlist/internal/git.mjs
+// build/dev/javascript/starlist/starlist/git.mjs
 var Committed = class extends CustomType {
 };
 var NothingToCommit = class extends CustomType {
@@ -8243,24 +9588,24 @@ function pull(flags, is_shallow2) {
     let base = toList(["pull", "--tags"]);
     let _block;
     if (is_shallow2) {
-      _block = append3(base, toList(["--unshallow"]));
+      _block = append(base, toList(["--unshallow"]));
     } else {
       _block = base;
     }
     let args = _block;
     let _block$1;
-    let $1 = is_empty2(trim(flags));
+    let $1 = is_empty3(trim(flags));
     if ($1) {
       _block$1 = args;
     } else {
-      _block$1 = append3(
+      _block$1 = append(
         args,
         (() => {
           let _pipe = flags;
           let _pipe$1 = trim(_pipe);
           let _pipe$2 = split2(_pipe$1, " ");
           return filter(_pipe$2, (s) => {
-            return !is_empty2(s);
+            return !is_empty3(s);
           });
         })()
       );
@@ -8276,1148 +9621,6 @@ function config_set(key, value) {
 }
 function set_remote_url(url) {
   return try_git(toList(["remote", "set-url", "origin", url]));
-}
-
-// build/dev/javascript/starlist/starlist/internal/action/setup.mjs
-function inject_token(url, token4) {
-  let $ = starts_with(url, "https://");
-  if ($) {
-    info("fixing https: " + url);
-    let rest = drop_start(url, string_length("https://"));
-    return "https://x-access-token:" + token4 + "@" + rest;
-  } else {
-    info("ignoring because not of https");
-    return url;
-  }
-}
-function try$3(result, next2) {
-  if (result instanceof Ok) {
-    let v = result[0];
-    return next2(v);
-  } else {
-    return result;
-  }
-}
-function setup(committer, token4) {
-  let name;
-  let email;
-  name = committer[0];
-  email = committer[1];
-  return try$3(
-    config_set("user.name", name),
-    (_) => {
-      return try$3(
-        config_set("user.email", email),
-        (_2) => {
-          return try$3(
-            config_set("pull.rebase", "false"),
-            (_3) => {
-              return try$3(
-                (() => {
-                  let $ = get2("GITHUB_REPOSITORY");
-                  if ($ instanceof Ok) {
-                    let repo = $[0];
-                    let _block;
-                    let $1 = get2("GITHUB_SERVER_URL");
-                    if ($1 instanceof Ok) {
-                      let url2 = $1[0];
-                      _block = url2;
-                    } else {
-                      _block = "https://github.com";
-                    }
-                    let server = _block;
-                    let url = inject_token(server, token4) + "/" + repo + ".git";
-                    info("Set token");
-                    return set_remote_url(url);
-                  } else {
-                    let $1 = remote_url();
-                    if ($1 instanceof Ok) {
-                      let url = $1[0];
-                      let injected = inject_token(url, token4);
-                      let $2 = is_empty2(injected);
-                      if ($2) {
-                        return new Ok(void 0);
-                      } else {
-                        info("Set token");
-                        return set_remote_url(injected);
-                      }
-                    } else {
-                      return new Ok(void 0);
-                    }
-                  }
-                })(),
-                (_4) => {
-                  let $ = remote_url();
-                  if ($ instanceof Ok) {
-                    let url = $[0];
-                    info("URL: " + replace(url, token4, "TOKEN"));
-                    info(
-                      "Origin URL contains token: " + (() => {
-                        let $1 = contains_string(url, token4);
-                        if ($1) {
-                          return "yes";
-                        } else {
-                          return "no";
-                        }
-                      })()
-                    );
-                  } else {
-                    info("No origin URL configured");
-                  }
-                  return new Ok(void 0);
-                }
-              );
-            }
-          );
-        }
-      );
-    }
-  );
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/uri.mjs
-var Uri = class extends CustomType {
-  constructor(scheme, userinfo, host, port, path2, query, fragment) {
-    super();
-    this.scheme = scheme;
-    this.userinfo = userinfo;
-    this.host = host;
-    this.port = port;
-    this.path = path2;
-    this.query = query;
-    this.fragment = fragment;
-  }
-};
-var empty2 = /* @__PURE__ */ new Uri(
-  /* @__PURE__ */ new None(),
-  /* @__PURE__ */ new None(),
-  /* @__PURE__ */ new None(),
-  /* @__PURE__ */ new None(),
-  "",
-  /* @__PURE__ */ new None(),
-  /* @__PURE__ */ new None()
-);
-function is_valid_host_within_brackets_char(char) {
-  return 48 >= char && char <= 57 || 65 >= char && char <= 90 || 97 >= char && char <= 122 || char === 58 || char === 46;
-}
-function parse_fragment(rest, pieces) {
-  return new Ok(
-    new Uri(
-      pieces.scheme,
-      pieces.userinfo,
-      pieces.host,
-      pieces.port,
-      pieces.path,
-      pieces.query,
-      new Some(rest)
-    )
-  );
-}
-function parse_query_with_question_mark_loop(loop$original, loop$uri_string, loop$pieces, loop$size) {
-  while (true) {
-    let original = loop$original;
-    let uri_string = loop$uri_string;
-    let pieces = loop$pieces;
-    let size3 = loop$size;
-    if (uri_string.startsWith("#")) {
-      if (size3 === 0) {
-        let rest = uri_string.slice(1);
-        return parse_fragment(rest, pieces);
-      } else {
-        let rest = uri_string.slice(1);
-        let query = string_codeunit_slice(original, 0, size3);
-        let pieces$1 = new Uri(
-          pieces.scheme,
-          pieces.userinfo,
-          pieces.host,
-          pieces.port,
-          pieces.path,
-          new Some(query),
-          pieces.fragment
-        );
-        return parse_fragment(rest, pieces$1);
-      }
-    } else if (uri_string === "") {
-      return new Ok(
-        new Uri(
-          pieces.scheme,
-          pieces.userinfo,
-          pieces.host,
-          pieces.port,
-          pieces.path,
-          new Some(original),
-          pieces.fragment
-        )
-      );
-    } else {
-      let $ = pop_codeunit(uri_string);
-      let rest;
-      rest = $[1];
-      loop$original = original;
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$size = size3 + 1;
-    }
-  }
-}
-function parse_query_with_question_mark(uri_string, pieces) {
-  return parse_query_with_question_mark_loop(uri_string, uri_string, pieces, 0);
-}
-function parse_path_loop(loop$original, loop$uri_string, loop$pieces, loop$size) {
-  while (true) {
-    let original = loop$original;
-    let uri_string = loop$uri_string;
-    let pieces = loop$pieces;
-    let size3 = loop$size;
-    if (uri_string.startsWith("?")) {
-      let rest = uri_string.slice(1);
-      let path2 = string_codeunit_slice(original, 0, size3);
-      let pieces$1 = new Uri(
-        pieces.scheme,
-        pieces.userinfo,
-        pieces.host,
-        pieces.port,
-        path2,
-        pieces.query,
-        pieces.fragment
-      );
-      return parse_query_with_question_mark(rest, pieces$1);
-    } else if (uri_string.startsWith("#")) {
-      let rest = uri_string.slice(1);
-      let path2 = string_codeunit_slice(original, 0, size3);
-      let pieces$1 = new Uri(
-        pieces.scheme,
-        pieces.userinfo,
-        pieces.host,
-        pieces.port,
-        path2,
-        pieces.query,
-        pieces.fragment
-      );
-      return parse_fragment(rest, pieces$1);
-    } else if (uri_string === "") {
-      return new Ok(
-        new Uri(
-          pieces.scheme,
-          pieces.userinfo,
-          pieces.host,
-          pieces.port,
-          original,
-          pieces.query,
-          pieces.fragment
-        )
-      );
-    } else {
-      let $ = pop_codeunit(uri_string);
-      let rest;
-      rest = $[1];
-      loop$original = original;
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$size = size3 + 1;
-    }
-  }
-}
-function parse_path(uri_string, pieces) {
-  return parse_path_loop(uri_string, uri_string, pieces, 0);
-}
-function parse_port_loop(loop$uri_string, loop$pieces, loop$port) {
-  while (true) {
-    let uri_string = loop$uri_string;
-    let pieces = loop$pieces;
-    let port = loop$port;
-    if (uri_string.startsWith("0")) {
-      let rest = uri_string.slice(1);
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$port = port * 10;
-    } else if (uri_string.startsWith("1")) {
-      let rest = uri_string.slice(1);
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$port = port * 10 + 1;
-    } else if (uri_string.startsWith("2")) {
-      let rest = uri_string.slice(1);
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$port = port * 10 + 2;
-    } else if (uri_string.startsWith("3")) {
-      let rest = uri_string.slice(1);
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$port = port * 10 + 3;
-    } else if (uri_string.startsWith("4")) {
-      let rest = uri_string.slice(1);
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$port = port * 10 + 4;
-    } else if (uri_string.startsWith("5")) {
-      let rest = uri_string.slice(1);
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$port = port * 10 + 5;
-    } else if (uri_string.startsWith("6")) {
-      let rest = uri_string.slice(1);
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$port = port * 10 + 6;
-    } else if (uri_string.startsWith("7")) {
-      let rest = uri_string.slice(1);
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$port = port * 10 + 7;
-    } else if (uri_string.startsWith("8")) {
-      let rest = uri_string.slice(1);
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$port = port * 10 + 8;
-    } else if (uri_string.startsWith("9")) {
-      let rest = uri_string.slice(1);
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$port = port * 10 + 9;
-    } else if (uri_string.startsWith("?")) {
-      let rest = uri_string.slice(1);
-      let pieces$1 = new Uri(
-        pieces.scheme,
-        pieces.userinfo,
-        pieces.host,
-        new Some(port),
-        pieces.path,
-        pieces.query,
-        pieces.fragment
-      );
-      return parse_query_with_question_mark(rest, pieces$1);
-    } else if (uri_string.startsWith("#")) {
-      let rest = uri_string.slice(1);
-      let pieces$1 = new Uri(
-        pieces.scheme,
-        pieces.userinfo,
-        pieces.host,
-        new Some(port),
-        pieces.path,
-        pieces.query,
-        pieces.fragment
-      );
-      return parse_fragment(rest, pieces$1);
-    } else if (uri_string.startsWith("/")) {
-      let pieces$1 = new Uri(
-        pieces.scheme,
-        pieces.userinfo,
-        pieces.host,
-        new Some(port),
-        pieces.path,
-        pieces.query,
-        pieces.fragment
-      );
-      return parse_path(uri_string, pieces$1);
-    } else if (uri_string === "") {
-      return new Ok(
-        new Uri(
-          pieces.scheme,
-          pieces.userinfo,
-          pieces.host,
-          new Some(port),
-          pieces.path,
-          pieces.query,
-          pieces.fragment
-        )
-      );
-    } else {
-      return new Error2(void 0);
-    }
-  }
-}
-function parse_port(uri_string, pieces) {
-  if (uri_string.startsWith(":0")) {
-    let rest = uri_string.slice(2);
-    return parse_port_loop(rest, pieces, 0);
-  } else if (uri_string.startsWith(":1")) {
-    let rest = uri_string.slice(2);
-    return parse_port_loop(rest, pieces, 1);
-  } else if (uri_string.startsWith(":2")) {
-    let rest = uri_string.slice(2);
-    return parse_port_loop(rest, pieces, 2);
-  } else if (uri_string.startsWith(":3")) {
-    let rest = uri_string.slice(2);
-    return parse_port_loop(rest, pieces, 3);
-  } else if (uri_string.startsWith(":4")) {
-    let rest = uri_string.slice(2);
-    return parse_port_loop(rest, pieces, 4);
-  } else if (uri_string.startsWith(":5")) {
-    let rest = uri_string.slice(2);
-    return parse_port_loop(rest, pieces, 5);
-  } else if (uri_string.startsWith(":6")) {
-    let rest = uri_string.slice(2);
-    return parse_port_loop(rest, pieces, 6);
-  } else if (uri_string.startsWith(":7")) {
-    let rest = uri_string.slice(2);
-    return parse_port_loop(rest, pieces, 7);
-  } else if (uri_string.startsWith(":8")) {
-    let rest = uri_string.slice(2);
-    return parse_port_loop(rest, pieces, 8);
-  } else if (uri_string.startsWith(":9")) {
-    let rest = uri_string.slice(2);
-    return parse_port_loop(rest, pieces, 9);
-  } else if (uri_string === ":") {
-    return new Ok(pieces);
-  } else if (uri_string === "") {
-    return new Ok(pieces);
-  } else if (uri_string.startsWith("?")) {
-    let rest = uri_string.slice(1);
-    return parse_query_with_question_mark(rest, pieces);
-  } else if (uri_string.startsWith(":?")) {
-    let rest = uri_string.slice(2);
-    return parse_query_with_question_mark(rest, pieces);
-  } else if (uri_string.startsWith("#")) {
-    let rest = uri_string.slice(1);
-    return parse_fragment(rest, pieces);
-  } else if (uri_string.startsWith(":#")) {
-    let rest = uri_string.slice(2);
-    return parse_fragment(rest, pieces);
-  } else if (uri_string.startsWith("/")) {
-    return parse_path(uri_string, pieces);
-  } else if (uri_string.startsWith(":")) {
-    let rest = uri_string.slice(1);
-    if (rest.startsWith("/")) {
-      return parse_path(rest, pieces);
-    } else {
-      return new Error2(void 0);
-    }
-  } else {
-    return new Error2(void 0);
-  }
-}
-function parse_host_outside_of_brackets_loop(loop$original, loop$uri_string, loop$pieces, loop$size) {
-  while (true) {
-    let original = loop$original;
-    let uri_string = loop$uri_string;
-    let pieces = loop$pieces;
-    let size3 = loop$size;
-    if (uri_string === "") {
-      return new Ok(
-        new Uri(
-          pieces.scheme,
-          pieces.userinfo,
-          new Some(original),
-          pieces.port,
-          pieces.path,
-          pieces.query,
-          pieces.fragment
-        )
-      );
-    } else if (uri_string.startsWith(":")) {
-      let host = string_codeunit_slice(original, 0, size3);
-      let pieces$1 = new Uri(
-        pieces.scheme,
-        pieces.userinfo,
-        new Some(host),
-        pieces.port,
-        pieces.path,
-        pieces.query,
-        pieces.fragment
-      );
-      return parse_port(uri_string, pieces$1);
-    } else if (uri_string.startsWith("/")) {
-      let host = string_codeunit_slice(original, 0, size3);
-      let pieces$1 = new Uri(
-        pieces.scheme,
-        pieces.userinfo,
-        new Some(host),
-        pieces.port,
-        pieces.path,
-        pieces.query,
-        pieces.fragment
-      );
-      return parse_path(uri_string, pieces$1);
-    } else if (uri_string.startsWith("?")) {
-      let rest = uri_string.slice(1);
-      let host = string_codeunit_slice(original, 0, size3);
-      let pieces$1 = new Uri(
-        pieces.scheme,
-        pieces.userinfo,
-        new Some(host),
-        pieces.port,
-        pieces.path,
-        pieces.query,
-        pieces.fragment
-      );
-      return parse_query_with_question_mark(rest, pieces$1);
-    } else if (uri_string.startsWith("#")) {
-      let rest = uri_string.slice(1);
-      let host = string_codeunit_slice(original, 0, size3);
-      let pieces$1 = new Uri(
-        pieces.scheme,
-        pieces.userinfo,
-        new Some(host),
-        pieces.port,
-        pieces.path,
-        pieces.query,
-        pieces.fragment
-      );
-      return parse_fragment(rest, pieces$1);
-    } else {
-      let $ = pop_codeunit(uri_string);
-      let rest;
-      rest = $[1];
-      loop$original = original;
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$size = size3 + 1;
-    }
-  }
-}
-function parse_host_within_brackets_loop(loop$original, loop$uri_string, loop$pieces, loop$size) {
-  while (true) {
-    let original = loop$original;
-    let uri_string = loop$uri_string;
-    let pieces = loop$pieces;
-    let size3 = loop$size;
-    if (uri_string === "") {
-      return new Ok(
-        new Uri(
-          pieces.scheme,
-          pieces.userinfo,
-          new Some(uri_string),
-          pieces.port,
-          pieces.path,
-          pieces.query,
-          pieces.fragment
-        )
-      );
-    } else if (uri_string.startsWith("]")) {
-      if (size3 === 0) {
-        let rest = uri_string.slice(1);
-        return parse_port(rest, pieces);
-      } else {
-        let rest = uri_string.slice(1);
-        let host = string_codeunit_slice(original, 0, size3 + 1);
-        let pieces$1 = new Uri(
-          pieces.scheme,
-          pieces.userinfo,
-          new Some(host),
-          pieces.port,
-          pieces.path,
-          pieces.query,
-          pieces.fragment
-        );
-        return parse_port(rest, pieces$1);
-      }
-    } else if (uri_string.startsWith("/")) {
-      if (size3 === 0) {
-        return parse_path(uri_string, pieces);
-      } else {
-        let host = string_codeunit_slice(original, 0, size3);
-        let pieces$1 = new Uri(
-          pieces.scheme,
-          pieces.userinfo,
-          new Some(host),
-          pieces.port,
-          pieces.path,
-          pieces.query,
-          pieces.fragment
-        );
-        return parse_path(uri_string, pieces$1);
-      }
-    } else if (uri_string.startsWith("?")) {
-      if (size3 === 0) {
-        let rest = uri_string.slice(1);
-        return parse_query_with_question_mark(rest, pieces);
-      } else {
-        let rest = uri_string.slice(1);
-        let host = string_codeunit_slice(original, 0, size3);
-        let pieces$1 = new Uri(
-          pieces.scheme,
-          pieces.userinfo,
-          new Some(host),
-          pieces.port,
-          pieces.path,
-          pieces.query,
-          pieces.fragment
-        );
-        return parse_query_with_question_mark(rest, pieces$1);
-      }
-    } else if (uri_string.startsWith("#")) {
-      if (size3 === 0) {
-        let rest = uri_string.slice(1);
-        return parse_fragment(rest, pieces);
-      } else {
-        let rest = uri_string.slice(1);
-        let host = string_codeunit_slice(original, 0, size3);
-        let pieces$1 = new Uri(
-          pieces.scheme,
-          pieces.userinfo,
-          new Some(host),
-          pieces.port,
-          pieces.path,
-          pieces.query,
-          pieces.fragment
-        );
-        return parse_fragment(rest, pieces$1);
-      }
-    } else {
-      let $ = pop_codeunit(uri_string);
-      let char;
-      let rest;
-      char = $[0];
-      rest = $[1];
-      let $1 = is_valid_host_within_brackets_char(char);
-      if ($1) {
-        loop$original = original;
-        loop$uri_string = rest;
-        loop$pieces = pieces;
-        loop$size = size3 + 1;
-      } else {
-        return parse_host_outside_of_brackets_loop(
-          original,
-          original,
-          pieces,
-          0
-        );
-      }
-    }
-  }
-}
-function parse_host_within_brackets(uri_string, pieces) {
-  return parse_host_within_brackets_loop(uri_string, uri_string, pieces, 0);
-}
-function parse_host_outside_of_brackets(uri_string, pieces) {
-  return parse_host_outside_of_brackets_loop(uri_string, uri_string, pieces, 0);
-}
-function parse_host(uri_string, pieces) {
-  if (uri_string.startsWith("[")) {
-    return parse_host_within_brackets(uri_string, pieces);
-  } else if (uri_string.startsWith(":")) {
-    let pieces$1 = new Uri(
-      pieces.scheme,
-      pieces.userinfo,
-      new Some(""),
-      pieces.port,
-      pieces.path,
-      pieces.query,
-      pieces.fragment
-    );
-    return parse_port(uri_string, pieces$1);
-  } else if (uri_string === "") {
-    return new Ok(
-      new Uri(
-        pieces.scheme,
-        pieces.userinfo,
-        new Some(""),
-        pieces.port,
-        pieces.path,
-        pieces.query,
-        pieces.fragment
-      )
-    );
-  } else {
-    return parse_host_outside_of_brackets(uri_string, pieces);
-  }
-}
-function parse_userinfo_loop(loop$original, loop$uri_string, loop$pieces, loop$size) {
-  while (true) {
-    let original = loop$original;
-    let uri_string = loop$uri_string;
-    let pieces = loop$pieces;
-    let size3 = loop$size;
-    if (uri_string.startsWith("@")) {
-      if (size3 === 0) {
-        let rest = uri_string.slice(1);
-        return parse_host(rest, pieces);
-      } else {
-        let rest = uri_string.slice(1);
-        let userinfo = string_codeunit_slice(original, 0, size3);
-        let pieces$1 = new Uri(
-          pieces.scheme,
-          new Some(userinfo),
-          pieces.host,
-          pieces.port,
-          pieces.path,
-          pieces.query,
-          pieces.fragment
-        );
-        return parse_host(rest, pieces$1);
-      }
-    } else if (uri_string === "") {
-      return parse_host(original, pieces);
-    } else if (uri_string.startsWith("/")) {
-      return parse_host(original, pieces);
-    } else if (uri_string.startsWith("?")) {
-      return parse_host(original, pieces);
-    } else if (uri_string.startsWith("#")) {
-      return parse_host(original, pieces);
-    } else {
-      let $ = pop_codeunit(uri_string);
-      let rest;
-      rest = $[1];
-      loop$original = original;
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$size = size3 + 1;
-    }
-  }
-}
-function parse_authority_pieces(string4, pieces) {
-  return parse_userinfo_loop(string4, string4, pieces, 0);
-}
-function parse_authority_with_slashes(uri_string, pieces) {
-  if (uri_string === "//") {
-    return new Ok(
-      new Uri(
-        pieces.scheme,
-        pieces.userinfo,
-        new Some(""),
-        pieces.port,
-        pieces.path,
-        pieces.query,
-        pieces.fragment
-      )
-    );
-  } else if (uri_string.startsWith("//")) {
-    let rest = uri_string.slice(2);
-    return parse_authority_pieces(rest, pieces);
-  } else {
-    return parse_path(uri_string, pieces);
-  }
-}
-function parse_scheme_loop(loop$original, loop$uri_string, loop$pieces, loop$size) {
-  while (true) {
-    let original = loop$original;
-    let uri_string = loop$uri_string;
-    let pieces = loop$pieces;
-    let size3 = loop$size;
-    if (uri_string.startsWith("/")) {
-      if (size3 === 0) {
-        return parse_authority_with_slashes(uri_string, pieces);
-      } else {
-        let scheme = string_codeunit_slice(original, 0, size3);
-        let pieces$1 = new Uri(
-          new Some(lowercase(scheme)),
-          pieces.userinfo,
-          pieces.host,
-          pieces.port,
-          pieces.path,
-          pieces.query,
-          pieces.fragment
-        );
-        return parse_authority_with_slashes(uri_string, pieces$1);
-      }
-    } else if (uri_string.startsWith("?")) {
-      if (size3 === 0) {
-        let rest = uri_string.slice(1);
-        return parse_query_with_question_mark(rest, pieces);
-      } else {
-        let rest = uri_string.slice(1);
-        let scheme = string_codeunit_slice(original, 0, size3);
-        let pieces$1 = new Uri(
-          new Some(lowercase(scheme)),
-          pieces.userinfo,
-          pieces.host,
-          pieces.port,
-          pieces.path,
-          pieces.query,
-          pieces.fragment
-        );
-        return parse_query_with_question_mark(rest, pieces$1);
-      }
-    } else if (uri_string.startsWith("#")) {
-      if (size3 === 0) {
-        let rest = uri_string.slice(1);
-        return parse_fragment(rest, pieces);
-      } else {
-        let rest = uri_string.slice(1);
-        let scheme = string_codeunit_slice(original, 0, size3);
-        let pieces$1 = new Uri(
-          new Some(lowercase(scheme)),
-          pieces.userinfo,
-          pieces.host,
-          pieces.port,
-          pieces.path,
-          pieces.query,
-          pieces.fragment
-        );
-        return parse_fragment(rest, pieces$1);
-      }
-    } else if (uri_string.startsWith(":")) {
-      if (size3 === 0) {
-        return new Error2(void 0);
-      } else {
-        let rest = uri_string.slice(1);
-        let scheme = string_codeunit_slice(original, 0, size3);
-        let pieces$1 = new Uri(
-          new Some(lowercase(scheme)),
-          pieces.userinfo,
-          pieces.host,
-          pieces.port,
-          pieces.path,
-          pieces.query,
-          pieces.fragment
-        );
-        return parse_authority_with_slashes(rest, pieces$1);
-      }
-    } else if (uri_string === "") {
-      return new Ok(
-        new Uri(
-          pieces.scheme,
-          pieces.userinfo,
-          pieces.host,
-          pieces.port,
-          original,
-          pieces.query,
-          pieces.fragment
-        )
-      );
-    } else {
-      let $ = pop_codeunit(uri_string);
-      let rest;
-      rest = $[1];
-      loop$original = original;
-      loop$uri_string = rest;
-      loop$pieces = pieces;
-      loop$size = size3 + 1;
-    }
-  }
-}
-function to_string2(uri) {
-  let _block;
-  let $ = uri.fragment;
-  if ($ instanceof Some) {
-    let fragment = $[0];
-    _block = toList(["#", fragment]);
-  } else {
-    _block = toList([]);
-  }
-  let parts = _block;
-  let _block$1;
-  let $1 = uri.query;
-  if ($1 instanceof Some) {
-    let query = $1[0];
-    _block$1 = prepend("?", prepend(query, parts));
-  } else {
-    _block$1 = parts;
-  }
-  let parts$1 = _block$1;
-  let parts$2 = prepend(uri.path, parts$1);
-  let _block$2;
-  let $2 = uri.host;
-  let $3 = starts_with(uri.path, "/");
-  if ($2 instanceof Some && !$3) {
-    let host = $2[0];
-    if (host !== "") {
-      _block$2 = prepend("/", parts$2);
-    } else {
-      _block$2 = parts$2;
-    }
-  } else {
-    _block$2 = parts$2;
-  }
-  let parts$3 = _block$2;
-  let _block$3;
-  let $4 = uri.host;
-  let $5 = uri.port;
-  if ($4 instanceof Some && $5 instanceof Some) {
-    let port = $5[0];
-    _block$3 = prepend(":", prepend(to_string(port), parts$3));
-  } else {
-    _block$3 = parts$3;
-  }
-  let parts$4 = _block$3;
-  let _block$4;
-  let $6 = uri.scheme;
-  let $7 = uri.userinfo;
-  let $8 = uri.host;
-  if ($6 instanceof Some) {
-    if ($7 instanceof Some) {
-      if ($8 instanceof Some) {
-        let s = $6[0];
-        let u = $7[0];
-        let h = $8[0];
-        _block$4 = prepend(
-          s,
-          prepend(
-            "://",
-            prepend(u, prepend("@", prepend(h, parts$4)))
-          )
-        );
-      } else {
-        let s = $6[0];
-        _block$4 = prepend(s, prepend(":", parts$4));
-      }
-    } else if ($8 instanceof Some) {
-      let s = $6[0];
-      let h = $8[0];
-      _block$4 = prepend(s, prepend("://", prepend(h, parts$4)));
-    } else {
-      let s = $6[0];
-      _block$4 = prepend(s, prepend(":", parts$4));
-    }
-  } else if ($7 instanceof None && $8 instanceof Some) {
-    let h = $8[0];
-    _block$4 = prepend("//", prepend(h, parts$4));
-  } else {
-    _block$4 = parts$4;
-  }
-  let parts$5 = _block$4;
-  return concat2(parts$5);
-}
-function parse2(uri_string) {
-  return parse_scheme_loop(uri_string, uri_string, empty2, 0);
-}
-
-// build/dev/javascript/gleam_http/gleam/http.mjs
-var Get = class extends CustomType {
-};
-var Post = class extends CustomType {
-};
-var Head = class extends CustomType {
-};
-var Put = class extends CustomType {
-};
-var Delete = class extends CustomType {
-};
-var Trace = class extends CustomType {
-};
-var Connect = class extends CustomType {
-};
-var Options = class extends CustomType {
-};
-var Patch = class extends CustomType {
-};
-var Http = class extends CustomType {
-};
-var Https = class extends CustomType {
-};
-function method_to_string(method) {
-  if (method instanceof Get) {
-    return "GET";
-  } else if (method instanceof Post) {
-    return "POST";
-  } else if (method instanceof Head) {
-    return "HEAD";
-  } else if (method instanceof Put) {
-    return "PUT";
-  } else if (method instanceof Delete) {
-    return "DELETE";
-  } else if (method instanceof Trace) {
-    return "TRACE";
-  } else if (method instanceof Connect) {
-    return "CONNECT";
-  } else if (method instanceof Options) {
-    return "OPTIONS";
-  } else if (method instanceof Patch) {
-    return "PATCH";
-  } else {
-    let method$1 = method[0];
-    return method$1;
-  }
-}
-function scheme_to_string(scheme) {
-  if (scheme instanceof Http) {
-    return "http";
-  } else {
-    return "https";
-  }
-}
-function scheme_from_string(scheme) {
-  let $ = lowercase(scheme);
-  if ($ === "http") {
-    return new Ok(new Http());
-  } else if ($ === "https") {
-    return new Ok(new Https());
-  } else {
-    return new Error2(void 0);
-  }
-}
-
-// build/dev/javascript/gleam_http/gleam/http/request.mjs
-var Request = class extends CustomType {
-  constructor(method, headers, body, scheme, host, port, path2, query) {
-    super();
-    this.method = method;
-    this.headers = headers;
-    this.body = body;
-    this.scheme = scheme;
-    this.host = host;
-    this.port = port;
-    this.path = path2;
-    this.query = query;
-  }
-};
-function to_uri(request) {
-  return new Uri(
-    new Some(scheme_to_string(request.scheme)),
-    new None(),
-    new Some(request.host),
-    request.port,
-    request.path,
-    request.query,
-    new None()
-  );
-}
-function from_uri(uri) {
-  return try$(
-    (() => {
-      let _pipe = uri.scheme;
-      let _pipe$1 = unwrap(_pipe, "");
-      return scheme_from_string(_pipe$1);
-    })(),
-    (scheme) => {
-      return try$(
-        (() => {
-          let _pipe = uri.host;
-          return to_result(_pipe, void 0);
-        })(),
-        (host) => {
-          let req = new Request(
-            new Get(),
-            toList([]),
-            "",
-            scheme,
-            host,
-            uri.port,
-            uri.path,
-            uri.query
-          );
-          return new Ok(req);
-        }
-      );
-    }
-  );
-}
-function set_header(request, key, value) {
-  let headers = key_set(request.headers, lowercase(key), value);
-  return new Request(
-    request.method,
-    headers,
-    request.body,
-    request.scheme,
-    request.host,
-    request.port,
-    request.path,
-    request.query
-  );
-}
-function set_body(req, body) {
-  return new Request(
-    req.method,
-    req.headers,
-    body,
-    req.scheme,
-    req.host,
-    req.port,
-    req.path,
-    req.query
-  );
-}
-function set_method(req, method) {
-  return new Request(
-    method,
-    req.headers,
-    req.body,
-    req.scheme,
-    req.host,
-    req.port,
-    req.path,
-    req.query
-  );
-}
-function to(url) {
-  let _pipe = url;
-  let _pipe$1 = parse2(_pipe);
-  return try$(_pipe$1, from_uri);
-}
-
-// build/dev/javascript/gleam_http/gleam/http/response.mjs
-var Response = class extends CustomType {
-  constructor(status, headers, body) {
-    super();
-    this.status = status;
-    this.headers = headers;
-    this.body = body;
-  }
-};
-var Response$Response = (status, headers, body) => new Response(status, headers, body);
-function set_body2(response, body) {
-  return new Response(response.status, response.headers, body);
-}
-function map7(response, transform) {
-  let _pipe = response.body;
-  let _pipe$1 = transform(_pipe);
-  return ((_capture) => {
-    return set_body2(response, _capture);
-  })(_pipe$1);
-}
-
-// build/dev/javascript/gleam_fetch/gleam_fetch_ffi.mjs
-async function raw_send(request) {
-  try {
-    return Result$Ok(await fetch(request));
-  } catch (error2) {
-    return Result$Error(FetchError$NetworkError(error2.toString()));
-  }
-}
-function from_fetch_response(response) {
-  let headers = [...response.headers].reverse();
-  return Response$Response(response.status, arrayToList2(headers), response);
-}
-function request_common(request) {
-  let url = to_string2(to_uri(request));
-  let method = method_to_string(request.method).toUpperCase();
-  let options = {
-    headers: make_headers(request.headers),
-    method
-  };
-  return [url, options];
-}
-function to_fetch_request(request) {
-  let [url, options] = request_common(request);
-  if (options.method !== "GET" && options.method !== "HEAD")
-    options.body = request.body;
-  return new globalThis.Request(url, options);
-}
-function make_headers(headersList) {
-  let headers = new globalThis.Headers();
-  for (let [k, v] of headersList) headers.append(k.toLowerCase(), v);
-  return headers;
-}
-async function read_text_body(response) {
-  let body;
-  try {
-    body = await response.body.text();
-  } catch (error2) {
-    return Result$Error(FetchError$UnableToReadBody());
-  }
-  return Result$Ok(map7(response, () => body));
-}
-function arrayToList2(array4) {
-  let list3 = List$Empty();
-  for (const element of array4) {
-    list3 = List$NonEmpty(element, list3);
-  }
-  return list3;
-}
-
-// build/dev/javascript/gleam_fetch/gleam/fetch.mjs
-var NetworkError = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var FetchError$NetworkError = ($0) => new NetworkError($0);
-var UnableToReadBody = class extends CustomType {
-};
-var FetchError$UnableToReadBody = () => new UnableToReadBody();
-function send(request) {
-  let _pipe = request;
-  let _pipe$1 = to_fetch_request(_pipe);
-  let _pipe$2 = raw_send(_pipe$1);
-  return try_await(
-    _pipe$2,
-    (resp) => {
-      return resolve(new Ok(from_fetch_response(resp)));
-    }
-  );
 }
 
 // build/dev/javascript/gleam_json/gleam_json_ffi.mjs
@@ -9553,7 +9756,7 @@ function do_parse(json, decoder) {
 function parse4(json, decoder) {
   return do_parse(json, decoder);
 }
-function to_string3(json) {
+function to_string4(json) {
   return json_to_string(json);
 }
 function string3(input) {
@@ -9588,6 +9791,517 @@ function array2(entries, inner_type) {
   return preprocessed_array(_pipe$1);
 }
 
+// build/dev/javascript/starlist/starlist/types.mjs
+var Timestamp = class extends CustomType {
+  constructor(date, time) {
+    super();
+    this.date = date;
+    this.time = time;
+  }
+};
+var Repo = class extends CustomType {
+  constructor(archived_on, description, forks, homepage_url, is_fork, is_private, is_template, total_languages, languages, latest_release, licence, name, parent_repo, pushed_on, starred_on, stars, topics, url) {
+    super();
+    this.archived_on = archived_on;
+    this.description = description;
+    this.forks = forks;
+    this.homepage_url = homepage_url;
+    this.is_fork = is_fork;
+    this.is_private = is_private;
+    this.is_template = is_template;
+    this.total_languages = total_languages;
+    this.languages = languages;
+    this.latest_release = latest_release;
+    this.licence = licence;
+    this.name = name;
+    this.parent_repo = parent_repo;
+    this.pushed_on = pushed_on;
+    this.starred_on = starred_on;
+    this.stars = stars;
+    this.topics = topics;
+    this.url = url;
+  }
+};
+var Release = class extends CustomType {
+  constructor(name, published_on) {
+    super();
+    this.name = name;
+    this.published_on = published_on;
+  }
+};
+var Language = class extends CustomType {
+  constructor(name, percent) {
+    super();
+    this.name = name;
+    this.percent = percent;
+  }
+};
+var Topic = class extends CustomType {
+  constructor(name, url) {
+    super();
+    this.name = name;
+    this.url = url;
+  }
+};
+var OutputFile = class extends CustomType {
+  constructor(filename2, data2) {
+    super();
+    this.filename = filename2;
+    this.data = data2;
+  }
+};
+
+// build/dev/javascript/starlist/starlist/internal/star_types.mjs
+var StarData = class extends CustomType {
+  constructor(data_version2, login, truncated, total2, fetched2, repos, updated_at) {
+    super();
+    this.data_version = data_version2;
+    this.login = login;
+    this.truncated = truncated;
+    this.total = total2;
+    this.fetched = fetched2;
+    this.repos = repos;
+    this.updated_at = updated_at;
+  }
+};
+var DisplayRepo = class extends CustomType {
+  constructor(archived_on, description, forks, homepage_url, is_fork, is_private, is_template, total_languages, languages, latest_release, licence, name, parent_repo, pushed_on, starred_on, stars, topics, url) {
+    super();
+    this.archived_on = archived_on;
+    this.description = description;
+    this.forks = forks;
+    this.homepage_url = homepage_url;
+    this.is_fork = is_fork;
+    this.is_private = is_private;
+    this.is_template = is_template;
+    this.total_languages = total_languages;
+    this.languages = languages;
+    this.latest_release = latest_release;
+    this.licence = licence;
+    this.name = name;
+    this.parent_repo = parent_repo;
+    this.pushed_on = pushed_on;
+    this.starred_on = starred_on;
+    this.stars = stars;
+    this.topics = topics;
+    this.url = url;
+  }
+};
+var DisplayRelease = class extends CustomType {
+  constructor(name, published_on) {
+    super();
+    this.name = name;
+    this.published_on = published_on;
+  }
+};
+var PartitionContext = class extends CustomType {
+  constructor(name, filename2, count, count_label) {
+    super();
+    this.name = name;
+    this.filename = filename2;
+    this.count = count;
+    this.count_label = count_label;
+  }
+};
+var PageVars = class extends CustomType {
+  constructor(data_version2, updated_at, generated_at, login, truncated, total2, fetched2, stars, groups, group_count, group_description, partition2) {
+    super();
+    this.data_version = data_version2;
+    this.updated_at = updated_at;
+    this.generated_at = generated_at;
+    this.login = login;
+    this.truncated = truncated;
+    this.total = total2;
+    this.fetched = fetched2;
+    this.stars = stars;
+    this.groups = groups;
+    this.group_count = group_count;
+    this.group_description = group_description;
+    this.partition = partition2;
+  }
+};
+var IndexVars = class extends CustomType {
+  constructor(data_version2, updated_at, generated_at, login, truncated, total2, fetched2, partitions, partition_count, partition_description2) {
+    super();
+    this.data_version = data_version2;
+    this.updated_at = updated_at;
+    this.generated_at = generated_at;
+    this.login = login;
+    this.truncated = truncated;
+    this.total = total2;
+    this.fetched = fetched2;
+    this.partitions = partitions;
+    this.partition_count = partition_count;
+    this.partition_description = partition_description2;
+  }
+};
+var data_version = 4;
+
+// build/dev/javascript/starlist/starlist/internal/data_file.mjs
+function language_to_json(lang) {
+  return object2(
+    toList([
+      ["name", string3(lang.name)],
+      ["percent", int3(lang.percent)]
+    ])
+  );
+}
+function topic_to_json(topic) {
+  return object2(
+    toList([
+      ["name", string3(topic.name)],
+      ["url", string3(topic.url)]
+    ])
+  );
+}
+function release_to_json(rel) {
+  return object2(
+    toList([
+      ["name", nullable(rel.name, string3)],
+      ["publishedOn", string3(rel.published_on)]
+    ])
+  );
+}
+function repo_to_json(repo) {
+  return object2(
+    toList([
+      ["archivedOn", nullable(repo.archived_on, string3)],
+      ["description", nullable(repo.description, string3)],
+      ["forks", int3(repo.forks)],
+      ["homepageUrl", nullable(repo.homepage_url, string3)],
+      ["isFork", bool2(repo.is_fork)],
+      ["isPrivate", bool2(repo.is_private)],
+      ["isTemplate", bool2(repo.is_template)],
+      ["languageCount", int3(repo.total_languages)],
+      ["languages", array2(repo.languages, language_to_json)],
+      ["latestRelease", nullable(repo.latest_release, release_to_json)],
+      ["licence", string3(repo.licence)],
+      ["name", string3(repo.name)],
+      ["parentRepo", nullable(repo.parent_repo, string3)],
+      ["pushedOn", string3(repo.pushed_on)],
+      ["starredOn", string3(repo.starred_on)],
+      ["stars", int3(repo.stars)],
+      [
+        "topics",
+        nullable(
+          repo.topics,
+          (ts) => {
+            return array2(ts, topic_to_json);
+          }
+        )
+      ],
+      ["url", string3(repo.url)]
+    ])
+  );
+}
+function star_data_to_json(data2) {
+  return object2(
+    toList([
+      ["dataVersion", int3(data2.data_version)],
+      ["login", string3(data2.login)],
+      ["truncated", bool2(data2.truncated)],
+      ["total", int3(data2.total)],
+      ["fetched", int3(data2.fetched)],
+      ["updatedAt", string3(data2.updated_at)],
+      ["repos", array2(data2.repos, repo_to_json)]
+    ])
+  );
+}
+function validate_data_version(data2) {
+  let $ = data2.data_version === data_version;
+  if ($) {
+    return new Ok(data2);
+  } else {
+    return new Error2(
+      new VersionMismatchError(
+        data_version,
+        data2.data_version
+      )
+    );
+  }
+}
+function language_decoder() {
+  return field(
+    "name",
+    string2,
+    (name) => {
+      return field(
+        "percent",
+        int2,
+        (percent) => {
+          return success(new Language(name, percent));
+        }
+      );
+    }
+  );
+}
+function topic_decoder() {
+  return field(
+    "name",
+    string2,
+    (name) => {
+      return field(
+        "url",
+        string2,
+        (url) => {
+          return success(new Topic(name, url));
+        }
+      );
+    }
+  );
+}
+function release_decoder() {
+  return field(
+    "name",
+    optional(string2),
+    (name) => {
+      return field(
+        "publishedOn",
+        string2,
+        (published_on) => {
+          return success(new Release(name, published_on));
+        }
+      );
+    }
+  );
+}
+function repo_decoder() {
+  return field(
+    "archivedOn",
+    optional(string2),
+    (archived_on) => {
+      return field(
+        "description",
+        optional(string2),
+        (description) => {
+          return field(
+            "forks",
+            int2,
+            (forks) => {
+              return field(
+                "homepageUrl",
+                optional(string2),
+                (homepage_url) => {
+                  return field(
+                    "isFork",
+                    bool,
+                    (is_fork) => {
+                      return field(
+                        "isPrivate",
+                        bool,
+                        (is_private) => {
+                          return field(
+                            "isTemplate",
+                            bool,
+                            (is_template) => {
+                              return field(
+                                "languageCount",
+                                int2,
+                                (total_languages) => {
+                                  return field(
+                                    "languages",
+                                    list2(language_decoder()),
+                                    (languages) => {
+                                      return field(
+                                        "latestRelease",
+                                        optional(release_decoder()),
+                                        (latest_release) => {
+                                          return field(
+                                            "licence",
+                                            string2,
+                                            (licence) => {
+                                              return field(
+                                                "name",
+                                                string2,
+                                                (name) => {
+                                                  return field(
+                                                    "parentRepo",
+                                                    optional(
+                                                      string2
+                                                    ),
+                                                    (parent_repo) => {
+                                                      return field(
+                                                        "pushedOn",
+                                                        string2,
+                                                        (pushed_on) => {
+                                                          return field(
+                                                            "starredOn",
+                                                            string2,
+                                                            (starred_on) => {
+                                                              return field(
+                                                                "stars",
+                                                                int2,
+                                                                (stars) => {
+                                                                  return field(
+                                                                    "topics",
+                                                                    optional(
+                                                                      list2(
+                                                                        topic_decoder()
+                                                                      )
+                                                                    ),
+                                                                    (topics) => {
+                                                                      return field(
+                                                                        "url",
+                                                                        string2,
+                                                                        (url) => {
+                                                                          return success(
+                                                                            new Repo(
+                                                                              archived_on,
+                                                                              description,
+                                                                              forks,
+                                                                              homepage_url,
+                                                                              is_fork,
+                                                                              is_private,
+                                                                              is_template,
+                                                                              total_languages,
+                                                                              languages,
+                                                                              latest_release,
+                                                                              licence,
+                                                                              name,
+                                                                              parent_repo,
+                                                                              pushed_on,
+                                                                              starred_on,
+                                                                              stars,
+                                                                              topics,
+                                                                              url
+                                                                            )
+                                                                          );
+                                                                        }
+                                                                      );
+                                                                    }
+                                                                  );
+                                                                }
+                                                              );
+                                                            }
+                                                          );
+                                                        }
+                                                      );
+                                                    }
+                                                  );
+                                                }
+                                              );
+                                            }
+                                          );
+                                        }
+                                      );
+                                    }
+                                  );
+                                }
+                              );
+                            }
+                          );
+                        }
+                      );
+                    }
+                  );
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  );
+}
+function star_data_decoder() {
+  return field(
+    "dataVersion",
+    int2,
+    (data_version2) => {
+      return field(
+        "login",
+        string2,
+        (login) => {
+          return field(
+            "truncated",
+            bool,
+            (truncated) => {
+              return field(
+                "total",
+                int2,
+                (total2) => {
+                  return field(
+                    "fetched",
+                    int2,
+                    (fetched2) => {
+                      return field(
+                        "updatedAt",
+                        string2,
+                        (updated_at) => {
+                          return field(
+                            "repos",
+                            list2(repo_decoder()),
+                            (repos) => {
+                              return success(
+                                new StarData(
+                                  data_version2,
+                                  login,
+                                  truncated,
+                                  total2,
+                                  fetched2,
+                                  repos,
+                                  updated_at
+                                )
+                              );
+                            }
+                          );
+                        }
+                      );
+                    }
+                  );
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  );
+}
+function load_data_file(filename2) {
+  let $ = read(filename2);
+  if ($ instanceof Ok) {
+    let contents = $[0];
+    let $1 = parse4(contents, star_data_decoder());
+    if ($1 instanceof Ok) {
+      let data2 = $1[0];
+      return validate_data_version(data2);
+    } else {
+      return new Error2(
+        new FileError2(
+          "Failed to decode " + filename2 + " as valid StarData JSON"
+        )
+      );
+    }
+  } else {
+    return new Error2(
+      new FileError2(
+        "Cannot read " + filename2 + ": file not found or unreadable"
+      )
+    );
+  }
+}
+function map_file_error(result, context) {
+  if (result instanceof Ok) {
+    return result;
+  } else {
+    let err = result[0];
+    return new Error2(
+      new FileError2(
+        "File error " + context + ": " + inspect2(err)
+      )
+    );
+  }
+}
+function write_data_file(data2, filename2) {
+  let _block;
+  let _pipe = star_data_to_json(data2);
+  _block = to_string4(_pipe);
+  let json_string = _block;
+  let _pipe$1 = write(filename2, json_string);
+  return map_file_error(_pipe$1, "writing " + filename2);
+}
+
 // build/dev/javascript/squall/squall.mjs
 var Client = class extends CustomType {
   constructor(endpoint, headers) {
@@ -9614,7 +10328,7 @@ function prepare_request(client, query, variables) {
       let _block;
       let _pipe = req;
       let _pipe$1 = set_method(_pipe, new Post());
-      let _pipe$2 = set_body(_pipe$1, to_string3(body));
+      let _pipe$2 = set_body(_pipe$1, to_string4(body));
       _block = set_header(_pipe$2, "content-type", "application/json");
       let req$1 = _block;
       let req$2 = fold2(
@@ -9658,8 +10372,54 @@ function parse_response(body, decoder) {
   );
 }
 
-// build/dev/javascript/starlist/starlist/graphql/starred_repos.mjs
+// build/dev/javascript/starlist/starlist/internal/graphql/identity.mjs
 var User = class extends CustomType {
+  constructor(login) {
+    super();
+    this.login = login;
+  }
+};
+var IdentityResponse = class extends CustomType {
+  constructor(viewer) {
+    super();
+    this.viewer = viewer;
+  }
+};
+function user_decoder() {
+  return field(
+    "login",
+    string2,
+    (login) => {
+      return success(new User(login));
+    }
+  );
+}
+function identity_response_decoder() {
+  return field(
+    "viewer",
+    user_decoder(),
+    (viewer) => {
+      return success(new IdentityResponse(viewer));
+    }
+  );
+}
+function identity3(client) {
+  return prepare_request(
+    client,
+    "query Identity {\n  viewer {\n    login\n  }\n}\n",
+    object2(toList([]))
+  );
+}
+function parse_identity_response(body) {
+  return parse_response(body, identity_response_decoder());
+}
+
+// build/dev/javascript/starlist/starlist/internal/graphql/user_starred_repos.mjs
+var ASC = class extends CustomType {
+};
+var DESC = class extends CustomType {
+};
+var User2 = class extends CustomType {
   constructor(login, starred_repositories) {
     super();
     this.login = login;
@@ -9718,7 +10478,7 @@ var LanguageConnection = class extends CustomType {
     this.edges = edges;
   }
 };
-var Release = class extends CustomType {
+var Release2 = class extends CustomType {
   constructor(name, published_at) {
     super();
     this.name = name;
@@ -9726,10 +10486,11 @@ var Release = class extends CustomType {
   }
 };
 var License = class extends CustomType {
-  constructor(nickname, spdx_id) {
+  constructor(spdx_id, name, nickname) {
     super();
-    this.nickname = nickname;
     this.spdx_id = spdx_id;
+    this.name = name;
+    this.nickname = nickname;
   }
 };
 var ParentRepository = class extends CustomType {
@@ -9759,24 +10520,31 @@ var RepositoryTopic = class extends CustomType {
     this.url = url;
   }
 };
-var Language = class extends CustomType {
+var Language2 = class extends CustomType {
   constructor(name) {
     super();
     this.name = name;
   }
 };
-var Topic = class extends CustomType {
+var Topic2 = class extends CustomType {
   constructor(name) {
     super();
     this.name = name;
   }
 };
-var StarredReposResponse = class extends CustomType {
-  constructor(viewer) {
+var UserStarredReposResponse = class extends CustomType {
+  constructor(user) {
     super();
-    this.viewer = viewer;
+    this.user = user;
   }
 };
+function order_direction_to_string(value) {
+  if (value instanceof ASC) {
+    return "ASC";
+  } else {
+    return "DESC";
+  }
+}
 function page_info_decoder() {
   return field(
     "endCursor",
@@ -9792,7 +10560,7 @@ function page_info_decoder() {
     }
   );
 }
-function release_decoder() {
+function release_decoder2() {
   return field(
     "name",
     optional(string2),
@@ -9801,7 +10569,7 @@ function release_decoder() {
         "publishedAt",
         optional(string2),
         (published_at) => {
-          return success(new Release(name, published_at));
+          return success(new Release2(name, published_at));
         }
       );
     }
@@ -9809,14 +10577,20 @@ function release_decoder() {
 }
 function license_decoder() {
   return field(
-    "nickname",
+    "spdxId",
     optional(string2),
-    (nickname) => {
+    (spdx_id) => {
       return field(
-        "spdxId",
-        optional(string2),
-        (spdx_id) => {
-          return success(new License(nickname, spdx_id));
+        "name",
+        string2,
+        (name) => {
+          return field(
+            "nickname",
+            optional(string2),
+            (nickname) => {
+              return success(new License(spdx_id, name, nickname));
+            }
+          );
         }
       );
     }
@@ -9831,19 +10605,19 @@ function parent_repository_decoder() {
     }
   );
 }
-function language_decoder() {
+function language_decoder2() {
   return field(
     "name",
     string2,
     (name) => {
-      return success(new Language(name));
+      return success(new Language2(name));
     }
   );
 }
 function language_edge_decoder() {
   return field(
     "node",
-    language_decoder(),
+    language_decoder2(),
     (node) => {
       return field(
         "size",
@@ -9878,19 +10652,19 @@ function language_connection_decoder() {
     }
   );
 }
-function topic_decoder() {
+function topic_decoder2() {
   return field(
     "name",
     string2,
     (name) => {
-      return success(new Topic(name));
+      return success(new Topic2(name));
     }
   );
 }
 function repository_topic_decoder() {
   return field(
     "topic",
-    topic_decoder(),
+    topic_decoder2(),
     (topic) => {
       return field(
         "url",
@@ -9960,7 +10734,7 @@ function repository_decoder() {
                                     (languages) => {
                                       return field(
                                         "latestRelease",
-                                        optional(release_decoder()),
+                                        optional(release_decoder2()),
                                         (latest_release) => {
                                           return field(
                                             "licenseInfo",
@@ -10094,7 +10868,7 @@ function starred_repository_connection_decoder() {
     }
   );
 }
-function user_decoder() {
+function user_decoder2() {
   return field(
     "login",
     string2,
@@ -10103,167 +10877,39 @@ function user_decoder() {
         "starredRepositories",
         starred_repository_connection_decoder(),
         (starred_repositories) => {
-          return success(new User(login, starred_repositories));
+          return success(new User2(login, starred_repositories));
         }
       );
     }
   );
 }
-function starred_repos_response_decoder() {
+function user_starred_repos_response_decoder() {
   return field(
-    "viewer",
-    user_decoder(),
-    (viewer) => {
-      return success(new StarredReposResponse(viewer));
+    "user",
+    optional(user_decoder2()),
+    (user) => {
+      return success(new UserStarredReposResponse(user));
     }
   );
 }
-function starred_repos(client, cursor) {
+function user_starred_repos(client, login, cursor, order) {
   return prepare_request(
     client,
-    "query GetStarredRepos($cursor: String) {\n  viewer {\n    login\n\n    starredRepositories(first: 40, after: $cursor) {\n      isOverLimit\n      totalCount\n\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n\n      edges {\n        starredAt\n\n        node {\n          archivedAt\n          description\n          forkCount\n          homepageUrl\n          url\n          isFork\n          isPrivate\n          isTemplate\n\n          languages(first: 5, orderBy: { direction: DESC, field: SIZE }) {\n            totalCount\n            totalSize\n            edges {\n              node {\n                name\n              }\n              size\n            }\n          }\n\n          latestRelease {\n            name\n            publishedAt\n          }\n\n          licenseInfo {\n            nickname\n            spdxId\n          }\n\n          nameWithOwner\n          parent {\n            nameWithOwner\n          }\n          pushedAt\n\n          repositoryTopics(first: 20) {\n            totalCount\n            nodes {\n              topic {\n                name\n              }\n              url\n            }\n          }\n\n          stargazerCount\n        }\n      }\n    }\n  }\n}\n",
-    object2(toList([["cursor", string3(cursor)]]))
+    "query GetUserStarredRepos($login: String!, $cursor: String, $order: OrderDirection!) {\n  user(login: $login) {\n    login\n\n    starredRepositories(first: 40, after: $cursor, orderBy: { field: STARRED_AT, direction: $order }) {\n      isOverLimit\n      totalCount\n\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n\n      edges {\n        starredAt\n\n        node {\n          archivedAt\n          description\n          forkCount\n          homepageUrl\n          url\n          isFork\n          isPrivate\n          isTemplate\n\n          languages(first: 10, orderBy: { direction: DESC, field: SIZE }) {\n            totalCount\n            totalSize\n            edges {\n              node {\n                name\n              }\n              size\n            }\n          }\n\n          latestRelease {\n            name\n            publishedAt\n          }\n\n          licenseInfo {\n            spdxId\n            name\n            nickname\n          }\n\n          nameWithOwner\n          parent {\n            nameWithOwner\n          }\n          pushedAt\n\n          repositoryTopics(first: 20) {\n            totalCount\n            nodes {\n              topic {\n                name\n              }\n              url\n            }\n          }\n\n          stargazerCount\n        }\n      }\n    }\n  }\n}\n",
+    object2(
+      toList([
+        ["login", string3(login)],
+        ["cursor", string3(cursor)],
+        ["order", string3(order_direction_to_string(order))]
+      ])
+    )
   );
 }
-function parse_starred_repos_response(body) {
-  return parse_response(body, starred_repos_response_decoder());
+function parse_user_starred_repos_response(body) {
+  return parse_response(body, user_starred_repos_response_decoder());
 }
 
-// build/dev/javascript/starlist/starlist/internal/star_types.mjs
-var Timestamp = class extends CustomType {
-  constructor(date, time) {
-    super();
-    this.date = date;
-    this.time = time;
-  }
-};
-var Language2 = class extends CustomType {
-  constructor(name, percent) {
-    super();
-    this.name = name;
-    this.percent = percent;
-  }
-};
-var Topic2 = class extends CustomType {
-  constructor(name, url) {
-    super();
-    this.name = name;
-    this.url = url;
-  }
-};
-var Release2 = class extends CustomType {
-  constructor(name, published_on) {
-    super();
-    this.name = name;
-    this.published_on = published_on;
-  }
-};
-var StarredRepo = class extends CustomType {
-  constructor(archived_on, description, forks, homepage_url, is_fork, is_private, is_template, language_count2, languages, latest_release, license, name, parent_repo, pushed_on, starred_on, stars, topic_count, topics, url) {
-    super();
-    this.archived_on = archived_on;
-    this.description = description;
-    this.forks = forks;
-    this.homepage_url = homepage_url;
-    this.is_fork = is_fork;
-    this.is_private = is_private;
-    this.is_template = is_template;
-    this.language_count = language_count2;
-    this.languages = languages;
-    this.latest_release = latest_release;
-    this.license = license;
-    this.name = name;
-    this.parent_repo = parent_repo;
-    this.pushed_on = pushed_on;
-    this.starred_on = starred_on;
-    this.stars = stars;
-    this.topic_count = topic_count;
-    this.topics = topics;
-    this.url = url;
-  }
-};
-var PartitionContext = class extends CustomType {
-  constructor(name, filename2, count, count_label) {
-    super();
-    this.name = name;
-    this.filename = filename2;
-    this.count = count;
-    this.count_label = count_label;
-  }
-};
-var TemplateVars = class extends CustomType {
-  constructor(data_version2, updated_at, generated_at, login, truncated, total, fetched, stars, groups, group_count, group_description, partition2, partitions, partition_count, partition_description2) {
-    super();
-    this.data_version = data_version2;
-    this.updated_at = updated_at;
-    this.generated_at = generated_at;
-    this.login = login;
-    this.truncated = truncated;
-    this.total = total;
-    this.fetched = fetched;
-    this.stars = stars;
-    this.groups = groups;
-    this.group_count = group_count;
-    this.group_description = group_description;
-    this.partition = partition2;
-    this.partitions = partitions;
-    this.partition_count = partition_count;
-    this.partition_description = partition_description2;
-  }
-};
-var QueryResponse = class extends CustomType {
-  constructor(data_version2, login, truncated, total, fetched, stars, updated_at) {
-    super();
-    this.data_version = data_version2;
-    this.login = login;
-    this.truncated = truncated;
-    this.total = total;
-    this.fetched = fetched;
-    this.stars = stars;
-    this.updated_at = updated_at;
-  }
-};
-var ResponseRepo = class extends CustomType {
-  constructor(archived_on, description, forks, homepage_url, is_fork, is_private, is_template, language_count2, languages, latest_release, license, name, parent_repo, pushed_on, starred_on, stars, topic_count, topics, url) {
-    super();
-    this.archived_on = archived_on;
-    this.description = description;
-    this.forks = forks;
-    this.homepage_url = homepage_url;
-    this.is_fork = is_fork;
-    this.is_private = is_private;
-    this.is_template = is_template;
-    this.language_count = language_count2;
-    this.languages = languages;
-    this.latest_release = latest_release;
-    this.license = license;
-    this.name = name;
-    this.parent_repo = parent_repo;
-    this.pushed_on = pushed_on;
-    this.starred_on = starred_on;
-    this.stars = stars;
-    this.topic_count = topic_count;
-    this.topics = topics;
-    this.url = url;
-  }
-};
-var ResponseRelease = class extends CustomType {
-  constructor(name, published_on) {
-    super();
-    this.name = name;
-    this.published_on = published_on;
-  }
-};
-var GeneratedFile = class extends CustomType {
-  constructor(filename2, data2) {
-    super();
-    this.filename = filename2;
-    this.data = data2;
-  }
-};
-var data_version = 2;
-
-// build/dev/javascript/starlist/starlist/timestamp_ffi.mjs
+// build/dev/javascript/starlist/starlist_ffi.mjs
 function formatDateLocale(locale, timeZone, dateStyle, isoString) {
   const formatter = new Intl.DateTimeFormat(locale, { timeZone, dateStyle });
   return formatter.format(new Date(isoString));
@@ -10302,11 +10948,103 @@ function nowEpochSeconds() {
   return Math.floor(Date.now() / 1e3);
 }
 
-// build/dev/javascript/starlist/starlist/internal/timestamp.mjs
-function now_iso() {
-  return nowIso();
+// build/dev/javascript/starlist/starlist/utils.mjs
+function is_absolute(path2) {
+  return starts_with(path2, "/");
 }
-function format(cfg, iso_string) {
+function collapse_segments(loop$acc, loop$segments) {
+  while (true) {
+    let acc = loop$acc;
+    let segments = loop$segments;
+    if (segments instanceof Empty) {
+      return new Ok(reverse(acc));
+    } else {
+      let $ = segments.head;
+      if ($ === ".") {
+        let rest = segments.tail;
+        loop$acc = acc;
+        loop$segments = rest;
+      } else if ($ === "") {
+        let rest = segments.tail;
+        loop$acc = acc;
+        loop$segments = rest;
+      } else if ($ === "..") {
+        let rest = segments.tail;
+        if (acc instanceof Empty) {
+          return new Error2(void 0);
+        } else {
+          let tail = acc.tail;
+          loop$acc = tail;
+          loop$segments = rest;
+        }
+      } else {
+        let seg = $;
+        let rest = segments.tail;
+        loop$acc = prepend(seg, acc);
+        loop$segments = rest;
+      }
+    }
+  }
+}
+function normalize(path2) {
+  let _block;
+  let $1 = starts_with(path2, "/");
+  if ($1) {
+    _block = ["/", drop_start(path2, 1)];
+  } else {
+    _block = ["", path2];
+  }
+  let $ = _block;
+  let prefix;
+  let to_split;
+  prefix = $[0];
+  to_split = $[1];
+  let _block$1;
+  let _pipe = split2(to_split, "/");
+  _block$1 = ((_capture) => {
+    return collapse_segments(toList([]), _capture);
+  })(
+    _pipe
+  );
+  let segments = _block$1;
+  if (segments instanceof Ok) {
+    let parts = segments[0];
+    return new Ok(prefix + join(parts, "/"));
+  } else {
+    return segments;
+  }
+}
+function validate_path(path2, repo_root, label) {
+  let _block;
+  let $ = is_absolute(path2);
+  if ($) {
+    _block = path2;
+  } else {
+    _block = repo_root + "/" + path2;
+  }
+  let resolved = _block;
+  let $1 = normalize(resolved);
+  if ($1 instanceof Ok) {
+    let expanded = $1[0];
+    let $2 = starts_with(expanded, repo_root);
+    if ($2) {
+      return new Ok(expanded);
+    } else {
+      return new Error2(
+        new SecurityError(
+          label + " path '" + path2 + "' resolves outside repository root"
+        )
+      );
+    }
+  } else {
+    return new Error2(
+      new SecurityError(
+        label + " path '" + path2 + "' contains invalid traversal"
+      )
+    );
+  }
+}
+function format_timestamp(cfg, iso_string) {
   if (cfg instanceof IsoDateTime) {
     let time_zone = cfg.time_zone;
     return new Timestamp(
@@ -10324,8 +11062,11 @@ function format(cfg, iso_string) {
     );
   }
 }
+function now_iso() {
+  return nowIso();
+}
 function now(cfg) {
-  return format(cfg, nowIso());
+  return format_timestamp(cfg, nowIso());
 }
 
 // build/dev/javascript/starlist/starlist/internal/github_client.mjs
@@ -10334,7 +11075,7 @@ var default_backoff_ms = 6e4;
 function make_client(token4) {
   return new_with_auth("https://api.github.com/graphql", token4);
 }
-function get_header(headers, name) {
+function get_header2(headers, name) {
   let lower_name = lowercase(name);
   let _pipe = headers;
   let _pipe$1 = find(
@@ -10343,7 +11084,7 @@ function get_header(headers, name) {
       return lowercase(h[0]) === lower_name;
     }
   );
-  let _pipe$2 = map5(_pipe$1, (h) => {
+  let _pipe$2 = map6(_pipe$1, (h) => {
     return h[1];
   });
   return from_result(_pipe$2);
@@ -10376,7 +11117,7 @@ function extract_languages(repo) {
             _block = 0;
           }
           let percent = _block;
-          return new Language2(edge.node.name, percent);
+          return new Language(edge.node.name, percent);
         }
       );
     } else {
@@ -10393,7 +11134,7 @@ function extract_release(repo) {
     let $1 = rel.published_at;
     if ($1 instanceof Some) {
       let published = $1[0];
-      return new Some(new ResponseRelease(rel.name, published));
+      return new Some(new Release(rel.name, published));
     } else {
       return $1;
     }
@@ -10401,23 +11142,16 @@ function extract_release(repo) {
     return $;
   }
 }
-function extract_license(repo) {
+function extract_licence(repo) {
   let $ = repo.license_info;
   if ($ instanceof Some) {
-    let lic = $[0];
-    let $1 = lic.spdx_id;
-    if ($1 instanceof Some) {
-      let spdx = $1[0];
-      return spdx;
-    } else {
-      let $2 = lic.nickname;
-      if ($2 instanceof Some) {
-        let nick = $2[0];
-        return nick;
-      } else {
-        return "";
+    let licence = $[0];
+    return lazy_unwrap(
+      licence.spdx_id,
+      () => {
+        return unwrap(licence.nickname, licence.name);
       }
-    }
+    );
   } else {
     return "";
   }
@@ -10436,20 +11170,17 @@ function extract_topics(repo) {
   if ($ instanceof Some) {
     let nodes = $[0];
     return new Some(
-      map3(
-        nodes,
-        (rt) => {
-          return new Topic2(rt.topic.name, rt.url);
-        }
-      )
+      map3(nodes, (rt) => {
+        return new Topic(rt.topic.name, rt.url);
+      })
     );
   } else {
     return $;
   }
 }
-function edge_to_response_repo(edge) {
+function edge_to_repo(edge) {
   let repo = edge.node;
-  return new ResponseRepo(
+  return new Repo(
     repo.archived_at,
     repo.description,
     repo.fork_count,
@@ -10460,13 +11191,12 @@ function edge_to_response_repo(edge) {
     language_count(repo),
     extract_languages(repo),
     extract_release(repo),
-    extract_license(repo),
+    extract_licence(repo),
     repo.name_with_owner,
     extract_parent(repo),
     unwrap(repo.pushed_at, ""),
     edge.starred_at,
     repo.stargazer_count,
-    repo.repository_topics.total_count,
     extract_topics(repo),
     repo.url
   );
@@ -10474,8 +11204,85 @@ function edge_to_response_repo(edge) {
 function jitter(min_ms, max_ms) {
   return min_ms + random(max_ms - min_ms + 1);
 }
+function resolve_login(client, login) {
+  if (login instanceof Some) {
+    let login$1 = login[0];
+    return resolve(new Ok(login$1));
+  } else {
+    let $ = identity3(client);
+    if ($ instanceof Ok) {
+      let request = $[0];
+      let _pipe = send(request);
+      let _pipe$1 = try_await(_pipe, read_text_body);
+      return then_await(
+        _pipe$1,
+        (response) => {
+          if (response instanceof Ok) {
+            let response$1 = response[0];
+            let $1 = response$1.status;
+            if ($1 === 200) {
+              let $2 = parse_identity_response(response$1.body);
+              if ($2 instanceof Ok) {
+                let parsed = $2[0];
+                return resolve(new Ok(parsed.viewer.login));
+              } else {
+                let msg = $2[0];
+                return resolve(
+                  new Error2(
+                    new GitHubApiError(
+                      "Failed to decode response: " + msg
+                    )
+                  )
+                );
+              }
+            } else {
+              let status = $1;
+              return resolve(
+                new Error2(
+                  new GitHubApiError(
+                    "GitHub API returned status " + to_string(status) + ": " + slice(
+                      response$1.body,
+                      0,
+                      200
+                    )
+                  )
+                )
+              );
+            }
+          } else {
+            return resolve(
+              new Error2(
+                new GitHubApiError(
+                  "Network error during GitHub API request"
+                )
+              )
+            );
+          }
+        }
+      );
+    } else {
+      let msg = $[0];
+      return resolve(
+        new Error2(
+          new GitHubApiError("Failed to build identity query: " + msg)
+        )
+      );
+    }
+  }
+}
+function try_parse_viewer(login, response, callback) {
+  let $ = response.user;
+  if ($ instanceof Some) {
+    let viewer = $[0];
+    return callback(viewer);
+  } else {
+    return resolve(
+      new Error2(new GitHubApiError("Could not find login: " + login))
+    );
+  }
+}
 function get_backoff_ms(headers) {
-  let $ = get_header(headers, "retry-after");
+  let $ = get_header2(headers, "retry-after");
   if ($ instanceof Some) {
     let value = $[0];
     let $1 = parse_int(value);
@@ -10486,7 +11293,7 @@ function get_backoff_ms(headers) {
       return default_backoff_ms;
     }
   } else {
-    let $1 = get_header(headers, "x-ratelimit-reset");
+    let $1 = get_header2(headers, "x-ratelimit-reset");
     if ($1 instanceof Some) {
       let value = $1[0];
       let $2 = parse_int(value);
@@ -10508,55 +11315,72 @@ function get_backoff_ms(headers) {
     }
   }
 }
-function handle_success(client, acc, body, max_stars) {
-  let $ = parse_starred_repos_response(body);
+function handle_success(client, login, acc, body, max_stars, order) {
+  let $ = parse_user_starred_repos_response(body);
   if ($ instanceof Ok) {
     let parsed = $[0];
-    let viewer = parsed.viewer;
-    let conn = viewer.starred_repositories;
-    let _block;
-    let $1 = conn.edges;
-    if ($1 instanceof Some) {
-      let edges = $1[0];
-      _block = append3(acc, edges);
-    } else {
-      _block = acc;
-    }
-    let new_edges = _block;
-    let login = viewer.login;
-    let truncated = conn.is_over_limit;
-    let total = conn.total_count;
-    let _block$1;
-    if (max_stars instanceof Some) {
-      let n = max_stars[0];
-      _block$1 = length2(new_edges) >= n;
-    } else {
-      _block$1 = false;
-    }
-    let reached_limit = _block$1;
-    info(
-      "Fetched page " + to_string(length2(new_edges)) + "/" + to_string(
-        total
-      ) + " stars so far"
-    );
-    if (reached_limit) {
-      return resolve(new Ok([new_edges, login, truncated, total]));
-    } else {
-      let $2 = conn.page_info.has_next_page;
-      let $3 = conn.page_info.end_cursor;
-      if ($2 && $3 instanceof Some) {
-        let next_cursor = $3[0];
-        let _pipe = wait(jitter(200, 500));
-        return then_await(
-          _pipe,
-          (_) => {
-            return fetch_all_pages(client, next_cursor, new_edges, 0, max_stars);
-          }
+    return try_parse_viewer(
+      login,
+      parsed,
+      (viewer) => {
+        let conn = viewer.starred_repositories;
+        let _block;
+        let $1 = conn.edges;
+        if ($1 instanceof Some) {
+          let edges = $1[0];
+          _block = append(acc, edges);
+        } else {
+          _block = acc;
+        }
+        let new_edges = _block;
+        let login$1 = viewer.login;
+        let truncated = conn.is_over_limit;
+        let total2 = conn.total_count;
+        let _block$1;
+        if (max_stars instanceof Some) {
+          let n = max_stars[0];
+          _block$1 = length(new_edges) >= n;
+        } else {
+          _block$1 = false;
+        }
+        let reached_limit = _block$1;
+        info2(
+          "Fetched page " + to_string(length(new_edges)) + "/" + to_string(
+            total2
+          ) + " stars so far"
         );
-      } else {
-        return resolve(new Ok([new_edges, login, truncated, total]));
+        if (reached_limit) {
+          return resolve(
+            new Ok([new_edges, login$1, truncated, total2])
+          );
+        } else {
+          let $2 = conn.page_info.has_next_page;
+          let $3 = conn.page_info.end_cursor;
+          if ($2 && $3 instanceof Some) {
+            let next_cursor = $3[0];
+            let _pipe = wait(jitter(200, 500));
+            return then_await(
+              _pipe,
+              (_) => {
+                return fetch_all_pages(
+                  client,
+                  login$1,
+                  next_cursor,
+                  new_edges,
+                  0,
+                  max_stars,
+                  order
+                );
+              }
+            );
+          } else {
+            return resolve(
+              new Ok([new_edges, login$1, truncated, total2])
+            );
+          }
+        }
       }
-    }
+    );
   } else {
     let msg = $[0];
     return resolve(
@@ -10564,8 +11388,8 @@ function handle_success(client, acc, body, max_stars) {
     );
   }
 }
-function fetch_all_pages(client, cursor, acc, retries, max_stars) {
-  let $ = starred_repos(client, cursor);
+function fetch_all_pages(client, login, cursor, acc, retries, max_stars, order) {
+  let $ = user_starred_repos(client, login, cursor, order);
   if ($ instanceof Ok) {
     let request = $[0];
     let _pipe = send(request);
@@ -10575,7 +11399,16 @@ function fetch_all_pages(client, cursor, acc, retries, max_stars) {
       (result) => {
         if (result instanceof Ok) {
           let resp = result[0];
-          return handle_response(client, cursor, acc, retries, resp, max_stars);
+          return handle_response(
+            client,
+            login,
+            cursor,
+            acc,
+            retries,
+            resp,
+            max_stars,
+            order
+          );
         } else {
           return resolve(
             new Error2(
@@ -10594,14 +11427,32 @@ function fetch_all_pages(client, cursor, acc, retries, max_stars) {
     );
   }
 }
-function handle_response(client, cursor, acc, retries, resp, max_stars) {
+function handle_response(client, login, cursor, acc, retries, resp, max_stars, order) {
   let $ = resp.status;
   if ($ === 200) {
-    return handle_success(client, acc, resp.body, max_stars);
+    return handle_success(client, login, acc, resp.body, max_stars, order);
   } else if ($ === 429) {
-    return handle_rate_limit(client, cursor, acc, retries, resp, max_stars);
+    return handle_rate_limit(
+      client,
+      login,
+      cursor,
+      acc,
+      retries,
+      resp,
+      max_stars,
+      order
+    );
   } else if ($ === 403) {
-    return handle_rate_limit(client, cursor, acc, retries, resp, max_stars);
+    return handle_rate_limit(
+      client,
+      login,
+      cursor,
+      acc,
+      retries,
+      resp,
+      max_stars,
+      order
+    );
   } else {
     let status = $;
     return resolve(
@@ -10617,40 +11468,59 @@ function handle_response(client, cursor, acc, retries, resp, max_stars) {
     );
   }
 }
-function fetch_starred_repos(token4, max_stars) {
+function fetch_starred_repos(token4, login, max_stars, order) {
   let client = make_client(token4);
-  let _pipe = fetch_all_pages(client, "", toList([]), 0, max_stars);
-  return map_promise(
+  let _block;
+  if (order instanceof Descending2) {
+    _block = new DESC();
+  } else {
+    _block = new ASC();
+  }
+  let order_dir = _block;
+  let _pipe = resolve_login(client, login);
+  let _pipe$1 = then_await(
     _pipe,
     (result) => {
-      let _pipe$1 = result;
-      return map5(
-        _pipe$1,
+      if (result instanceof Ok) {
+        let login$1 = result[0];
+        return fetch_all_pages(
+          client,
+          login$1,
+          "",
+          toList([]),
+          0,
+          max_stars,
+          order_dir
+        );
+      } else {
+        let err = result[0];
+        return resolve(new Error2(err));
+      }
+    }
+  );
+  return map_promise(
+    _pipe$1,
+    (result) => {
+      let _pipe$2 = result;
+      return map6(
+        _pipe$2,
         (acc) => {
           let edges;
-          let login;
+          let login$1;
           let truncated;
-          let total;
+          let total2;
           edges = acc[0];
-          login = acc[1];
+          login$1 = acc[1];
           truncated = acc[2];
-          total = acc[3];
-          let repos = map3(edges, edge_to_response_repo);
-          return new QueryResponse(
-            data_version,
-            login,
-            truncated,
-            total,
-            length2(repos),
-            repos,
-            now_iso()
-          );
+          total2 = acc[3];
+          let repos = map3(edges, edge_to_repo);
+          return [repos, login$1, truncated, total2];
         }
       );
     }
   );
 }
-function handle_rate_limit(client, cursor, acc, retries, resp, max_stars) {
+function handle_rate_limit(client, login, cursor, acc, retries, resp, max_stars, order) {
   let $ = retries >= max_retries;
   if ($) {
     return resolve(
@@ -10662,7 +11532,7 @@ function handle_rate_limit(client, cursor, acc, retries, resp, max_stars) {
     );
   } else {
     let wait_ms = get_backoff_ms(resp.headers);
-    warning(
+    warning2(
       "Rate limited (status " + to_string(resp.status) + "), waiting " + to_string(
         globalThis.Math.trunc(wait_ms / 1e3)
       ) + "s before retry " + to_string(retries + 1) + "/" + to_string(
@@ -10673,21 +11543,22 @@ function handle_rate_limit(client, cursor, acc, retries, resp, max_stars) {
     return then_await(
       _pipe,
       (_) => {
-        return fetch_all_pages(client, cursor, acc, retries + 1, max_stars);
+        return fetch_all_pages(
+          client,
+          login,
+          cursor,
+          acc,
+          retries + 1,
+          max_stars,
+          order
+        );
       }
     );
   }
 }
 
 // build/dev/javascript/starlist/starlist/internal/partitioner.mjs
-var PartitionInfo = class extends CustomType {
-  constructor(key, filename2, count) {
-    super();
-    this.key = key;
-    this.filename = filename2;
-    this.count = count;
-  }
-};
+var FILEPATH2 = "src/starlist/internal/partitioner.gleam";
 var PartitionData = class extends CustomType {
   constructor(key, filename2, vars) {
     super();
@@ -10697,9 +11568,9 @@ var PartitionData = class extends CustomType {
   }
 };
 var PartitionResult = class extends CustomType {
-  constructor(partitions, data2) {
+  constructor(index6, data2) {
     super();
-    this.partitions = partitions;
+    this.index = index6;
     this.data = data2;
   }
 };
@@ -10913,10 +11784,10 @@ function sanitize_key(key) {
 function make_filename(pattern, key) {
   return replace(pattern, "{key}", sanitize_key(key));
 }
-function partition_matches_group(partition2, group3) {
-  if (group3 instanceof GroupByLanguage && partition2 instanceof PartitionByLanguage) {
+function partition_matches_group(partition2, group4) {
+  if (group4 instanceof GroupByLanguage && partition2 instanceof PartitionByLanguage) {
     return true;
-  } else if (group3 instanceof GroupByTopic && partition2 instanceof PartitionByTopic) {
+  } else if (group4 instanceof GroupByTopic && partition2 instanceof PartitionByTopic) {
     return true;
   } else {
     return false;
@@ -10932,7 +11803,7 @@ function upsert(acc, key, repo) {
     _block = toList([]);
   }
   let existing = _block;
-  return insert(acc, key, append3(existing, toList([repo])));
+  return insert(acc, key, append(existing, toList([repo])));
 }
 function bucket_stars(stars, partition2) {
   return fold2(
@@ -10997,7 +11868,7 @@ function group_by_licence(stars) {
     make(),
     (acc, repo) => {
       let _block;
-      let $ = repo.license;
+      let $ = repo.licence;
       if ($ === "") {
         _block = "Unknown license";
       } else {
@@ -11008,56 +11879,50 @@ function group_by_licence(stars) {
     }
   );
 }
-function group_stars(stars, group3) {
-  if (group3 instanceof GroupByLanguage) {
+function group_stars(stars, group4) {
+  if (group4 instanceof GroupByLanguage) {
     return [group_by_language(stars), "languages"];
-  } else if (group3 instanceof GroupByTopic) {
+  } else if (group4 instanceof GroupByTopic) {
     return [group_by_topic(stars), "topics"];
   } else {
     return [group_by_licence(stars), "licences"];
   }
 }
-function scope_vars(base, stars, group3, grouped, partition_ctx) {
+function scope_vars(base, stars, group4, grouped, partition_ctx) {
   if (grouped) {
-    let $ = group_stars(stars, group3);
+    let $ = group_stars(stars, group4);
     let groups;
     let description;
     groups = $[0];
     description = $[1];
-    return new TemplateVars(
+    return new PageVars(
       base.data_version,
       base.updated_at,
       base.generated_at,
       base.login,
       base.truncated,
-      length2(stars),
-      length2(stars),
+      length(stars),
+      length(stars),
       stars,
       groups,
       size(groups),
       description,
-      partition_ctx,
-      base.partitions,
-      base.partition_count,
-      base.partition_description
+      partition_ctx
     );
   } else {
-    return new TemplateVars(
+    return new PageVars(
       base.data_version,
       base.updated_at,
       base.generated_at,
       base.login,
       base.truncated,
-      length2(stars),
-      length2(stars),
+      length(stars),
+      length(stars),
       stars,
       make(),
       0,
       "",
-      partition_ctx,
-      base.partitions,
-      base.partition_count,
-      base.partition_description
+      partition_ctx
     );
   }
 }
@@ -11070,32 +11935,21 @@ function dict_get(d, key) {
     return toList([]);
   }
 }
-function partition(vars, partition2, group3, partition_filename) {
+function partition(vars, partition2, group4, partition_filename, partition_description2) {
   if (partition2 instanceof PartitionOff) {
     return new Error2(void 0);
   } else {
     let buckets = bucket_stars(vars.stars, partition2);
     let _block;
     let _pipe = keys(buckets);
-    _block = sort(_pipe, compare);
+    _block = sort(_pipe, compare3);
     let sorted_keys = _block;
-    let partitions = map3(
-      sorted_keys,
-      (key) => {
-        let stars = dict_get(buckets, key);
-        return new PartitionInfo(
-          key,
-          make_filename(partition_filename, key),
-          length2(stars)
-        );
-      }
-    );
-    let grouped = !partition_matches_group(partition2, group3);
+    let grouped = !partition_matches_group(partition2, group4);
     let data2 = map3(
       sorted_keys,
       (key) => {
         let stars = dict_get(buckets, key);
-        let count = length2(stars);
+        let count = length(stars);
         let filename2 = make_filename(partition_filename, key);
         let _block$1;
         if (count === 1) {
@@ -11105,17 +11959,51 @@ function partition(vars, partition2, group3, partition_filename) {
           _block$1 = to_string(n) + " repos";
         }
         let count_label = _block$1;
-        let ctx = new PartitionContext(
-          key,
-          filename2,
-          count,
-          count_label
-        );
-        let scoped = scope_vars(vars, stars, group3, grouped, new Some(ctx));
+        let ctx = new PartitionContext(key, filename2, count, count_label);
+        let scoped = scope_vars(vars, stars, group4, grouped, new Some(ctx));
         return new PartitionData(key, filename2, scoped);
       }
     );
-    return new Ok(new PartitionResult(partitions, data2));
+    let contexts = map3(
+      data2,
+      (d) => {
+        let $ = d.vars.partition;
+        let ctx;
+        if ($ instanceof Some) {
+          ctx = $[0];
+        } else {
+          throw makeError(
+            "let_assert",
+            FILEPATH2,
+            "starlist/internal/partitioner",
+            66,
+            "partition",
+            "Pattern match failed, no pattern matched the value.",
+            {
+              value: $,
+              start: 2103,
+              end: 2142,
+              pattern_start: 2114,
+              pattern_end: 2123
+            }
+          );
+        }
+        return ctx;
+      }
+    );
+    let index6 = new IndexVars(
+      vars.data_version,
+      vars.updated_at,
+      vars.generated_at,
+      vars.login,
+      vars.truncated,
+      vars.total,
+      vars.fetched,
+      contexts,
+      length(contexts),
+      partition_description2
+    );
+    return new Ok(new PartitionResult(index6, data2));
   }
 }
 
@@ -11231,7 +12119,7 @@ var List2 = class extends CustomType {
     this[0] = $0;
   }
 };
-function new$3() {
+function new$4() {
   return make();
 }
 function add_string(assigns, name, value) {
@@ -11439,7 +12327,7 @@ function append_node(nodes, node, shift) {
     }
   }
 }
-function new$4() {
+function new$5() {
   return new Builder(toList([]), empty3(), append_node, append5);
 }
 function push2(builder, item) {
@@ -11535,7 +12423,7 @@ function array3(shift, nodes) {
 function from_list3(list3) {
   let $ = (() => {
     let _pipe = list3;
-    let _pipe$1 = fold2(_pipe, new$4(), push2);
+    let _pipe$1 = fold2(_pipe, new$5(), push2);
     return build(_pipe$1);
   })();
   if ($ instanceof Ok) {
@@ -11604,11 +12492,11 @@ function check2(regexp, string4) {
 }
 
 // build/dev/javascript/nibble/nibble/lexer.mjs
-var FILEPATH2 = "src/nibble/lexer.gleam";
+var FILEPATH3 = "src/nibble/lexer.gleam";
 var Matcher = class extends CustomType {
-  constructor(run4) {
+  constructor(run3) {
     super();
-    this.run = run4;
+    this.run = run3;
   }
 };
 var Keep = class extends CustomType {
@@ -11678,7 +12566,7 @@ function keep(f) {
   return new Matcher(
     (mode, lexeme, lookahead) => {
       let _pipe = f(lexeme, lookahead);
-      let _pipe$1 = map5(
+      let _pipe$1 = map6(
         _pipe,
         (_capture) => {
           return new Keep(_capture, mode);
@@ -11747,7 +12635,7 @@ function keyword(str, breaker, value) {
   } else {
     throw makeError(
       "let_assert",
-      FILEPATH2,
+      FILEPATH3,
       "nibble/lexer",
       334,
       "keyword",
@@ -11783,7 +12671,7 @@ function identifier(start, inner, reserved, to_value) {
   } else {
     throw makeError(
       "let_assert",
-      FILEPATH2,
+      FILEPATH3,
       "nibble/lexer",
       486,
       "identifier",
@@ -11804,7 +12692,7 @@ function identifier(start, inner, reserved, to_value) {
   } else {
     throw makeError(
       "let_assert",
-      FILEPATH2,
+      FILEPATH3,
       "nibble/lexer",
       487,
       "identifier",
@@ -11829,7 +12717,7 @@ function identifier(start, inner, reserved, to_value) {
           return new NoMatch();
         }
       } else if ($3) {
-        let $4 = contains(reserved, lexeme);
+        let $4 = contains2(reserved, lexeme);
         if ($4) {
           return new NoMatch();
         } else {
@@ -11852,7 +12740,7 @@ function whitespace(token4) {
   } else {
     throw makeError(
       "let_assert",
-      FILEPATH2,
+      FILEPATH3,
       "nibble/lexer",
       557,
       "whitespace",
@@ -12166,16 +13054,16 @@ function do$2(parser, f) {
     }
   );
 }
-function then$2(parser, f) {
+function then$3(parser, f) {
   return do$2(parser, f);
 }
-function map10(parser, f) {
+function map11(parser, f) {
   return do$2(parser, (a) => {
     return return$(f(a));
   });
 }
 function replace4(parser, b) {
-  return map10(parser, (_) => {
+  return map11(parser, (_) => {
     return b;
   });
 }
@@ -12487,7 +13375,7 @@ function sequence(parser, sep) {
     toList([
       (() => {
         let _pipe = parser;
-        return then$2(
+        return then$3(
           _pipe,
           (_capture) => {
             return more(_capture, parser, sep);
@@ -12501,7 +13389,7 @@ function sequence(parser, sep) {
 function optional2(parser) {
   return one_of2(
     toList([
-      map10(parser, (var0) => {
+      map11(parser, (var0) => {
         return new Some(var0);
       }),
       return$(new None())
@@ -12733,7 +13621,7 @@ function gen_lexer() {
 }
 function do_parse2(tokens, parser) {
   let _pipe = run2(tokens, parser);
-  let _pipe$1 = map5(_pipe, (state) => {
+  let _pipe$1 = map6(_pipe, (state) => {
     return state.emitted;
   });
   return map_error(
@@ -13083,14 +13971,14 @@ function for_tag(state) {
 function render_binding() {
   return do$2(
     variable_name(),
-    (to2) => {
+    (to3) => {
       return do$2(
         token3(new Colon()),
         (_) => {
           return do$2(
             variable2(),
             (from2) => {
-              return return$([from2, to2]);
+              return return$([from2, to3]);
             }
           );
         }
@@ -13154,7 +14042,7 @@ function filename() {
         file_name_tokens,
         new$(),
         (acc, token4) => {
-          return append(acc, stringify_token(token4));
+          return append2(acc, stringify_token(token4));
         }
       );
       let _pipe$1 = identity(_pipe);
@@ -13258,7 +14146,7 @@ function base_parser(old_state) {
         toList([
           (() => {
             let _pipe2 = tag_parser(state);
-            return map10(
+            return map11(
               _pipe2,
               (var0) => {
                 return new Continue2(var0);
@@ -13267,12 +14155,12 @@ function base_parser(old_state) {
           })(),
           (() => {
             let _pipe2 = any();
-            let _pipe$1 = map10(
+            let _pipe$1 = map11(
               _pipe2,
               (token4) => {
                 return new State3(
                   state.emitted,
-                  append(
+                  append2(
                     state.current_text,
                     stringify_token(token4)
                   ),
@@ -13282,7 +14170,7 @@ function base_parser(old_state) {
                 );
               }
             );
-            return map10(
+            return map11(
               _pipe$1,
               (var0) => {
                 return new Continue2(var0);
@@ -13292,7 +14180,7 @@ function base_parser(old_state) {
           (() => {
             let _pipe2 = eof();
             let _pipe$1 = replace4(_pipe2, stringify_current_text(state));
-            return map10(
+            return map11(
               _pipe$1,
               (var0) => {
                 return new Break(var0);
@@ -13303,7 +14191,7 @@ function base_parser(old_state) {
       );
     }
   );
-  return map10(
+  return map11(
     _pipe,
     (state) => {
       return new State3(
@@ -13319,7 +14207,7 @@ function base_parser(old_state) {
     }
   );
 }
-function new$6() {
+function new$7() {
   return new Parser2(gen_lexer(), base_parser(empty_state()));
 }
 
@@ -13405,7 +14293,7 @@ function render_output(data2, raw, var$, assigns, acc, options) {
     let str = str_result[0];
     let _block;
     if (raw) {
-      _block = append(acc, str);
+      _block = append2(acc, str);
     } else {
       _block = add(acc, options.encoder(str));
     }
@@ -13456,7 +14344,7 @@ function get_assign(assigns, var$) {
 function render_node(node, assigns, acc, options) {
   if (node instanceof Text) {
     let str = node[0];
-    return new Ok(append(acc, str));
+    return new Ok(append2(acc, str));
   } else if (node instanceof Dynamic) {
     let dynamic2 = node[0];
     return render_dynamic(dynamic2, assigns, acc, options);
@@ -13528,13 +14416,13 @@ function render_child(template_name, assigns, assigns_map, acc, options) {
           make(),
           (acc2, mapping) => {
             let from2;
-            let to2;
+            let to3;
             from2 = mapping[0];
-            to2 = mapping[1];
+            to3 = mapping[1];
             return try$(
               get_assign(assigns, from2),
               (assign) => {
-                return new Ok(insert(acc2, to2, assign));
+                return new Ok(insert(acc2, to3, assign));
               }
             );
           }
@@ -13632,7 +14520,7 @@ function render2(template, assigns, template_cache) {
 
 // build/dev/javascript/starlist/starlist/internal/templates.mjs
 var index5 = "# <%= login %> Star List [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/sindresorhus/awesome)\n\n> :star: generated with [halostatue/starlist](https://github.com/halostatue/starlist)\n\nLast updated <%= updated_at.date %> <%= updated_at.time %>\n\n<%= total %> stars in <%= partition_count %> <%= partition_description %>\n\n## Table of Contents\n\n<% for partition in partitions %>\n- [<%= partition.name %>](<%= partition.filename %>) (<%= partition.count_label %>)\n<% end %>\n";
-var page = "<% if partition %># <%= partition.name %>\n<% else %># <%= login %> Star List [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/sindresorhus/awesome)\n<% end %>\n> :star: generated with [halostatue/starlist](https://github.com/halostatue/starlist)\n\nLast updated <%= updated_at.date %> <%= updated_at.time %>\n\n<%= total %> stars in <%= group_count %> <%= group_description %>\n\n## Table of Contents\n\n<% for group in groups %>\n- [<%= group.name %>](#<%= group.slug %>)\n<% end %>\n\n<% for group in groups %>\n## <%= group.name %>\n\n<%= group.count_label %>\n\n<% for repo in group.repos %>\n- [<%= repo.name %>](<%= repo.url %>)<% if repo.description %>: <%= repo.description %><% end %>\n\n  **Latest Update**: <%= repo.pushed_on.date %> <%= repo.pushed_on.time %>\n  **Stars**: <%= repo.stars %>\n  **Starred On**: <%= repo.starred_on.date %>\n<% if repo.forks %>  **Forks**: <%= repo.forks %>\n<% end %>\n<% if repo.archived_on %>  **Archived On**: <%= repo.archived_on.date %>\n<% end %>\n<% if repo.topic_count %>  **Topics**: <%= repo.topic_links %>\n<% end %>\n<% end %>\n\n<% end %>\n";
+var page = "<% if partition %># <%= partition.name %>\n<% else %># <%= login %> Star List [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/sindresorhus/awesome)\n<% end %>\n> :star: generated with [halostatue/starlist](https://github.com/halostatue/starlist)\n\nLast updated <%= updated_at.date %> <%= updated_at.time %>\n\n<%= total %> stars in <%= group_count %> <%= group_description %>\n\n## Table of Contents\n\n<% for group in groups %>\n- [<%= group.name %>](#<%= group.slug %>)\n<% end %>\n\n<% for group in groups %>\n## <%= group.name %>\n\n<%= group.count_label %>\n\n<% for repo in group.repos %>\n- [<%= repo.name %>](<%= repo.url %>)<% if repo.description %>: <%= repo.description %><% end %>\n\n  **Latest Update**: <%= repo.pushed_on.date %> <%= repo.pushed_on.time %>\n  **Stars**: <%= repo.stars %>\n  **Starred On**: <%= repo.starred_on.date %>\n<% if repo.forks %>  **Forks**: <%= repo.forks %>\n<% end %>\n<% if repo.archived_on %>  **Archived On**: <%= repo.archived_on.date %>\n<% end %>\n<% if repo.topic_links %>  **Topics**: <%= repo.topic_links %>\n<% end %>\n<% end %>\n\n<% end %>\n";
 
 // build/dev/javascript/starlist/starlist/internal/renderer.mjs
 var Template2 = class extends CustomType {
@@ -13651,14 +14539,14 @@ function embedded_template(path2) {
   }
 }
 function timestamp_to_assigns(ts) {
-  let _pipe = new$3();
+  let _pipe = new$4();
   let _pipe$1 = add_string(_pipe, "date", ts.date);
   return add_string(_pipe$1, "time", ts.time);
 }
 function language_to_assign(lang) {
   return new Dict2(
     (() => {
-      let _pipe = new$3();
+      let _pipe = new$4();
       let _pipe$1 = add_string(_pipe, "name", lang.name);
       return add_int(_pipe$1, "percent", lang.percent);
     })()
@@ -13667,7 +14555,7 @@ function language_to_assign(lang) {
 function topic_to_assign(topic) {
   return new Dict2(
     (() => {
-      let _pipe = new$3();
+      let _pipe = new$4();
       let _pipe$1 = add_string(_pipe, "name", topic.name);
       return add_string(_pipe$1, "url", topic.url);
     })()
@@ -13675,7 +14563,7 @@ function topic_to_assign(topic) {
 }
 function release_to_assigns(rel) {
   let _block;
-  let _pipe = new$3();
+  let _pipe = new$4();
   _block = add_dict(
     _pipe,
     "published_on",
@@ -13722,6 +14610,20 @@ function add_optional_topics(d, key, value) {
     return add_bool(d, key, false);
   }
 }
+function add_topic_count(d, value) {
+  return add_int(
+    d,
+    "topic_count",
+    (() => {
+      if (value instanceof Some) {
+        let topics = value[0];
+        return length(topics);
+      } else {
+        return 0;
+      }
+    })()
+  );
+}
 function add_optional_topic_links(d, key, value) {
   if (value instanceof Some) {
     let topics = value[0];
@@ -13741,51 +14643,55 @@ function add_optional_topic_links(d, key, value) {
 }
 function starred_repo_to_assign(repo) {
   let _block;
-  let _pipe = new$3();
+  let _pipe = new$4();
   let _pipe$1 = add_string(_pipe, "name", repo.name);
   let _pipe$2 = add_string(_pipe$1, "url", repo.url);
-  let _pipe$3 = add_string(_pipe$2, "license", repo.license);
+  let _pipe$3 = add_string(_pipe$2, "licence", repo.licence);
   let _pipe$4 = add_int(_pipe$3, "forks", repo.forks);
   let _pipe$5 = add_int(_pipe$4, "stars", repo.stars);
   let _pipe$6 = add_bool(_pipe$5, "is_fork", repo.is_fork);
   let _pipe$7 = add_bool(_pipe$6, "is_private", repo.is_private);
   let _pipe$8 = add_bool(_pipe$7, "is_template", repo.is_template);
-  let _pipe$9 = add_int(_pipe$8, "language_count", repo.language_count);
-  let _pipe$10 = add_int(_pipe$9, "topic_count", repo.topic_count);
-  let _pipe$11 = add_list(
-    _pipe$10,
+  let _pipe$9 = add_int(
+    _pipe$8,
+    "total_languages",
+    repo.total_languages
+  );
+  let _pipe$10 = add_list(
+    _pipe$9,
     "languages",
     map3(repo.languages, language_to_assign)
   );
-  let _pipe$12 = add_dict(
-    _pipe$11,
+  let _pipe$11 = add_dict(
+    _pipe$10,
     "pushed_on",
     timestamp_to_assigns(repo.pushed_on)
   );
-  let _pipe$13 = add_dict(
-    _pipe$12,
+  let _pipe$12 = add_dict(
+    _pipe$11,
     "starred_on",
     timestamp_to_assigns(repo.starred_on)
   );
-  let _pipe$14 = add_optional_string(_pipe$13, "description", repo.description);
-  let _pipe$15 = add_optional_string(
-    _pipe$14,
+  let _pipe$13 = add_optional_string(_pipe$12, "description", repo.description);
+  let _pipe$14 = add_optional_string(
+    _pipe$13,
     "homepage_url",
     repo.homepage_url
   );
-  let _pipe$16 = add_optional_string(_pipe$15, "parent_repo", repo.parent_repo);
-  let _pipe$17 = add_optional_timestamp(
-    _pipe$16,
+  let _pipe$15 = add_optional_string(_pipe$14, "parent_repo", repo.parent_repo);
+  let _pipe$16 = add_optional_timestamp(
+    _pipe$15,
     "archived_on",
     repo.archived_on
   );
-  let _pipe$18 = add_optional_release(
-    _pipe$17,
+  let _pipe$17 = add_optional_release(
+    _pipe$16,
     "latest_release",
     repo.latest_release
   );
-  let _pipe$19 = add_optional_topics(_pipe$18, "topics", repo.topics);
-  _block = add_optional_topic_links(_pipe$19, "topic_links", repo.topics);
+  let _pipe$18 = add_optional_topics(_pipe$17, "topics", repo.topics);
+  let _pipe$19 = add_optional_topic_links(_pipe$18, "topic_links", repo.topics);
+  _block = add_topic_count(_pipe$19, repo.topics);
   let d = _block;
   return new Dict2(d);
 }
@@ -13796,7 +14702,7 @@ function add_partition(d, value) {
       d,
       "partition",
       (() => {
-        let _pipe = new$3();
+        let _pipe = new$4();
         let _pipe$1 = add_string(_pipe, "name", ctx.name);
         let _pipe$2 = add_string(_pipe$1, "filename", ctx.filename);
         let _pipe$3 = add_int(_pipe$2, "count", ctx.count);
@@ -13813,7 +14719,7 @@ function build_partition_list(partitions) {
     (ctx) => {
       return new Dict2(
         (() => {
-          let _pipe = new$3();
+          let _pipe = new$4();
           let _pipe$1 = add_string(_pipe, "name", ctx.name);
           let _pipe$2 = add_string(_pipe$1, "filename", ctx.filename);
           let _pipe$3 = add_int(_pipe$2, "count", ctx.count);
@@ -13821,6 +14727,39 @@ function build_partition_list(partitions) {
         })()
       );
     }
+  );
+}
+function index_vars_to_assigns(vars) {
+  let _pipe = new$4();
+  let _pipe$1 = add_int(_pipe, "data_version", vars.data_version);
+  let _pipe$2 = add_dict(
+    _pipe$1,
+    "updated_at",
+    timestamp_to_assigns(vars.updated_at)
+  );
+  let _pipe$3 = add_dict(
+    _pipe$2,
+    "generated_at",
+    timestamp_to_assigns(vars.generated_at)
+  );
+  let _pipe$4 = add_string(_pipe$3, "login", vars.login);
+  let _pipe$5 = add_bool(_pipe$4, "truncated", vars.truncated);
+  let _pipe$6 = add_int(_pipe$5, "total", vars.total);
+  let _pipe$7 = add_int(_pipe$6, "fetched", vars.fetched);
+  let _pipe$8 = add_list(
+    _pipe$7,
+    "partitions",
+    build_partition_list(vars.partitions)
+  );
+  let _pipe$9 = add_int(
+    _pipe$8,
+    "partition_count",
+    vars.partition_count
+  );
+  return add_string(
+    _pipe$9,
+    "partition_description",
+    vars.partition_description
   );
 }
 function is_slug_char(c) {
@@ -13943,7 +14882,7 @@ function build_groups(keys2, groups) {
         _block$1 = key;
       }
       let name = _block$1;
-      let count = length2(repos);
+      let count = length(repos);
       let _block$2;
       if (count === 1) {
         _block$2 = "1 repo";
@@ -13954,7 +14893,7 @@ function build_groups(keys2, groups) {
       let label = _block$2;
       return new Dict2(
         (() => {
-          let _pipe = new$3();
+          let _pipe = new$4();
           let _pipe$1 = add_string(_pipe, "name", name);
           let _pipe$2 = add_string(_pipe$1, "slug", slugify(name));
           let _pipe$3 = add_list(
@@ -13969,12 +14908,12 @@ function build_groups(keys2, groups) {
     }
   );
 }
-function template_vars_to_assigns(vars) {
+function page_vars_to_assigns(vars) {
   let _block;
   let _pipe = keys(vars.groups);
-  _block = sort(_pipe, compare);
+  _block = sort(_pipe, compare3);
   let sorted_keys = _block;
-  let _pipe$1 = new$3();
+  let _pipe$1 = new$4();
   let _pipe$2 = add_int(_pipe$1, "data_version", vars.data_version);
   let _pipe$3 = add_dict(
     _pipe$2,
@@ -14006,22 +14945,7 @@ function template_vars_to_assigns(vars) {
     "groups",
     build_groups(sorted_keys, vars.groups)
   );
-  let _pipe$13 = add_partition(_pipe$12, vars.partition);
-  let _pipe$14 = add_list(
-    _pipe$13,
-    "partitions",
-    build_partition_list(vars.partitions)
-  );
-  let _pipe$15 = add_int(
-    _pipe$14,
-    "partition_count",
-    vars.partition_count
-  );
-  return add_string(
-    _pipe$15,
-    "partition_description",
-    vars.partition_description
-  );
+  return add_partition(_pipe$12, vars.partition);
 }
 function parse_error_to_string(err) {
   if (err instanceof LexerError) {
@@ -14033,7 +14957,7 @@ function parse_error_to_string(err) {
   }
 }
 function compile3(source, name) {
-  let p = new$6();
+  let p = new$7();
   let $ = parse_to_template(source, name, p);
   if ($ instanceof Ok) {
     let tpl = $[0];
@@ -14096,8 +15020,7 @@ function render_error_to_string(err) {
     return "Child template not found: " + tpl_name;
   }
 }
-function render3(template, vars) {
-  let a = template_vars_to_assigns(vars);
+function render_assigns(template, a) {
   let cache = make();
   let $ = render2(template.inner, a, cache);
   if ($ instanceof Ok) {
@@ -14112,20 +15035,28 @@ function render3(template, vars) {
     );
   }
 }
+function render_page(template, vars) {
+  let a = page_vars_to_assigns(vars);
+  return render_assigns(template, a);
+}
+function render_index(template, vars) {
+  let a = index_vars_to_assigns(vars);
+  return render_assigns(template, a);
+}
 
 // build/dev/javascript/starlist/starlist/internal/resolver.mjs
 function resolve_release(rel, dt) {
-  return new Release2(
+  return new DisplayRelease(
     rel.name,
-    format(dt, rel.published_on)
+    format_timestamp(dt, rel.published_on)
   );
 }
 function resolve_repo(repo, dt) {
-  return new StarredRepo(
+  return new DisplayRepo(
     map2(
       repo.archived_on,
       (_capture) => {
-        return format(dt, _capture);
+        return format_timestamp(dt, _capture);
       }
     ),
     repo.description,
@@ -14134,7 +15065,7 @@ function resolve_repo(repo, dt) {
     repo.is_fork,
     repo.is_private,
     repo.is_template,
-    repo.language_count,
+    repo.total_languages,
     repo.languages,
     map2(
       repo.latest_release,
@@ -14142,13 +15073,12 @@ function resolve_repo(repo, dt) {
         return resolve_release(_capture, dt);
       }
     ),
-    repo.license,
+    repo.licence,
     repo.name,
     repo.parent_repo,
-    format(dt, repo.pushed_on),
-    format(dt, repo.starred_on),
+    format_timestamp(dt, repo.pushed_on),
+    format_timestamp(dt, repo.starred_on),
     repo.stars,
-    repo.topic_count,
     repo.topics,
     repo.url
   );
@@ -14163,7 +15093,7 @@ function upsert3(acc, key, repo) {
     _block = toList([]);
   }
   let existing = _block;
-  return insert(acc, key, append3(existing, toList([repo])));
+  return insert(acc, key, append(existing, toList([repo])));
 }
 function group_by_language2(stars) {
   return fold2(
@@ -14212,7 +15142,7 @@ function group_by_licence2(stars) {
     make(),
     (acc, repo) => {
       let _block;
-      let $ = repo.license;
+      let $ = repo.licence;
       if ($ === "") {
         _block = "Unknown license";
       } else {
@@ -14223,17 +15153,17 @@ function group_by_licence2(stars) {
     }
   );
 }
-function resolve_response(response, date_time, group3) {
+function resolve_response(data2, date_time, group4) {
   let stars = map3(
-    response.stars,
+    data2.repos,
     (_capture) => {
       return resolve_repo(_capture, date_time);
     }
   );
   let _block;
-  if (group3 instanceof GroupByLanguage) {
+  if (group4 instanceof GroupByLanguage) {
     _block = [group_by_language2(stars), "languages"];
-  } else if (group3 instanceof GroupByTopic) {
+  } else if (group4 instanceof GroupByTopic) {
     _block = [group_by_topic2(stars), "topics"];
   } else {
     _block = [group_by_licence2(stars), "licences"];
@@ -14243,562 +15173,70 @@ function resolve_response(response, date_time, group3) {
   let group_description;
   groups = $[0];
   group_description = $[1];
-  return new TemplateVars(
-    response.data_version,
-    format(date_time, response.updated_at),
+  return new PageVars(
+    data2.data_version,
+    format_timestamp(date_time, data2.updated_at),
     now(date_time),
-    response.login,
-    response.truncated,
-    length2(stars),
-    response.fetched,
+    data2.login,
+    data2.truncated,
+    length(stars),
+    data2.fetched,
     stars,
     groups,
     size(groups),
     group_description,
-    new None(),
-    toList([]),
-    0,
-    ""
+    new None()
   );
 }
 
-// build/dev/javascript/starlist/starlist/internal/star_data.mjs
-function language_to_json(lang) {
-  return object2(
-    toList([
-      ["name", string3(lang.name)],
-      ["percent", int3(lang.percent)]
-    ])
-  );
-}
-function topic_to_json(topic) {
-  return object2(
-    toList([
-      ["name", string3(topic.name)],
-      ["url", string3(topic.url)]
-    ])
-  );
-}
-function response_release_to_json(rel) {
-  return object2(
-    toList([
-      ["name", nullable(rel.name, string3)],
-      ["publishedOn", string3(rel.published_on)]
-    ])
-  );
-}
-function response_repo_to_json(repo) {
-  return object2(
-    toList([
-      ["archivedOn", nullable(repo.archived_on, string3)],
-      ["description", nullable(repo.description, string3)],
-      ["forks", int3(repo.forks)],
-      ["homepageUrl", nullable(repo.homepage_url, string3)],
-      ["isFork", bool2(repo.is_fork)],
-      ["isPrivate", bool2(repo.is_private)],
-      ["isTemplate", bool2(repo.is_template)],
-      ["languageCount", int3(repo.language_count)],
-      ["languages", array2(repo.languages, language_to_json)],
-      [
-        "latestRelease",
-        nullable(repo.latest_release, response_release_to_json)
-      ],
-      ["license", string3(repo.license)],
-      ["name", string3(repo.name)],
-      ["parentRepo", nullable(repo.parent_repo, string3)],
-      ["pushedOn", string3(repo.pushed_on)],
-      ["starredOn", string3(repo.starred_on)],
-      ["stars", int3(repo.stars)],
-      ["topicCount", int3(repo.topic_count)],
-      [
-        "topics",
-        nullable(
-          repo.topics,
-          (ts) => {
-            return array2(ts, topic_to_json);
-          }
-        )
-      ],
-      ["url", string3(repo.url)]
-    ])
-  );
-}
-function query_response_to_json(response) {
-  return object2(
-    toList([
-      ["dataVersion", int3(response.data_version)],
-      ["login", string3(response.login)],
-      ["truncated", bool2(response.truncated)],
-      ["total", int3(response.total)],
-      ["fetched", int3(response.fetched)],
-      ["updatedAt", string3(response.updated_at)],
-      ["stars", array2(response.stars, response_repo_to_json)]
-    ])
-  );
-}
-function validate_data_version(response) {
-  let $ = response.data_version === data_version;
-  if ($) {
-    return new Ok(response);
-  } else {
-    return new Error2(
-      new VersionMismatchError(
-        data_version,
-        response.data_version
-      )
-    );
-  }
-}
-function language_decoder2() {
-  return field(
-    "name",
-    string2,
-    (name) => {
-      return field(
-        "percent",
-        int2,
-        (percent) => {
-          return success(new Language2(name, percent));
-        }
-      );
-    }
-  );
-}
-function topic_decoder2() {
-  return field(
-    "name",
-    string2,
-    (name) => {
-      return field(
-        "url",
-        string2,
-        (url) => {
-          return success(new Topic2(name, url));
-        }
-      );
-    }
-  );
-}
-function response_release_decoder() {
-  return field(
-    "name",
-    optional(string2),
-    (name) => {
-      return field(
-        "publishedOn",
-        string2,
-        (published_on) => {
-          return success(
-            new ResponseRelease(name, published_on)
+// build/dev/javascript/starlist/starlist.mjs
+function fetch_star_data(token4, login, max_stars, order) {
+  let _pipe = fetch_starred_repos(token4, login, max_stars, order);
+  return map_promise(
+    _pipe,
+    (result) => {
+      return map6(
+        result,
+        (raw) => {
+          let repos;
+          let login$1;
+          let truncated;
+          let total2;
+          repos = raw[0];
+          login$1 = raw[1];
+          truncated = raw[2];
+          total2 = raw[3];
+          return new StarData(
+            data_version,
+            login$1,
+            truncated,
+            total2,
+            length(repos),
+            repos,
+            now_iso()
           );
         }
       );
     }
   );
 }
-function response_repo_decoder() {
-  return field(
-    "archivedOn",
-    optional(string2),
-    (archived_on) => {
-      return field(
-        "description",
-        optional(string2),
-        (description) => {
-          return field(
-            "forks",
-            int2,
-            (forks) => {
-              return field(
-                "homepageUrl",
-                optional(string2),
-                (homepage_url) => {
-                  return field(
-                    "isFork",
-                    bool,
-                    (is_fork) => {
-                      return field(
-                        "isPrivate",
-                        bool,
-                        (is_private) => {
-                          return field(
-                            "isTemplate",
-                            bool,
-                            (is_template) => {
-                              return field(
-                                "languageCount",
-                                int2,
-                                (language_count2) => {
-                                  return field(
-                                    "languages",
-                                    list2(language_decoder2()),
-                                    (languages) => {
-                                      return field(
-                                        "latestRelease",
-                                        optional(
-                                          response_release_decoder()
-                                        ),
-                                        (latest_release) => {
-                                          return field(
-                                            "license",
-                                            string2,
-                                            (license) => {
-                                              return field(
-                                                "name",
-                                                string2,
-                                                (name) => {
-                                                  return field(
-                                                    "parentRepo",
-                                                    optional(
-                                                      string2
-                                                    ),
-                                                    (parent_repo) => {
-                                                      return field(
-                                                        "pushedOn",
-                                                        string2,
-                                                        (pushed_on) => {
-                                                          return field(
-                                                            "starredOn",
-                                                            string2,
-                                                            (starred_on) => {
-                                                              return field(
-                                                                "stars",
-                                                                int2,
-                                                                (stars) => {
-                                                                  return field(
-                                                                    "topicCount",
-                                                                    int2,
-                                                                    (topic_count) => {
-                                                                      return field(
-                                                                        "topics",
-                                                                        optional(
-                                                                          list2(
-                                                                            topic_decoder2()
-                                                                          )
-                                                                        ),
-                                                                        (topics) => {
-                                                                          return field(
-                                                                            "url",
-                                                                            string2,
-                                                                            (url) => {
-                                                                              return success(
-                                                                                new ResponseRepo(
-                                                                                  archived_on,
-                                                                                  description,
-                                                                                  forks,
-                                                                                  homepage_url,
-                                                                                  is_fork,
-                                                                                  is_private,
-                                                                                  is_template,
-                                                                                  language_count2,
-                                                                                  languages,
-                                                                                  latest_release,
-                                                                                  license,
-                                                                                  name,
-                                                                                  parent_repo,
-                                                                                  pushed_on,
-                                                                                  starred_on,
-                                                                                  stars,
-                                                                                  topic_count,
-                                                                                  topics,
-                                                                                  url
-                                                                                )
-                                                                              );
-                                                                            }
-                                                                          );
-                                                                        }
-                                                                      );
-                                                                    }
-                                                                  );
-                                                                }
-                                                              );
-                                                            }
-                                                          );
-                                                        }
-                                                      );
-                                                    }
-                                                  );
-                                                }
-                                              );
-                                            }
-                                          );
-                                        }
-                                      );
-                                    }
-                                  );
-                                }
-                              );
-                            }
-                          );
-                        }
-                      );
-                    }
-                  );
-                }
-              );
-            }
-          );
-        }
-      );
-    }
+function load_star_data(filename2) {
+  return load_data_file(filename2);
+}
+function save_star_data(filename2, data2) {
+  return write_data_file(data2, filename2);
+}
+function filter_repos(data2, filter_fun) {
+  let kept = filter(data2.repos, filter_fun);
+  return new StarData(
+    data2.data_version,
+    data2.login,
+    data2.truncated,
+    data2.total,
+    length(kept),
+    kept,
+    data2.updated_at
   );
-}
-function query_response_decoder() {
-  return field(
-    "dataVersion",
-    int2,
-    (data_version2) => {
-      return field(
-        "login",
-        string2,
-        (login) => {
-          return field(
-            "truncated",
-            bool,
-            (truncated) => {
-              return field(
-                "total",
-                int2,
-                (total) => {
-                  return field(
-                    "fetched",
-                    int2,
-                    (fetched) => {
-                      return field(
-                        "updatedAt",
-                        string2,
-                        (updated_at) => {
-                          return field(
-                            "stars",
-                            list2(response_repo_decoder()),
-                            (stars) => {
-                              return success(
-                                new QueryResponse(
-                                  data_version2,
-                                  login,
-                                  truncated,
-                                  total,
-                                  fetched,
-                                  stars,
-                                  updated_at
-                                )
-                              );
-                            }
-                          );
-                        }
-                      );
-                    }
-                  );
-                }
-              );
-            }
-          );
-        }
-      );
-    }
-  );
-}
-function load_data_file(filename2) {
-  let $ = read(filename2);
-  if ($ instanceof Ok) {
-    let contents = $[0];
-    let $1 = parse4(contents, query_response_decoder());
-    if ($1 instanceof Ok) {
-      let response = $1[0];
-      return validate_data_version(response);
-    } else {
-      return new Error2(
-        new FileError2(
-          "Failed to decode " + filename2 + " as valid QueryResponse JSON"
-        )
-      );
-    }
-  } else {
-    return new Error2(
-      new FileError2(
-        "Cannot read " + filename2 + ": file not found or unreadable"
-      )
-    );
-  }
-}
-function map_file_error(result, context) {
-  if (result instanceof Ok) {
-    return result;
-  } else {
-    let err = result[0];
-    return new Error2(
-      new FileError2(
-        "File error " + context + ": " + inspect2(err)
-      )
-    );
-  }
-}
-function write_data_file(response, filename2) {
-  let _block;
-  let _pipe = query_response_to_json(response);
-  _block = to_string3(_pipe);
-  let json_string = _block;
-  let _pipe$1 = write(filename2, json_string);
-  return map_file_error(_pipe$1, "writing " + filename2);
-}
-
-// build/dev/javascript/starlist/starlist/process_handlers_ffi.mjs
-function registerProcessHandlers(errorFn, setFailedFn) {
-  process.on("unhandledRejection", (reason) => {
-    const msg = reason instanceof Error ? reason.message : String(reason);
-    errorFn("Unhandled rejection: " + msg);
-    setFailedFn("Unhandled rejection: " + msg);
-  });
-  process.on("uncaughtException", (err) => {
-    const msg = err instanceof Error ? err.message : String(err);
-    errorFn("Uncaught exception: " + msg);
-    setFailedFn("Uncaught exception: " + msg);
-  });
-}
-
-// build/dev/javascript/starlist/starlist/action.mjs
-var FILEPATH3 = "src/starlist/action.gleam";
-var SingleTemplate = class extends CustomType {
-  constructor(data2) {
-    super();
-    this.data = data2;
-  }
-};
-var MultiTemplate = class extends CustomType {
-  constructor(data2, index6) {
-    super();
-    this.data = data2;
-    this.index = index6;
-  }
-};
-var package_name = "halostatue/starlist";
-var package_version = "2.1.0";
-var auto_partition_threshold = 2e3;
-function log_env_vars(vars) {
-  return each(
-    vars,
-    (name) => {
-      let _block;
-      let _pipe = name;
-      let _pipe$1 = get2(_pipe);
-      _block = unwrap2(_pipe$1, "<unset>");
-      let value = _block;
-      return info(name + ": " + value);
-    }
-  );
-}
-function setup_git(git_cfg, token4) {
-  return try$(
-    (() => {
-      let $ = git_cfg.committer;
-      if ($ instanceof Some) {
-        let committer = $[0];
-        return setup(committer, token4);
-      } else {
-        return new Ok(void 0);
-      }
-    })(),
-    (_) => {
-      let $ = git_cfg.pull;
-      if ($ instanceof Some) {
-        let flags = $[0];
-        let _block;
-        let $1 = is_shallow();
-        if ($1 instanceof Ok) {
-          let v = $1[0];
-          _block = v;
-        } else {
-          _block = false;
-        }
-        let shallow = _block;
-        return pull(flags, shallow);
-      } else {
-        return new Ok(void 0);
-      }
-    }
-  );
-}
-function fetch_stars(fetch2, token4) {
-  let $ = fetch2.source;
-  if ($ instanceof Api) {
-    info("Fetching stars from API...");
-    return map_promise(
-      fetch_starred_repos(token4, fetch2.max_stars),
-      (res) => {
-        return map5(
-          res,
-          (response) => {
-            info(
-              "Fetched " + to_string(response.fetched) + "/" + to_string(
-                response.total
-              ) + " stars"
-            );
-            return response;
-          }
-        );
-      }
-    );
-  } else {
-    info("Loading stars from data.json...");
-    return resolve(
-      map5(
-        load_data_file("data.json"),
-        (response) => {
-          info(
-            "Loaded " + to_string(response.fetched) + "/" + to_string(
-              response.total
-            ) + " stars"
-          );
-          return response;
-        }
-      )
-    );
-  }
-}
-function filter_private(response) {
-  let public$ = filter(response.stars, (r) => {
-    return !r.is_private;
-  });
-  return new QueryResponse(
-    response.data_version,
-    response.login,
-    response.truncated,
-    response.total,
-    length2(public$),
-    public$,
-    response.updated_at
-  );
-}
-function compile_template(path2) {
-  return compile_file(path2);
-}
-function compile_templates(render4) {
-  return try$(
-    compile_template(render4.template),
-    (data_tpl) => {
-      let $ = render4.partition;
-      if ($ instanceof PartitionOff) {
-        return new Ok(new SingleTemplate(data_tpl));
-      } else {
-        return try$(
-          compile_template(render4.index_template),
-          (index_tpl) => {
-            return new Ok(new MultiTemplate(data_tpl, index_tpl));
-          }
-        );
-      }
-    }
-  );
-}
-function try_partition(result, next2) {
-  if (result instanceof Ok) {
-    let pr = result[0];
-    return next2(pr);
-  } else {
-    return new Error2(
-      new ConfigError("Partition returned Off in multi-file mode")
-    );
-  }
 }
 function partition_description(p) {
   if (p instanceof PartitionOff) {
@@ -14813,89 +15251,80 @@ function partition_description(p) {
     return "months";
   }
 }
-function enrich_index_vars(vars, pr, partition2) {
-  let contexts = map3(
-    pr.partitions,
-    (p) => {
-      return new PartitionContext(
-        p.key,
-        p.filename,
-        p.count,
-        (() => {
-          let $ = p.count;
-          if ($ === 1) {
-            return "1 repo";
-          } else {
-            let n = $;
-            return to_string(n) + " repos";
-          }
-        })()
+function render_single(render4, vars) {
+  return try$(
+    compile_file(render4.template),
+    (tpl) => {
+      return try$(
+        render_page(tpl, vars),
+        (rendered) => {
+          return new Ok(toList([new OutputFile(render4.filename, rendered)]));
+        }
       );
     }
   );
-  return new TemplateVars(
-    vars.data_version,
-    vars.updated_at,
-    vars.generated_at,
-    vars.login,
-    vars.truncated,
-    vars.total,
-    vars.fetched,
-    vars.stars,
-    vars.groups,
-    vars.group_count,
-    vars.group_description,
-    vars.partition,
-    contexts,
-    length2(contexts),
-    partition_description(partition2)
-  );
 }
-function render_files(render4, templates, vars) {
-  if (templates instanceof SingleTemplate) {
-    let tpl = templates.data;
-    return try$(
-      render3(tpl, vars),
-      (rendered) => {
-        return new Ok(toList([new GeneratedFile(render4.filename, rendered)]));
-      }
-    );
-  } else {
-    let data_tpl = templates.data;
-    let index_tpl = templates.index;
-    return try_partition(
-      partition(
-        vars,
-        render4.partition,
-        render4.group,
-        render4.partition_filename
-      ),
-      (pr) => {
-        let index_vars = enrich_index_vars(vars, pr, render4.partition);
-        return try$(
-          render3(index_tpl, index_vars),
-          (index_rendered) => {
-            let index_file = new GeneratedFile(render4.filename, index_rendered);
+function render_multi(render4, vars) {
+  return try$(
+    compile_file(render4.template),
+    (data_tpl) => {
+      return try$(
+        compile_file(render4.index_template),
+        (index_tpl) => {
+          let $ = partition(
+            vars,
+            render4.partition,
+            render4.group,
+            render4.partition_filename,
+            partition_description(render4.partition)
+          );
+          if ($ instanceof Ok) {
+            let pr = $[0];
             return try$(
-              try_map(
-                pr.data,
-                (part) => {
-                  return try$(
-                    render3(data_tpl, part.vars),
-                    (rendered) => {
-                      return new Ok(new GeneratedFile(part.filename, rendered));
+              render_index(index_tpl, pr.index),
+              (index_rendered) => {
+                let index_file = new OutputFile(render4.filename, index_rendered);
+                return try$(
+                  try_map(
+                    pr.data,
+                    (part) => {
+                      return try$(
+                        render_page(data_tpl, part.vars),
+                        (rendered) => {
+                          return new Ok(new OutputFile(part.filename, rendered));
+                        }
+                      );
                     }
-                  );
-                }
-              ),
-              (data_files) => {
-                return new Ok(prepend(index_file, data_files));
+                  ),
+                  (data_files) => {
+                    return new Ok(prepend(index_file, data_files));
+                  }
+                );
               }
             );
+          } else {
+            return new Error2(
+              new ConfigError(
+                "Partition returned Off in multi-file mode"
+              )
+            );
           }
-        );
-      }
-    );
+        }
+      );
+    }
+  );
+}
+function render3(render_config, data2) {
+  let vars = resolve_response(
+    data2,
+    render_config.date_time,
+    render_config.group
+  );
+  let $ = render_config.partition;
+  if ($ instanceof PartitionOff) {
+    return render_single(render_config, vars);
+  } else {
+    return render_multi(render_config, vars);
   }
 }
 function ensure_parent(path2) {
@@ -14907,7 +15336,7 @@ function ensure_parent(path2) {
     return new Error2(new FileError2("Cannot create directory: " + dir));
   }
 }
-function write_output_files(files) {
+function write_files(files, root_dir) {
   let _block;
   let $ = currentDirectory();
   if ($ instanceof Ok) {
@@ -14920,8 +15349,9 @@ function write_output_files(files) {
   return try_map(
     files,
     (file) => {
+      let path2 = join2(root_dir, file.filename);
       return try$(
-        validate_path(file.filename, repo_root, "output"),
+        validate_path(path2, repo_root, "output"),
         (resolved) => {
           return try$(
             ensure_parent(resolved),
@@ -14940,6 +15370,385 @@ function write_output_files(files) {
       );
     }
   );
+}
+function pull2(flags) {
+  let _block;
+  let $ = is_shallow();
+  if ($ instanceof Ok) {
+    let v = $[0];
+    _block = v;
+  } else {
+    _block = false;
+  }
+  let shallow = _block;
+  return pull(flags, shallow);
+}
+function commit_and_push(message, files) {
+  return try$(
+    add3(files),
+    (_) => {
+      return try$(
+        commit(message),
+        (commit_result) => {
+          if (commit_result instanceof Committed) {
+            return try$(
+              current_branch(),
+              (branch2) => {
+                return try$(
+                  push(branch2),
+                  (_2) => {
+                    return new Ok(true);
+                  }
+                );
+              }
+            );
+          } else {
+            return new Ok(false);
+          }
+        }
+      );
+    }
+  );
+}
+function auto_partition(render4, star_count) {
+  let $ = render4.partition;
+  if ($ instanceof PartitionOff && star_count >= 2e3) {
+    return new Render(
+      render4.date_time,
+      render4.filename,
+      render4.output_dir,
+      render4.partition_filename,
+      render4.group,
+      new PartitionByYear(),
+      render4.template,
+      render4.index_template
+    );
+  } else {
+    return render4;
+  }
+}
+
+// build/dev/javascript/starlist/starlist/star_data.mjs
+function total(data2) {
+  return data2.total;
+}
+function fetched(data2) {
+  return data2.fetched;
+}
+
+// build/dev/javascript/starlist/starlist_action/action_config.mjs
+var default_committer = [
+  "github-actions[bot]",
+  "41898282+github-actions[bot]@users.noreply.github.com"
+];
+function require_token(next2) {
+  let $ = get_input_opts2("token", toList([new InputRequired2()]));
+  if ($ instanceof Ok) {
+    let t = $[0];
+    set_secret2(t);
+    return next2(t);
+  } else {
+    let msg = $[0];
+    return new Error2(
+      new ConfigError("Missing token: " + describe_error3(msg))
+    );
+  }
+}
+function read_toml(next2) {
+  let config_input = get_input2("config");
+  let config_file = get_input2("config_file");
+  let $ = is_empty3(trim(config_input));
+  let $1 = is_empty3(trim(config_file));
+  if ($) {
+    if ($1) {
+      return next2(make());
+    } else {
+      let $2 = read(config_file);
+      if ($2 instanceof Ok) {
+        let content = $2[0];
+        let $3 = parse_toml(content);
+        if ($3 instanceof Ok) {
+          let toml = $3[0];
+          return next2(toml);
+        } else {
+          return $3;
+        }
+      } else {
+        return new Error2(
+          new FileError2("Cannot read config file: " + config_file)
+        );
+      }
+    }
+  } else if ($1) {
+    let $2 = parse_toml(config_input);
+    if ($2 instanceof Ok) {
+      let toml = $2[0];
+      return next2(toml);
+    } else {
+      return $2;
+    }
+  } else {
+    return new Error2(
+      new ConfigError("Cannot specify both 'config' and 'config_file'")
+    );
+  }
+}
+function apply_action_git_defaults(git2) {
+  return new Git(
+    git2.commit_message,
+    (() => {
+      let $ = git2.pull;
+      if ($ instanceof None) {
+        return new Some("");
+      } else {
+        return $;
+      }
+    })(),
+    new Some(
+      (() => {
+        let $ = git2.committer;
+        if ($ instanceof Some) {
+          let name = $[0][0];
+          let email = $[0][1];
+          return [
+            (() => {
+              if (name === "") {
+                return default_committer[0];
+              } else {
+                return name;
+              }
+            })(),
+            (() => {
+              if (email === "") {
+                return default_committer[1];
+              } else {
+                return email;
+              }
+            })()
+          ];
+        } else {
+          return default_committer;
+        }
+      })()
+    )
+  );
+}
+function resolve2() {
+  return require_token(
+    (token4) => {
+      return read_toml(
+        (toml) => {
+          return try$(
+            decode_data(toml),
+            (data2) => {
+              return try$(
+                decode_fetch(toml),
+                (fetch2) => {
+                  return try$(
+                    decode_render(toml),
+                    (render4) => {
+                      return try$(
+                        decode_git(toml),
+                        (git2) => {
+                          let git$1 = apply_action_git_defaults(git2);
+                          return new Ok(
+                            new Config(
+                              new Some(token4),
+                              data2,
+                              fetch2,
+                              render4,
+                              git$1
+                            )
+                          );
+                        }
+                      );
+                    }
+                  );
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  );
+}
+
+// build/dev/javascript/starlist/starlist_action/action_setup.mjs
+function inject_token(url, token4) {
+  let $ = starts_with(url, "https://");
+  if ($) {
+    info2("fixing https: " + url);
+    let rest = drop_start(url, string_length("https://"));
+    return "https://x-access-token:" + token4 + "@" + rest;
+  } else {
+    info2("ignoring because not of https");
+    return url;
+  }
+}
+function try$3(result, next2) {
+  if (result instanceof Ok) {
+    let v = result[0];
+    return next2(v);
+  } else {
+    return result;
+  }
+}
+function setup(committer, token4) {
+  let name;
+  let email;
+  name = committer[0];
+  email = committer[1];
+  return try$3(
+    config_set("user.name", name),
+    (_) => {
+      return try$3(
+        config_set("user.email", email),
+        (_2) => {
+          return try$3(
+            config_set("pull.rebase", "false"),
+            (_3) => {
+              return try$3(
+                (() => {
+                  let $ = get2("GITHUB_REPOSITORY");
+                  if ($ instanceof Ok) {
+                    let repo = $[0];
+                    let _block;
+                    let $1 = get2("GITHUB_SERVER_URL");
+                    if ($1 instanceof Ok) {
+                      let url2 = $1[0];
+                      _block = url2;
+                    } else {
+                      _block = "https://github.com";
+                    }
+                    let server = _block;
+                    let url = inject_token(server, token4) + "/" + repo + ".git";
+                    info2("Set token");
+                    return set_remote_url(url);
+                  } else {
+                    let $1 = remote_url();
+                    if ($1 instanceof Ok) {
+                      let url = $1[0];
+                      let injected = inject_token(url, token4);
+                      let $2 = is_empty3(injected);
+                      if ($2) {
+                        return new Ok(void 0);
+                      } else {
+                        info2("Set token");
+                        return set_remote_url(injected);
+                      }
+                    } else {
+                      return new Ok(void 0);
+                    }
+                  }
+                })(),
+                (_4) => {
+                  let $ = remote_url();
+                  if ($ instanceof Ok) {
+                    let url = $[0];
+                    info2("URL: " + replace(url, token4, "TOKEN"));
+                    info2(
+                      "Origin URL contains token: " + (() => {
+                        let $1 = contains_string(url, token4);
+                        if ($1) {
+                          return "yes";
+                        } else {
+                          return "no";
+                        }
+                      })()
+                    );
+                  } else {
+                    info2("No origin URL configured");
+                  }
+                  return new Ok(void 0);
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  );
+}
+
+// build/dev/javascript/starlist/starlist_action.mjs
+var FILEPATH4 = "src/starlist_action.gleam";
+var action_name = "halostatue/starlist";
+var action_version = "3.0.0";
+var auto_partition_threshold = 2e3;
+function env_or_unset(name) {
+  let _pipe = name;
+  let _pipe$1 = get2(_pipe);
+  return unwrap2(_pipe$1, "<unset>");
+}
+function setup_git(git_config, token4) {
+  return try$(
+    (() => {
+      let $ = git_config.committer;
+      if ($ instanceof Some) {
+        let committer = $[0];
+        return setup(committer, token4);
+      } else {
+        return new Ok(void 0);
+      }
+    })(),
+    (_) => {
+      let $ = git_config.pull;
+      if ($ instanceof Some) {
+        let flags = $[0];
+        return pull2(flags);
+      } else {
+        return new Ok(void 0);
+      }
+    }
+  );
+}
+function fetch_stars(fetch2, token4, data_path) {
+  let $ = fetch2.source;
+  if ($ instanceof Api) {
+    info2("Fetching stars from API...");
+    return map_promise(
+      fetch_star_data(
+        token4,
+        fetch2.login,
+        fetch2.max_stars,
+        fetch2.order
+      ),
+      (res) => {
+        return map6(
+          res,
+          (data2) => {
+            info2(
+              "Fetched " + to_string(fetched(data2)) + "/" + to_string(
+                total(data2)
+              ) + " stars"
+            );
+            return data2;
+          }
+        );
+      }
+    );
+  } else {
+    info2("Loading stars from " + data_path + "...");
+    return resolve(
+      map6(
+        load_star_data(data_path),
+        (data2) => {
+          info2(
+            "Loaded " + to_string(fetched(data2)) + "/" + to_string(
+              total(data2)
+            ) + " stars"
+          );
+          return data2;
+        }
+      )
+    );
+  }
+}
+function filter_private(data2) {
+  return filter_repos(data2, (r) => {
+    return !r.is_private;
+  });
 }
 function partition_to_string(p) {
   if (p instanceof PartitionOff) {
@@ -14975,12 +15784,13 @@ function date_time_to_string(dt) {
     return "locale=" + locale + " tz=" + tz + " date=" + ds + " time=" + ts;
   }
 }
-function log_config(cfg) {
-  return group2(
+function log_config(config) {
+  return group3(
     "Configuration",
     () => {
-      let fetch2 = cfg.fetch;
-      info(
+      info2("data.path: " + config.data.path);
+      let fetch2 = config.fetch;
+      info2(
         "fetch.source: " + (() => {
           let $ = fetch2.source;
           if ($ instanceof Api) {
@@ -14990,7 +15800,8 @@ function log_config(cfg) {
           }
         })()
       );
-      info(
+      info2("fetch.login: " + unwrap(fetch2.login, "@me"));
+      info2(
         "fetch.max_stars: " + (() => {
           let $ = fetch2.max_stars;
           if ($ instanceof Some) {
@@ -15001,19 +15812,30 @@ function log_config(cfg) {
           }
         })()
       );
-      let render4 = cfg.render;
-      info("render.filename: " + render4.filename);
-      info("render.template: " + render4.template);
-      info("render.index_template: " + render4.index_template);
-      info("render.partition: " + partition_to_string(render4.partition));
-      info("render.group: " + group_to_string(render4.group));
-      info("render.partition_filename: " + render4.partition_filename);
-      info("render.date_time: " + date_time_to_string(render4.date_time));
-      let git_cfg = cfg.git;
-      info("git.commit_message: " + git_cfg.commit_message);
-      info(
+      info2(
+        "fetch.order: " + (() => {
+          let $ = fetch2.order;
+          if ($ instanceof Descending2) {
+            return "descending";
+          } else {
+            return "ascending";
+          }
+        })()
+      );
+      let render4 = config.render;
+      info2("render.filename: " + render4.filename);
+      info2("render.output_dir: " + render4.output_dir);
+      info2("render.template: " + render4.template);
+      info2("render.index_template: " + render4.index_template);
+      info2("render.partition: " + partition_to_string(render4.partition));
+      info2("render.group: " + group_to_string(render4.group));
+      info2("render.partition_filename: " + render4.partition_filename);
+      info2("render.date_time: " + date_time_to_string(render4.date_time));
+      let git_config = config.git;
+      info2("git.commit_message: " + git_config.commit_message);
+      info2(
         "git.pull: " + (() => {
-          let $ = git_cfg.pull;
+          let $ = git_config.pull;
           if ($ instanceof Some) {
             let $1 = $[0];
             if ($1 === "") {
@@ -15027,9 +15849,9 @@ function log_config(cfg) {
           }
         })()
       );
-      return info(
+      return info2(
         "git.committer: " + (() => {
-          let $ = git_cfg.committer;
+          let $ = git_config.committer;
           if ($ instanceof Some) {
             let name = $[0][0];
             let email = $[0][1];
@@ -15042,187 +15864,104 @@ function log_config(cfg) {
     }
   );
 }
-function error_to_string(err) {
-  if (err instanceof ConfigError) {
-    let msg = err.message;
-    return "Configuration error: " + msg;
-  } else if (err instanceof GitHubApiError) {
-    let msg = err.message;
-    return "GitHub API error: " + msg;
-  } else if (err instanceof FileError2) {
-    let msg = err.message;
-    return "File error: " + msg;
-  } else if (err instanceof TemplateError) {
-    let msg = err.message;
-    return "Template error: " + msg;
-  } else if (err instanceof MarkdownError) {
-    let msg = err.message;
-    return "Markdown error: " + msg;
-  } else if (err instanceof GitError) {
-    let command2 = err.command;
-    let exit_code = err.exit_code;
-    let message = err.message;
-    return "Git error (exit " + to_string(exit_code) + ") running '" + command2 + "': " + message;
-  } else if (err instanceof SecurityError) {
-    let msg = err.message;
-    return "Security error: " + msg;
-  } else {
-    let expected = err.expected;
-    let found = err.found;
-    return "Data version mismatch: expected " + to_string(expected) + ", found " + to_string(
-      found
-    );
-  }
-}
-function try_promise(result, next2) {
-  if (result instanceof Ok) {
-    let v = result[0];
-    return next2(v);
-  } else {
-    let e = result[0];
-    return resolve(new Error2(e));
-  }
-}
-function boot_info() {
-  info(package_name + " v" + package_version);
-  return log_env_vars(toList(["GITHUB_ACTION_REPOSITORY", "GITHUB_REPOSITORY"]));
-}
-function auto_partition(render4, star_count) {
-  let $ = render4.partition;
-  if ($ instanceof PartitionOff && star_count >= 2e3) {
-    info(
-      "Auto-partitioning by year (" + to_string(star_count) + " stars >= " + to_string(
-        auto_partition_threshold
-      ) + ")"
-    );
-    return new Render(
-      render4.date_time,
-      render4.filename,
-      render4.partition_filename,
-      render4.group,
-      new PartitionByYear(),
-      render4.template,
-      render4.index_template
-    );
-  } else {
-    return render4;
-  }
-}
-function run3() {
-  return try_promise(
+function run_pipeline() {
+  return try_promise2(
     resolve2(),
-    (cfg) => {
-      log_config(cfg);
-      let $ = cfg.token;
+    (config) => {
+      log_config(config);
+      let $ = config.token;
       let token4;
       if ($ instanceof Some) {
         token4 = $[0];
       } else {
         throw makeError(
           "let_assert",
-          FILEPATH3,
-          "starlist/action",
-          83,
-          "run",
+          FILEPATH4,
+          "starlist_action",
+          71,
+          "run_pipeline",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 2096,
-            end: 2130,
-            pattern_start: 2107,
-            pattern_end: 2118
+            start: 1725,
+            end: 1762,
+            pattern_start: 1736,
+            pattern_end: 1747
           }
         );
       }
-      return try_promise(
-        group2("Git setup", () => {
-          return setup_git(cfg.git, token4);
-        }),
+      return try_promise2(
+        group3(
+          "Git setup",
+          () => {
+            return setup_git(config.git, token4);
+          }
+        ),
         (_) => {
           return try_await(
-            group2(
+            group_async(
               "Fetch stars",
               () => {
-                return fetch_stars(cfg.fetch, token4);
+                return fetch_stars(config.fetch, token4, config.data.path);
               }
             ),
             (response) => {
               let public$ = filter_private(response);
-              info(
-                "Writing data.json (" + to_string(public$.fetched) + " public)..."
+              let data_path = config.data.path;
+              info2(
+                "Writing " + data_path + " (" + to_string(
+                  fetched(public$)
+                ) + " public)..."
               );
-              return try_promise(
-                write_data_file(public$, "data.json"),
+              return try_promise2(
+                save_star_data(data_path, public$),
                 (_2) => {
-                  return try_promise(
-                    add3(toList(["data.json"])),
-                    (_3) => {
-                      let render4 = auto_partition(cfg.render, public$.fetched);
-                      let vars = resolve_response(
-                        public$,
-                        render4.date_time,
-                        render4.group
+                  let render4 = auto_partition(
+                    config.render,
+                    fetched(public$)
+                  );
+                  let $1 = !isEqual(render4.partition, config.render.partition);
+                  if ($1) {
+                    info2(
+                      "Auto-partitioning by year (" + to_string(
+                        fetched(public$)
+                      ) + " stars >= " + to_string(
+                        auto_partition_threshold
+                      ) + ")"
+                    );
+                  } else {
+                  }
+                  return try_promise2(
+                    group3(
+                      "Render",
+                      () => {
+                        return render3(render4, public$);
+                      }
+                    ),
+                    (files) => {
+                      info2(
+                        "Writing " + to_string(length(files)) + " output file(s)..."
                       );
-                      group_start("Render");
-                      return try_promise(
-                        compile_templates(render4),
-                        (templates) => {
-                          return try_promise(
-                            render_files(render4, templates, vars),
-                            (files) => {
-                              group_end();
-                              info(
-                                "Writing " + to_string(
-                                  length2(files)
-                                ) + " output file(s)..."
-                              );
-                              return try_promise(
-                                write_output_files(files),
-                                (written) => {
-                                  return try_promise(
-                                    add3(written),
-                                    (_4) => {
-                                      return group2(
-                                        "Commit",
-                                        () => {
-                                          let message = cfg.git.commit_message;
-                                          return try_promise(
-                                            commit(message),
-                                            (commit_result) => {
-                                              if (commit_result instanceof Committed) {
-                                                let _block;
-                                                let $1 = current_branch();
-                                                if ($1 instanceof Ok) {
-                                                  let b = $1[0];
-                                                  _block = b;
-                                                } else {
-                                                  _block = "HEAD";
-                                                }
-                                                let branch2 = _block;
-                                                return try_await(
-                                                  resolve(
-                                                    push(branch2)
-                                                  ),
-                                                  (_5) => {
-                                                    return resolve(
-                                                      new Ok(void 0)
-                                                    );
-                                                  }
-                                                );
-                                              } else {
-                                                info(
-                                                  "Nothing to commit, skipping push."
-                                                );
-                                                return resolve(
-                                                  new Ok(void 0)
-                                                );
-                                              }
-                                            }
-                                          );
-                                        }
-                                      );
-                                    }
-                                  );
+                      return try_promise2(
+                        write_files(files, render4.output_dir),
+                        (written) => {
+                          return group_async(
+                            "Commit",
+                            () => {
+                              let all_files = prepend(data_path, written);
+                              return try_promise2(
+                                commit_and_push(
+                                  config.git.commit_message,
+                                  all_files
+                                ),
+                                (committed) => {
+                                  if (committed) {
+                                  } else {
+                                    info2(
+                                      "Nothing to commit, skipping push."
+                                    );
+                                  }
+                                  return resolve(new Ok(void 0));
                                 }
                               );
                             }
@@ -15241,16 +15980,20 @@ function run3() {
   );
 }
 function main() {
-  registerProcessHandlers(error, set_failed);
-  boot_info();
+  register_default_process_handlers();
+  info2(
+    action_name + " v" + action_version + "\nRunning " + env_or_unset(
+      "GITHUB_ACTION_REPOSITORY"
+    ) + " on " + env_or_unset("GITHUB_REPOSITORY")
+  );
   map_promise(
-    run3(),
-    (res) => {
-      if (res instanceof Ok) {
-        info("Done.");
+    run_pipeline(),
+    (response) => {
+      if (response instanceof Ok) {
+        info2("Done.");
       } else {
-        let err = res[0];
-        set_failed(error_to_string(err));
+        let error2 = response[0];
+        set_failed2(to_string3(error2));
       }
       return void 0;
     }

@@ -1,7 +1,7 @@
 /// Security and sanitization tests.
-import starlist/config
-import starlist/internal/errors
+import starlist/errors
 import starlist/internal/partitioner
+import starlist/utils
 
 // ---------------------------------------------------------------------------
 // sanitize_key: shorthands
@@ -126,18 +126,18 @@ pub fn make_filename_cpp_test() {
 pub fn validate_path_rejects_traversal_test() {
   let repo_root = "/home/user/repo"
   let assert Error(errors.SecurityError(_)) =
-    config.validate_path("stars/../../etc/passwd", repo_root, "output")
+    utils.validate_path("stars/../../etc/passwd", repo_root, "output")
 }
 
 pub fn validate_path_rejects_absolute_outside_test() {
   let repo_root = "/home/user/repo"
   let assert Error(errors.SecurityError(_)) =
-    config.validate_path("/etc/passwd", repo_root, "output")
+    utils.validate_path("/etc/passwd", repo_root, "output")
 }
 
 pub fn validate_path_accepts_normal_test() {
   let repo_root = "/home/user/repo"
-  let assert Ok(_) = config.validate_path("stars/rust.md", repo_root, "output")
+  let assert Ok(_) = utils.validate_path("stars/rust.md", repo_root, "output")
 }
 
 // ---------------------------------------------------------------------------
@@ -147,17 +147,17 @@ pub fn validate_path_accepts_normal_test() {
 pub fn full_chain_language_test() {
   let repo_root = "/home/user/repo"
   let filename = partitioner.make_filename("stars/{key}.md", "Rust")
-  let assert Ok(_) = config.validate_path(filename, repo_root, "output")
+  let assert Ok(_) = utils.validate_path(filename, repo_root, "output")
 }
 
 pub fn full_chain_cpp_test() {
   let repo_root = "/home/user/repo"
   let filename = partitioner.make_filename("stars/{key}.md", "C++")
-  let assert Ok(_) = config.validate_path(filename, repo_root, "output")
+  let assert Ok(_) = utils.validate_path(filename, repo_root, "output")
 }
 
 pub fn full_chain_dotnet_test() {
   let repo_root = "/home/user/repo"
   let filename = partitioner.make_filename("stars/{key}.md", ".NET")
-  let assert Ok(_) = config.validate_path(filename, repo_root, "output")
+  let assert Ok(_) = utils.validate_path(filename, repo_root, "output")
 }

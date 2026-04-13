@@ -12,6 +12,7 @@ import clip/opt
 pub type FetchArgs {
   FetchArgs(
     credentials_command: Result(String, Nil),
+    login: Result(String, Nil),
     max_stars: Result(Int, Nil),
     output: String,
   )
@@ -68,7 +69,8 @@ fn fetch_command() -> clip.Command(Command) {
     use credentials_command <- clip.parameter
     use max_stars <- clip.parameter
     use output <- clip.parameter
-    Fetch(FetchArgs(credentials_command:, max_stars:, output:))
+    use login <- clip.parameter
+    Fetch(FetchArgs(credentials_command:, max_stars:, output:, login:))
   })
   |> clip.opt(
     opt.new("github-credentials-command")
@@ -83,6 +85,7 @@ fn fetch_command() -> clip.Command(Command) {
     |> opt.default("data.json")
     |> opt.help("Output file"),
   )
+  |> clip.opt(opt.new("login") |> opt.optional |> opt.help("GitHub Login"))
 }
 
 fn generate_command() -> clip.Command(Command) {
@@ -121,6 +124,7 @@ fn run_command() -> clip.Command(Command) {
   clip.command({
     use credentials_command <- clip.parameter
     use max_stars <- clip.parameter
+    use login <- clip.parameter
     use input <- clip.parameter
     use template <- clip.parameter
     use dir <- clip.parameter
@@ -134,7 +138,7 @@ fn run_command() -> clip.Command(Command) {
     use date_style <- clip.parameter
     use time_style <- clip.parameter
     Run(
-      fetch: FetchArgs(credentials_command:, max_stars:, output: input),
+      fetch: FetchArgs(credentials_command:, max_stars:, output: input, login:),
       generate: GenerateArgs(
         input:,
         template:,
@@ -159,6 +163,7 @@ fn run_command() -> clip.Command(Command) {
   |> clip.opt(
     opt.new("max-stars") |> opt.int |> opt.optional |> opt.help("Max stars"),
   )
+  |> clip.opt(opt.new("login") |> opt.optional |> opt.help("GitHub Login"))
   |> gen_opts
 }
 

@@ -4,8 +4,8 @@
 import gleam/list
 import gleam/string
 import qcheck
-import starlist/config
-import starlist/internal/errors
+import starlist/errors
+import starlist/utils
 
 fn traversal_path_generator() -> qcheck.Generator(String) {
   qcheck.from_generators(qcheck.return("/etc/passwd"), [
@@ -38,7 +38,7 @@ pub fn path_traversal_rejected_test() {
   let repo_root = "/home/user/repo"
 
   use path <- qcheck.given(traversal_path_generator())
-  let result = config.validate_path(path, repo_root, "output")
+  let result = utils.validate_path(path, repo_root, "output")
   case result {
     Error(errors.SecurityError(_)) -> Nil
     _ -> panic as { "Expected SecurityError for path: " <> path }
@@ -49,7 +49,7 @@ pub fn safe_paths_accepted_test() {
   let repo_root = "/home/user/repo"
 
   use path <- qcheck.given(safe_path_generator())
-  let result = config.validate_path(path, repo_root, "output")
+  let result = utils.validate_path(path, repo_root, "output")
   case result {
     Ok(_) -> Nil
     Error(e) -> {

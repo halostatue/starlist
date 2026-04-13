@@ -12,20 +12,25 @@ import gleam/result
 import gleam/string
 import pontil
 import squall
-import starlist/graphql/starred_repos.{
-  type Repository, type StarredRepositoryEdge,
+import starlist/config
+import starlist/errors.{type StarlistError}
+import starlist/internal/graphql/identity
+import starlist/internal/graphql/user_starred_repos.{
+  type Repository, type StarredRepositoryEdge, type User,
+  type UserStarredReposResponse,
 }
-import starlist/internal/errors.{type StarlistError}
-import starlist/internal/star_types.{
-  type QueryResponse, type ResponseRelease, type ResponseRepo,
-}
-import starlist/internal/timestamp
+import starlist/types.{type Release, type Repo, Language, Release, Repo, Topic}
+import starlist/utils
 
 /// Maximum number of retries on rate-limit (429/403) responses.
 const max_retries = 3
 
 /// Default backoff in milliseconds when no retry-after header is present.
 const default_backoff_ms = 60_000
+
+/// Raw fetch result: (repos, login, truncated, total).
+pub type FetchResult =
+  #(List(Repo), String, Bool, Int)
 
 /// Create a squall client configured for the GitHub GraphQL API.
 fn make_client(token: String) -> squall.Client {
@@ -35,27 +40,33 @@ fn make_client(token: String) -> squall.Client {
 /// Fetch all starred repositories for the authenticated user.
 /// Handles pagination and rate-limiting.
 /// When max_stars is Some(n), stops fetching after accumulating >= n edges.
+/// Returns raw (repos, login, truncated, total) — caller constructs StarData.
 pub fn fetch_starred_repos(
   token: String,
+  login: Option(String),
   max_stars: Option(Int),
-) -> Promise(Result(QueryResponse, StarlistError)) {
+  order: config.FetchOrder,
+) -> Promise(Result(FetchResult, StarlistError)) {
   let client = make_client(token)
-  fetch_all_pages(client, "", [], 0, max_stars)
+  let order_dir = case order {
+    config.Descending -> user_starred_repos.DESC
+    config.Ascending -> user_starred_repos.ASC
+  }
+
+  resolve_login(client, login)
+  |> promise.await(fn(result) {
+    case result {
+      Error(err) -> promise.resolve(Error(err))
+      Ok(login) ->
+        fetch_all_pages(client, login, "", [], 0, max_stars, order_dir)
+    }
+  })
   |> promise.map(fn(result) {
     result
     |> result.map(fn(acc) {
       let #(edges, login, truncated, total) = acc
-      let repos = list.map(edges, edge_to_response_repo)
-
-      star_types.QueryResponse(
-        data_version: star_types.data_version,
-        login: login,
-        truncated: truncated,
-        total: total,
-        fetched: list.length(repos),
-        stars: repos,
-        updated_at: timestamp.now_iso(),
-      )
+      let repos = list.map(edges, edge_to_repo)
+      #(repos, login, truncated, total)
     })
   })
 }
@@ -67,12 +78,14 @@ type PageAcc =
 /// Recursively fetch pages of starred repos until pagination is exhausted.
 fn fetch_all_pages(
   client: squall.Client,
+  login: String,
   cursor: String,
   acc: List(StarredRepositoryEdge),
   retries: Int,
   max_stars: Option(Int),
+  order: user_starred_repos.OrderDirection,
 ) -> Promise(Result(PageAcc, StarlistError)) {
-  case starred_repos.starred_repos(client, cursor) {
+  case user_starred_repos.user_starred_repos(client, login, cursor, order) {
     Error(msg) ->
       promise.resolve(
         Error(errors.GitHubApiError("Failed to build request: " <> msg)),
@@ -89,7 +102,16 @@ fn fetch_all_pages(
               )),
             )
           Ok(resp) ->
-            handle_response(client, cursor, acc, retries, resp, max_stars)
+            handle_response(
+              client,
+              login,
+              cursor,
+              acc,
+              retries,
+              resp,
+              max_stars,
+              order,
+            )
         }
       })
     }
@@ -99,17 +121,28 @@ fn fetch_all_pages(
 /// Process an HTTP response — handle success, rate-limits, and errors.
 fn handle_response(
   client: squall.Client,
+  login: String,
   cursor: String,
   acc: List(StarredRepositoryEdge),
   retries: Int,
   resp: Response(String),
   max_stars: Option(Int),
+  order: user_starred_repos.OrderDirection,
 ) -> Promise(Result(PageAcc, StarlistError)) {
   case resp.status {
-    200 -> handle_success(client, acc, resp.body, max_stars)
+    200 -> handle_success(client, login, acc, resp.body, max_stars, order)
 
     429 | 403 ->
-      handle_rate_limit(client, cursor, acc, retries, resp, max_stars)
+      handle_rate_limit(
+        client,
+        login,
+        cursor,
+        acc,
+        retries,
+        resp,
+        max_stars,
+        order,
+      )
 
     status ->
       promise.resolve(
@@ -126,17 +159,20 @@ fn handle_response(
 /// Parse a successful response and continue pagination if needed.
 fn handle_success(
   client: squall.Client,
+  login: String,
   acc: List(StarredRepositoryEdge),
   body: String,
   max_stars: Option(Int),
+  order: user_starred_repos.OrderDirection,
 ) -> Promise(Result(PageAcc, StarlistError)) {
-  case starred_repos.parse_starred_repos_response(body) {
+  case user_starred_repos.parse_user_starred_repos_response(body) {
     Error(msg) ->
       promise.resolve(
         Error(errors.GitHubApiError("Failed to decode response: " <> msg)),
       )
     Ok(parsed) -> {
-      let viewer = parsed.viewer
+      use viewer <- try_parse_viewer(login, parsed)
+
       let conn = viewer.starred_repositories
       let new_edges = case conn.edges {
         Some(edges) -> list.append(acc, edges)
@@ -166,7 +202,15 @@ fn handle_success(
             True, Some(next_cursor) ->
               promise.wait(jitter(200, 500))
               |> promise.await(fn(_) {
-                fetch_all_pages(client, next_cursor, new_edges, 0, max_stars)
+                fetch_all_pages(
+                  client,
+                  login,
+                  next_cursor,
+                  new_edges,
+                  0,
+                  max_stars,
+                  order,
+                )
               })
             _, _ -> promise.resolve(Ok(#(new_edges, login, truncated, total)))
           }
@@ -178,11 +222,13 @@ fn handle_success(
 /// Handle 429/403 rate-limit responses with retry + backoff.
 fn handle_rate_limit(
   client: squall.Client,
+  login: String,
   cursor: String,
   acc: List(StarredRepositoryEdge),
   retries: Int,
   resp: Response(String),
   max_stars: Option(Int),
+  order: user_starred_repos.OrderDirection,
 ) -> Promise(Result(PageAcc, StarlistError)) {
   case retries >= max_retries {
     True ->
@@ -207,7 +253,15 @@ fn handle_rate_limit(
       )
       promise.wait(wait_ms)
       |> promise.await(fn(_) {
-        fetch_all_pages(client, cursor, acc, retries + 1, max_stars)
+        fetch_all_pages(
+          client,
+          login,
+          cursor,
+          acc,
+          retries + 1,
+          max_stars,
+          order,
+        )
       })
     }
   }
@@ -228,7 +282,7 @@ fn get_backoff_ms(headers: List(#(String, String))) -> Int {
         Some(value) ->
           case int.parse(value) {
             Ok(reset_epoch) -> {
-              let now = timestamp.now_epoch_seconds()
+              let now = utils.now_epoch_seconds()
               let delta = reset_epoch - now
               case delta > 0 {
                 True -> delta * 1000
@@ -251,10 +305,10 @@ fn get_header(headers: List(#(String, String)), name: String) -> Option(String) 
   |> option.from_result
 }
 
-/// Convert a squall-generated StarredRepositoryEdge to our ResponseRepo type.
-fn edge_to_response_repo(edge: StarredRepositoryEdge) -> ResponseRepo {
+/// Convert a squall-generated StarredRepositoryEdge to our Repo type.
+fn edge_to_repo(edge: StarredRepositoryEdge) -> Repo {
   let repo = edge.node
-  star_types.ResponseRepo(
+  Repo(
     archived_on: repo.archived_at,
     description: repo.description,
     forks: repo.fork_count,
@@ -262,16 +316,15 @@ fn edge_to_response_repo(edge: StarredRepositoryEdge) -> ResponseRepo {
     is_fork: repo.is_fork,
     is_private: repo.is_private,
     is_template: repo.is_template,
-    language_count: language_count(repo),
+    total_languages: language_count(repo),
     languages: extract_languages(repo),
     latest_release: extract_release(repo),
-    license: extract_license(repo),
+    licence: extract_licence(repo),
     name: repo.name_with_owner,
     parent_repo: extract_parent(repo),
     pushed_on: option.unwrap(repo.pushed_at, ""),
     starred_on: edge.starred_at,
     stars: repo.stargazer_count,
-    topic_count: repo.repository_topics.total_count,
     topics: extract_topics(repo),
     url: repo.url,
   )
@@ -284,7 +337,7 @@ fn language_count(repo: Repository) -> Int {
   }
 }
 
-fn extract_languages(repo: Repository) -> List(star_types.Language) {
+fn extract_languages(repo: Repository) -> List(types.Language) {
   case repo.languages {
     None -> []
     Some(conn) ->
@@ -297,40 +350,32 @@ fn extract_languages(repo: Repository) -> List(star_types.Language) {
               True -> { edge.size * 100 } / total_size
               False -> 0
             }
-            star_types.Language(name: edge.node.name, percent: percent)
+            Language(name: edge.node.name, percent: percent)
           })
         }
       }
   }
 }
 
-fn extract_release(repo: Repository) -> Option(ResponseRelease) {
+fn extract_release(repo: Repository) -> Option(Release) {
   case repo.latest_release {
     None -> None
     Some(rel) ->
       case rel.published_at {
         None -> None
         Some(published) ->
-          Some(star_types.ResponseRelease(
-            name: rel.name,
-            published_on: published,
-          ))
+          Some(Release(name: rel.name, published_on: published))
       }
   }
 }
 
-fn extract_license(repo: Repository) -> String {
+fn extract_licence(repo: Repository) -> String {
   case repo.license_info {
     None -> ""
-    Some(lic) ->
-      case lic.spdx_id {
-        Some(spdx) -> spdx
-        None ->
-          case lic.nickname {
-            Some(nick) -> nick
-            None -> ""
-          }
-      }
+    Some(licence) ->
+      option.lazy_unwrap(licence.spdx_id, or: fn() {
+        option.unwrap(licence.nickname, or: licence.name)
+      })
   }
 }
 
@@ -341,19 +386,89 @@ fn extract_parent(repo: Repository) -> Option(String) {
   }
 }
 
-fn extract_topics(repo: Repository) -> Option(List(star_types.Topic)) {
+fn extract_topics(repo: Repository) -> Option(List(types.Topic)) {
   case repo.repository_topics.nodes {
     None -> None
     Some(nodes) ->
-      Some(
-        list.map(nodes, fn(rt) {
-          star_types.Topic(name: rt.topic.name, url: rt.url)
-        }),
-      )
+      Some(list.map(nodes, fn(rt) { Topic(name: rt.topic.name, url: rt.url) }))
   }
 }
 
 /// Random delay between min_ms and max_ms (inclusive).
 fn jitter(min_ms: Int, max_ms: Int) -> Int {
   min_ms + int.random(max_ms - min_ms + 1)
+}
+
+/// Resolve the login: use the provided value or fetch via viewer identity query.
+fn resolve_login(
+  client: squall.Client,
+  login: Option(String),
+) -> Promise(Result(String, StarlistError)) {
+  case login {
+    Some(login) -> promise.resolve(Ok(login))
+    None -> {
+      case identity.identity(client) {
+        Error(msg) ->
+          promise.resolve(
+            Error(errors.GitHubApiError(
+              "Failed to build identity query: " <> msg,
+            )),
+          )
+
+        Ok(request) -> {
+          fetch.send(request)
+          |> promise.try_await(fetch.read_text_body)
+          |> promise.await(fn(response) {
+            case response {
+              Error(_) ->
+                promise.resolve(
+                  Error(errors.GitHubApiError(
+                    "Network error during GitHub API request",
+                  )),
+                )
+              Ok(response) -> {
+                case response.status {
+                  200 ->
+                    case identity.parse_identity_response(response.body) {
+                      Error(msg) ->
+                        promise.resolve(
+                          Error(errors.GitHubApiError(
+                            "Failed to decode response: " <> msg,
+                          )),
+                        )
+                      Ok(parsed) -> {
+                        promise.resolve(Ok(parsed.viewer.login))
+                      }
+                    }
+                  status ->
+                    promise.resolve(
+                      Error(errors.GitHubApiError(
+                        "GitHub API returned status "
+                        <> int.to_string(status)
+                        <> ": "
+                        <> string.slice(response.body, 0, 200),
+                      )),
+                    )
+                }
+              }
+            }
+          })
+        }
+      }
+    }
+  }
+}
+
+fn try_parse_viewer(
+  login: String,
+  response: UserStarredReposResponse,
+  callback: fn(User) -> Promise(Result(PageAcc, StarlistError)),
+) -> Promise(Result(PageAcc, StarlistError)) {
+  case response.user {
+    Some(viewer) -> callback(viewer)
+    None ->
+      promise.resolve(
+        Error(errors.GitHubApiError("Could not find login: " <> login)),
+      )
+  }
 }

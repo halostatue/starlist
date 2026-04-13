@@ -5,40 +5,44 @@
 
 import gleam/dict
 import gleam/option.{None, Some}
+import gleam/result
 import gleam/string
 import pontil
-import pontil/types
 import simplifile
 import starlist/config
-import starlist/internal/errors
+import starlist/errors.{type StarlistError}
 import tom
 
 /// Action-specific default committer identity.
-const bot_name = "github-actions[bot]"
-
-const bot_email = "41898282+github-actions[bot]@users.noreply.github.com"
+const default_committer = #(
+  "github-actions[bot]",
+  "41898282+github-actions[bot]@users.noreply.github.com",
+)
 
 /// Resolve configuration from action inputs.
-pub fn resolve() -> Result(config.Config, errors.StarlistError) {
+pub fn resolve() -> Result(config.Config, StarlistError) {
   use token <- require_token()
   use toml <- read_toml()
+  use data <- result.try(config.decode_data(toml))
+  use fetch <- result.try(config.decode_fetch(toml))
+  use render <- result.try(config.decode_render(toml))
+  use git <- result.try(config.decode_git(toml))
 
-  let fetch = config.decode_fetch(toml)
-  let render = config.decode_render(toml)
-  let git = apply_action_git_defaults(config.decode_git(toml))
+  let git = apply_action_git_defaults(git)
 
-  Ok(config.Config(token: Some(token), fetch: fetch, render: render, git: git))
+  Ok(config.Config(
+    token: Some(token),
+    data: data,
+    fetch: fetch,
+    render: render,
+    git: git,
+  ))
 }
 
 fn require_token(
-  next: fn(String) -> Result(config.Config, errors.StarlistError),
-) -> Result(config.Config, errors.StarlistError) {
-  case
-    pontil.get_input_with_options(
-      "token",
-      types.InputOptions(required: True, trim_whitespace: True),
-    )
-  {
+  next: fn(String) -> Result(config.Config, StarlistError),
+) -> Result(config.Config, StarlistError) {
+  case pontil.get_input_opts("token", [pontil.InputRequired]) {
     Ok(t) -> {
       pontil.set_secret(t)
       next(t)
@@ -49,9 +53,8 @@ fn require_token(
 }
 
 fn read_toml(
-  next: fn(dict.Dict(String, tom.Toml)) ->
-    Result(config.Config, errors.StarlistError),
-) -> Result(config.Config, errors.StarlistError) {
+  next: fn(dict.Dict(String, tom.Toml)) -> Result(config.Config, StarlistError),
+) -> Result(config.Config, StarlistError) {
   let config_input = pontil.get_input("config")
   let config_file = pontil.get_input("config_file")
 
@@ -70,7 +73,7 @@ fn read_toml(
       }
     // File TOML
     True, False ->
-      case simplifile.read(config_file) {
+      case simplifile.read(from: config_file) {
         Ok(content) ->
           case config.parse_toml(content) {
             Ok(toml) -> next(toml)
@@ -96,15 +99,15 @@ fn apply_action_git_defaults(git: config.Git) -> config.Git {
     committer: Some(case git.committer {
       Some(#(name, email)) -> #(
         case name {
-          "" -> bot_name
+          "" -> default_committer.0
           _ -> name
         },
         case email {
-          "" -> bot_email
+          "" -> default_committer.1
           _ -> email
         },
       )
-      None -> #(bot_name, bot_email)
+      None -> default_committer
     }),
   )
 }

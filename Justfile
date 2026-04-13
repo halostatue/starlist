@@ -1,11 +1,21 @@
 _default:
     just --list
 
-# Build the action bundle
-@build:
+@fetch:
+    gleam build
+    GH_TOKEN="$(gh auth token)" gleam run -m starlist_js -- fetch --max-stars 50
+
+@userfetch USER:
+    gleam build
+    GH_TOKEN="$(gh auth token)" gleam run -m starlist_js -- fetch --max-stars 50 --login {{ USER }}
+
+@generate:
     gleam run -m cog
     SQUALL_AUTH_TOKEN="$(gh auth token)" gleam run -m squall generate https://api.github.com/graphql
     gleam format
+
+# Build the action bundle
+@build: generate
     gleam build
     gleam run -m build_action
 

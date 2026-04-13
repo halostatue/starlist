@@ -1,24 +1,22 @@
-//// Resolver — convert QueryResponse into template-ready TemplateVars.
+//// Resolver — convert StarData into template-ready TemplateVars.
 ////
-//// Takes DateTimeConfig and Group directly, no config dependency beyond types.
+//// Takes DateTimeConfig and Group directly, no config dependency beyond star_data.
 
 import gleam/dict
 import gleam/list
 import gleam/option.{None, Some}
 import starlist/config
-import starlist/internal/star_types.{
-  type QueryResponse, type Release, type ResponseRelease, type ResponseRepo,
-  type StarredRepo, type TemplateVars,
-}
-import starlist/internal/timestamp
+import starlist/internal/star_types.{type PageVars, type StarData}
+import starlist/types.{type Repo}
+import starlist/utils
 
-/// Resolve a QueryResponse into template-ready TemplateVars.
+/// Resolve a StarData into template-ready PageVars.
 pub fn resolve_response(
-  response: QueryResponse,
+  data: StarData,
   date_time: config.DateTimeConfig,
   group: config.Group,
-) -> TemplateVars {
-  let stars = list.map(response.stars, resolve_repo(_, date_time))
+) -> PageVars {
+  let stars = list.map(data.repos, resolve_repo(_, date_time))
 
   let #(groups, group_description) = case group {
     config.GroupByLanguage -> #(group_by_language(stars), "languages")
@@ -26,53 +24,52 @@ pub fn resolve_response(
     config.GroupByLicence -> #(group_by_licence(stars), "licences")
   }
 
-  star_types.TemplateVars(
-    data_version: response.data_version,
-    updated_at: timestamp.format(date_time, response.updated_at),
-    generated_at: timestamp.now(date_time),
-    login: response.login,
-    truncated: response.truncated,
+  star_types.PageVars(
+    data_version: data.data_version,
+    updated_at: utils.format_timestamp(date_time, data.updated_at),
+    generated_at: utils.now(date_time),
+    login: data.login,
+    truncated: data.truncated,
     total: list.length(stars),
-    fetched: response.fetched,
+    fetched: data.fetched,
     stars: stars,
     groups: groups,
     group_count: dict.size(groups),
     group_description: group_description,
     partition: None,
-    partitions: [],
-    partition_count: 0,
-    partition_description: "",
   )
 }
 
-fn resolve_repo(repo: ResponseRepo, dt: config.DateTimeConfig) -> StarredRepo {
-  star_types.StarredRepo(
-    archived_on: option.map(repo.archived_on, timestamp.format(dt, _)),
+fn resolve_repo(repo: Repo, dt: config.DateTimeConfig) -> star_types.DisplayRepo {
+  star_types.DisplayRepo(
+    archived_on: option.map(repo.archived_on, utils.format_timestamp(dt, _)),
     description: repo.description,
     forks: repo.forks,
     homepage_url: repo.homepage_url,
     is_fork: repo.is_fork,
     is_private: repo.is_private,
     is_template: repo.is_template,
-    language_count: repo.language_count,
+    total_languages: repo.total_languages,
     languages: repo.languages,
     latest_release: option.map(repo.latest_release, resolve_release(_, dt)),
-    license: repo.license,
+    licence: repo.licence,
     name: repo.name,
     parent_repo: repo.parent_repo,
-    pushed_on: timestamp.format(dt, repo.pushed_on),
-    starred_on: timestamp.format(dt, repo.starred_on),
+    pushed_on: utils.format_timestamp(dt, repo.pushed_on),
+    starred_on: utils.format_timestamp(dt, repo.starred_on),
     stars: repo.stars,
-    topic_count: repo.topic_count,
     topics: repo.topics,
     url: repo.url,
   )
 }
 
-fn resolve_release(rel: ResponseRelease, dt: config.DateTimeConfig) -> Release {
-  star_types.Release(
+fn resolve_release(
+  rel: types.Release,
+  dt: config.DateTimeConfig,
+) -> star_types.DisplayRelease {
+  star_types.DisplayRelease(
     name: rel.name,
-    published_on: timestamp.format(dt, rel.published_on),
+    published_on: utils.format_timestamp(dt, rel.published_on),
   )
 }
 
@@ -81,8 +78,8 @@ fn resolve_release(rel: ResponseRelease, dt: config.DateTimeConfig) -> Release {
 // ---------------------------------------------------------------------------
 
 fn group_by_language(
-  stars: List(StarredRepo),
-) -> dict.Dict(String, List(StarredRepo)) {
+  stars: List(star_types.DisplayRepo),
+) -> dict.Dict(String, List(star_types.DisplayRepo)) {
   list.fold(stars, dict.new(), fn(acc, repo) {
     let key = case repo.languages {
       [first, ..] -> first.name
@@ -93,8 +90,8 @@ fn group_by_language(
 }
 
 fn group_by_topic(
-  stars: List(StarredRepo),
-) -> dict.Dict(String, List(StarredRepo)) {
+  stars: List(star_types.DisplayRepo),
+) -> dict.Dict(String, List(star_types.DisplayRepo)) {
   list.fold(stars, dict.new(), fn(acc, repo) {
     let key = case repo.topics {
       None | Some([]) -> "no-topics"
@@ -105,10 +102,10 @@ fn group_by_topic(
 }
 
 fn group_by_licence(
-  stars: List(StarredRepo),
-) -> dict.Dict(String, List(StarredRepo)) {
+  stars: List(star_types.DisplayRepo),
+) -> dict.Dict(String, List(star_types.DisplayRepo)) {
   list.fold(stars, dict.new(), fn(acc, repo) {
-    let key = case repo.license {
+    let key = case repo.licence {
       "" -> "Unknown license"
       l -> l
     }
@@ -117,10 +114,10 @@ fn group_by_licence(
 }
 
 fn upsert(
-  acc: dict.Dict(String, List(StarredRepo)),
+  acc: dict.Dict(String, List(star_types.DisplayRepo)),
   key: String,
-  repo: StarredRepo,
-) -> dict.Dict(String, List(StarredRepo)) {
+  repo: star_types.DisplayRepo,
+) -> dict.Dict(String, List(star_types.DisplayRepo)) {
   let existing = case dict.get(acc, key) {
     Ok(repos) -> repos
     Error(_) -> []

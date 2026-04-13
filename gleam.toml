@@ -1,5 +1,5 @@
 name = "starlist"
-version = "2.0.2"
+version = "3.0.0"
 target = "javascript"
 
 description = "Generate a list from user starred GitHub repositories"
@@ -14,16 +14,18 @@ tom = ">= 2.0.0 and < 3.0.0"
 glemplate = ">= 8.0.0 and < 9.0.0"
 shellout = ">= 1.8.0 and < 2.0.0"
 filepath = ">= 1.0.0 and < 2.0.0"
-simplifile = ">= 2.0.0 and < 3.0.0"
 squall = { git = "https://github.com/halostatue/squall.git", ref = "fix-bad-duplicate-generation" }
 gleam_javascript = ">= 1.0.0 and < 2.0.0"
 envoy = ">= 1.1.0 and < 2.0.0"
 argv = ">= 1.0.2 and < 2.0.0"
 clip = ">= 1.2.0 and < 2.0.0"
-esgleam = ">= 1.0.0 and < 2.0.0"
-pontil = ">= 0.1.0 and < 1.0.0"
+pontil = ">= 1.0.0 and < 2.0.0"
+gleam_http = ">= 4.3.0 and < 5.0.0"
+simplifile = ">= 2.4.0 and < 3.0.0"
 
-[dev-dependencies]
+[dev_dependencies]
+esgleam = ">= 1.0.0 and < 2.0.0"
 gleeunit = ">= 1.0.0 and < 2.0.0"
 qcheck = ">= 1.0.0 and < 2.0.0"
 cog = ">= 2.0.3 and < 3.0.0"
+# sara = ">= 1.0.0 and < 2.0.0"

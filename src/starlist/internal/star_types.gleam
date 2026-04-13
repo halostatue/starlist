@@ -1,35 +1,49 @@
-/// Resolved star data types — the domain types used after API/file data
-/// is transformed into template-ready form. These complement the squall-generated
-/// response types in `starlist/graphql/`.
+//// Internal types for starlist.
+////
+//// Resolve → partition → render pipeline types also live here.
+
 import gleam/dict.{type Dict}
 import gleam/option.{type Option}
+import starlist/types.{type Language, type Repo, type Timestamp, type Topic}
 
-/// Current data version for QueryResponse serialization.
-pub const data_version = 2
+/// Current data version for StarData serialization.
+pub const data_version = 4
 
-/// Formatted timestamp with separate date and time components.
-pub type Timestamp {
-  Timestamp(date: String, time: String)
+//@json_encode
+//@json_decode
+/// Fetched/loaded star data with metadata.
+///
+/// This is semi-opaque. Internal modules can construct and destructure it freely, but
+/// external modules should use `starlist/star_data` functions to get at the external
+/// data. It should only be constructed via the GitHub API client or the JSON loading
+/// capabilities in `starlist`.
+pub type StarData {
+  StarData(
+    /// The data version.
+    ///
+    /// If this does not match the current data version, the data cannot be used for
+    /// processing and must be fetched from the API.
+    data_version: Int,
+    /// The login for whom the data was loaded.
+    login: String,
+    /// Whether the results are truncated by the GitHub API.
+    truncated: Bool,
+    /// The total number of stars reported for the user by the GitHub API.
+    total: Int,
+    /// The actual number of stars fetched.
+    fetched: Int,
+    /// The list of repos.
+    repos: List(Repo),
+    /// When this data was updated as an RFC3339 timestamp string.
+    updated_at: String,
+  )
 }
 
-/// Language with name and percentage of repo code.
-pub type Language {
-  Language(name: String, percent: Int)
-}
-
-/// Topic with name and URL.
-pub type Topic {
-  Topic(name: String, url: String)
-}
-
-/// Resolved release info with formatted timestamp.
-pub type Release {
-  Release(name: Option(String), published_on: Timestamp)
-}
-
-/// A starred repo with all timestamps resolved to Timestamp records.
-pub type StarredRepo {
-  StarredRepo(
+/// A starred repository ready for display in a template.
+///
+/// All of the templates have been resolved to Timestamp records suitable for display.
+pub type DisplayRepo {
+  DisplayRepo(
     archived_on: Option(Timestamp),
     description: Option(String),
     forks: Int,
@@ -37,24 +51,28 @@ pub type StarredRepo {
     is_fork: Bool,
     is_private: Bool,
     is_template: Bool,
-    language_count: Int,
+    total_languages: Int,
     languages: List(Language),
-    latest_release: Option(Release),
-    license: String,
+    latest_release: Option(DisplayRelease),
+    licence: String,
     name: String,
     parent_repo: Option(String),
     pushed_on: Timestamp,
     starred_on: Timestamp,
     stars: Int,
-    topic_count: Int,
     topics: Option(List(Topic)),
     url: String,
   )
 }
 
+/// Resolved release info with formatted timestamp.
+pub type DisplayRelease {
+  DisplayRelease(name: Option(String), published_on: Timestamp)
+}
+
 /// A group of starred repos under a topic, with the topic's URL.
 pub type TopicGroup {
-  TopicGroup(url: String, entries: List(StarredRepo))
+  TopicGroup(url: String, entries: List(DisplayRepo))
 }
 
 /// Partition context for a template — None when single-file mode.
@@ -67,9 +85,9 @@ pub type PartitionContext {
   )
 }
 
-/// Fully resolved data passed to the template engine.
-pub type TemplateVars {
-  TemplateVars(
+/// Fully resolved data passed to the page template (single-file or per-partition).
+pub type PageVars {
+  PageVars(
     data_version: Int,
     updated_at: Timestamp,
     generated_at: Timestamp,
@@ -77,63 +95,26 @@ pub type TemplateVars {
     truncated: Bool,
     total: Int,
     fetched: Int,
-    stars: List(StarredRepo),
-    groups: Dict(String, List(StarredRepo)),
+    stars: List(DisplayRepo),
+    groups: Dict(String, List(DisplayRepo)),
     group_count: Int,
     group_description: String,
     partition: Option(PartitionContext),
-    partitions: List(PartitionContext),
-    partition_count: Int,
-    partition_description: String,
   )
 }
 
-/// Raw API/file response wrapper, serialized to/from data.json.
-/// Wraps the accumulated response data with metadata fields.
-pub type QueryResponse {
-  QueryResponse(
+/// Fully resolved data passed to the index template (partitioned mode only).
+pub type IndexVars {
+  IndexVars(
     data_version: Int,
+    updated_at: Timestamp,
+    generated_at: Timestamp,
     login: String,
     truncated: Bool,
     total: Int,
     fetched: Int,
-    stars: List(ResponseRepo),
-    updated_at: String,
+    partitions: List(PartitionContext),
+    partition_count: Int,
+    partition_description: String,
   )
-}
-
-/// A repository as stored in data.json — flattened from the GraphQL response
-/// into a simpler structure for serialization.
-pub type ResponseRepo {
-  ResponseRepo(
-    archived_on: Option(String),
-    description: Option(String),
-    forks: Int,
-    homepage_url: Option(String),
-    is_fork: Bool,
-    is_private: Bool,
-    is_template: Bool,
-    language_count: Int,
-    languages: List(Language),
-    latest_release: Option(ResponseRelease),
-    license: String,
-    name: String,
-    parent_repo: Option(String),
-    pushed_on: String,
-    starred_on: String,
-    stars: Int,
-    topic_count: Int,
-    topics: Option(List(Topic)),
-    url: String,
-  )
-}
-
-/// Release info as stored in data.json (raw ISO string, not yet formatted).
-pub type ResponseRelease {
-  ResponseRelease(name: Option(String), published_on: String)
-}
-
-/// A generated output file ready to be written and staged.
-pub type GeneratedFile {
-  GeneratedFile(filename: String, data: String)
 }

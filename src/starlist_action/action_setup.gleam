@@ -3,14 +3,14 @@
 import envoy
 import gleam/string
 import pontil
-import starlist/internal/errors
-import starlist/internal/git
+import starlist/errors.{type StarlistError}
+import starlist/git
 
 /// Configure git identity and inject token into remote URL for authenticated push.
 pub fn setup(
   committer: #(String, String),
   token: String,
-) -> Result(Nil, errors.StarlistError) {
+) -> Result(Nil, StarlistError) {
   let #(name, email) = committer
   use _ <- try(git.config_set("user.name", name))
   use _ <- try(git.config_set("user.email", email))
@@ -73,9 +73,9 @@ fn inject_token(url: String, token: String) -> String {
 }
 
 fn try(
-  result: Result(a, errors.StarlistError),
-  next: fn(a) -> Result(Nil, errors.StarlistError),
-) -> Result(Nil, errors.StarlistError) {
+  result: Result(a, StarlistError),
+  next: fn(a) -> Result(Nil, StarlistError),
+) -> Result(Nil, StarlistError) {
   case result {
     Ok(v) -> next(v)
     Error(e) -> Error(e)

@@ -23,7 +23,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Generate stars list
-        uses: halostatue/starlist@v2.0.2
+        uses: halostatue/starlist@v3.0.0
         with:
           token: ${{ secrets.STARLIST_PAT }}
 ```
