@@ -1,246 +1,260 @@
-//// CLI entrypoint for starlist.
+//// Starlist public API.
 ////
-//// Usage: gleam run -m starlist <subcommand> [options]
-////
-//// Subcommands: fetch, generate, run, commit
+//// Thin facade over internal modules. Both frontends (action + CLI) should
+//// call through here rather than reaching into `starlist/internal/*` directly.
 
-import argv
-import clip
 import filepath
-import gleam/int
-import gleam/io
-import gleam/javascript/promise
+import gleam/javascript/promise.{type Promise}
 import gleam/list
-import gleam/option
+import gleam/option.{type Option, None}
 import gleam/result
-import gleam/string
 import simplifile
-import starlist/config
-import starlist/internal/cli/commands.{
-  type Command, type CommitArgs, type FetchArgs, type GenerateArgs, Commit,
-  Fetch, Generate, Run,
-}
-import starlist/internal/cli/config as cli_config
-import starlist/internal/git
+import starlist/config.{type Config}
+import starlist/errors.{type StarlistError}
+import starlist/git
+import starlist/internal/data_file
 import starlist/internal/github_client
 import starlist/internal/partitioner
-import starlist/internal/renderer.{type Template}
+import starlist/internal/renderer
 import starlist/internal/resolver
-import starlist/internal/star_data
-import starlist/internal/star_types.{type TemplateVars, GeneratedFile}
+import starlist/internal/star_types.{type PageVars}
+import starlist/types.{type OutputFile, type Repo, OutputFile}
+import starlist/utils
 
-pub fn main() -> Nil {
-  case commands.cli() |> clip.run(argv.load().arguments) {
-    Error(msg) -> io.println_error(msg)
-    Ok(cmd) -> dispatch(cmd)
-  }
+pub type StarData =
+  star_types.StarData
+
+/// Build a Config from defaults only.
+pub fn config_from_defaults() -> Config {
+  config.Config(
+    token: None,
+    data: config.default_data(),
+    fetch: config.default_fetch(),
+    render: config.default_render(),
+    git: config.default_git(),
+  )
 }
 
-fn dispatch(cmd: Command) -> Nil {
-  case cmd {
-    Fetch(args) -> dispatch_fetch(args)
-    Generate(args) -> dispatch_generate(args)
-    Run(fetch:, generate:) -> {
-      dispatch_fetch(fetch)
-      dispatch_generate(generate)
-    }
-    Commit(args) -> dispatch_commit(args)
-  }
+/// Build a Config from a TOML string, layered over defaults.
+pub fn config_from_string(toml_string: String) -> Result(Config, StarlistError) {
+  use toml <- result.try(config.parse_toml(toml_string))
+  use data <- result.try(config.decode_data(toml))
+  use fetch <- result.try(config.decode_fetch(toml))
+  use git <- result.try(config.decode_git(toml))
+  use render <- result.try(config.decode_render(toml))
+
+  Ok(config.Config(token: None, data:, fetch:, git:, render:))
 }
 
-fn dispatch_fetch(args: FetchArgs) -> Nil {
-  case cli_config.resolve_token(args.credentials_command) {
-    Error(msg) -> io.println_error(msg)
-    Ok(token) -> {
-      let max_stars = option.from_result(args.max_stars)
-      github_client.fetch_starred_repos(token, max_stars)
-      |> promise.map(fn(res) {
-        case res {
-          Error(err) -> io.println_error("Fetch error: " <> string.inspect(err))
-          Ok(response) -> {
-            io.println(
-              "Fetched "
-              <> int.to_string(list.length(response.stars))
-              <> " stars",
-            )
-            case star_data.write_data_file(response, args.output) {
-              Ok(_) -> io.println("Wrote " <> args.output)
-              Error(err) ->
-                io.println_error("Write error: " <> string.inspect(err))
-            }
-          }
-        }
-      })
-      Nil
-    }
-  }
-}
-
-fn dispatch_generate(args: GenerateArgs) -> Nil {
-  case star_data.load_data_file(args.input) {
-    Error(err) -> io.println_error("Load error: " <> string.inspect(err))
-    Ok(response) -> {
-      let render = cli_config.render_config(args)
-      let vars =
-        resolver.resolve_response(response, render.date_time, render.group)
-      case generate_files(render, vars) {
-        Error(msg) -> io.println_error(msg)
-        Ok(files) -> write_files(files, args.dir)
-      }
-    }
-  }
-}
-
-fn dispatch_commit(args: CommitArgs) -> Nil {
-  case git.add(["."]) {
-    Error(err) -> io.println_error("git add: " <> string.inspect(err))
-    Ok(_) ->
-      case git.commit(args.message) {
-        Error(err) -> io.println_error("git commit: " <> string.inspect(err))
-        Ok(git.NothingToCommit) -> io.println("Nothing to commit.")
-        Ok(git.Committed) -> {
-          io.println("Committed: " <> args.message)
-          case args.push {
-            False -> Nil
-            True ->
-              case git.current_branch() {
-                Error(err) ->
-                  io.println_error("git branch: " <> string.inspect(err))
-                Ok(branch) ->
-                  case git.push(branch) {
-                    Error(err) ->
-                      io.println_error("git push: " <> string.inspect(err))
-                    Ok(_) -> io.println("Pushed to " <> branch)
-                  }
-              }
-          }
-        }
-      }
+/// Build a Config from a TOML file, layered over defaults.
+pub fn config_from_file(path: String) -> Result(Config, StarlistError) {
+  case simplifile.read(from: path) {
+    Ok(content) -> config_from_string(content)
+    Error(_) -> Error(errors.FileError("Cannot read config file: " <> path))
   }
 }
 
 // ---------------------------------------------------------------------------
-// Generate helpers
+// Data: fetch / load / save / filter
 // ---------------------------------------------------------------------------
 
-fn generate_files(
-  render: config.Render,
-  vars: TemplateVars,
-) -> Result(List(star_types.GeneratedFile), String) {
+/// Fetch starred repos from the GitHub API.
+pub fn fetch_star_data(
+  token: String,
+  login: Option(String),
+  max_stars: Option(Int),
+  order: config.FetchOrder,
+) -> Promise(Result(StarData, StarlistError)) {
+  github_client.fetch_starred_repos(token, login, max_stars, order)
+  |> promise.map(fn(result) {
+    result.map(result, fn(raw) {
+      let #(repos, login, truncated, total) = raw
+      star_types.StarData(
+        data_version: star_types.data_version,
+        login: login,
+        truncated: truncated,
+        total: total,
+        fetched: list.length(repos),
+        repos: repos,
+        updated_at: utils.now_iso(),
+      )
+    })
+  })
+}
+
+/// Load star data from a JSON file.
+pub fn load_star_data(filename: String) -> Result(StarData, StarlistError) {
+  data_file.load_data_file(filename)
+}
+
+/// Save star data to a JSON file.
+pub fn save_star_data(
+  filename: String,
+  data: StarData,
+) -> Result(Nil, StarlistError) {
+  data_file.write_data_file(data, filename)
+}
+
+/// Filter a StarData, keeping only repos that satisfy the predicate.
+/// Updates the `fetched` count to match.
+pub fn filter_repos(data: StarData, filter_fun: fn(Repo) -> Bool) -> StarData {
+  let kept = list.filter(data.repos, filter_fun)
+  star_types.StarData(..data, repos: kept, fetched: list.length(kept))
+}
+
+// ---------------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------------
+
+const auto_partition_threshold = 2000
+
+/// Auto-promote partition to ByYear when star count exceeds threshold.
+pub fn auto_partition(render: config.Render, star_count: Int) -> config.Render {
   case render.partition {
-    config.PartitionOff -> {
-      use tpl <- result.try(compile_template(render.template))
-      use rendered <- result.try(render_template(tpl, vars))
-      Ok([GeneratedFile(filename: render.filename, data: rendered)])
-    }
-    _ -> {
-      use data_tpl <- result.try(compile_template(render.template))
-      use index_tpl <- result.try(compile_template(render.index_template))
-      case
-        partitioner.partition(
-          vars,
-          render.partition,
-          render.group,
-          render.partition_filename,
-        )
-      {
-        Error(Nil) -> Error("Partition returned Off in multi-file mode")
-        Ok(pr) -> {
-          let index_vars = enrich_index_vars(vars, pr, render.partition)
-          use index_rendered <- result.try(render_template(
-            index_tpl,
-            index_vars,
-          ))
-          let index_file =
-            GeneratedFile(filename: render.filename, data: index_rendered)
-          use data_files <- result.try(
-            list.try_map(pr.data, fn(part) {
-              use rendered <- result.try(render_template(data_tpl, part.vars))
-              Ok(GeneratedFile(filename: part.filename, data: rendered))
-            }),
-          )
-          Ok([index_file, ..data_files])
-        }
-      }
-    }
+    config.PartitionOff if star_count >= auto_partition_threshold ->
+      config.Render(..render, partition: config.PartitionByYear)
+    _ -> render
   }
 }
 
-fn compile_template(path: String) -> Result(Template, String) {
-  case renderer.compile_file(path) {
-    Ok(tpl) -> Ok(tpl)
-    Error(err) -> Error(string.inspect(err))
+/// Render star data into output files using the given config.
+/// Handles single-file and multi-file (partitioned) modes.
+pub fn render(
+  render_config: config.Render,
+  data: StarData,
+) -> Result(List(OutputFile), StarlistError) {
+  let vars =
+    resolver.resolve_response(
+      data,
+      render_config.date_time,
+      render_config.group,
+    )
+
+  case render_config.partition {
+    config.PartitionOff -> render_single(render_config, vars)
+    _ -> render_multi(render_config, vars)
   }
 }
 
-fn render_template(tpl: Template, vars: TemplateVars) -> Result(String, String) {
-  case renderer.render(tpl, vars) {
-    Ok(s) -> Ok(s)
-    Error(err) -> Error("Render error: " <> string.inspect(err))
-  }
-}
-
-fn write_files(files: List(star_types.GeneratedFile), dir: String) -> Nil {
-  let root = case simplifile.current_directory() {
-    Ok(d) -> d
+/// Write generated files to disk under `root_dir`, validating paths.
+/// Returns the list of filenames written.
+pub fn write_files(
+  files: List(OutputFile),
+  root_dir: String,
+) -> Result(List(String), StarlistError) {
+  let repo_root = case simplifile.current_directory() {
+    Ok(dir) -> dir
     Error(_) -> "."
   }
-  list.each(files, fn(file) {
-    let path = filepath.join(dir, file.filename)
-    case config.validate_path(path, root, "output") {
-      Error(err) -> io.println_error("Security: " <> string.inspect(err))
-      Ok(validated) ->
-        case ensure_parent(validated) {
-          Error(msg) -> io.println_error(msg)
-          Ok(_) ->
-            case simplifile.write(to: validated, contents: file.data) {
-              Ok(_) -> io.println("Wrote " <> path)
-              Error(err) ->
-                io.println_error(
-                  "Write error " <> path <> ": " <> string.inspect(err),
-                )
-            }
-        }
+  list.try_map(files, fn(file) {
+    let path = filepath.join(root_dir, file.filename)
+    use resolved <- result.try(utils.validate_path(path, repo_root, "output"))
+    use _ <- result.try(ensure_parent(resolved))
+    case simplifile.write(to: resolved, contents: file.data) {
+      Ok(Nil) -> Ok(file.filename)
+      Error(_) -> Error(errors.FileError("Failed to write: " <> file.filename))
     }
   })
 }
 
-fn enrich_index_vars(
-  vars: star_types.TemplateVars,
-  pr: partitioner.PartitionResult,
-  partition: config.Partition,
-) -> star_types.TemplateVars {
-  let contexts =
-    list.map(pr.partitions, fn(p) {
-      star_types.PartitionContext(
-        name: p.key,
-        filename: p.filename,
-        count: p.count,
-        count_label: case p.count {
-          1 -> "1 repo"
-          n -> int.to_string(n) <> " repos"
-        },
-      )
-    })
-  star_types.TemplateVars(
-    ..vars,
-    partitions: contexts,
-    partition_count: list.length(contexts),
-    partition_description: case partition {
-      config.PartitionOff -> ""
-      config.PartitionByLanguage -> "languages"
-      config.PartitionByTopic -> "topics"
-      config.PartitionByYear -> "years"
-      config.PartitionByYearMonth -> "months"
-    },
-  )
+/// Describe a partition mode as a human-readable plural noun.
+pub fn partition_description(p: config.Partition) -> String {
+  case p {
+    config.PartitionOff -> ""
+    config.PartitionByLanguage -> "languages"
+    config.PartitionByTopic -> "topics"
+    config.PartitionByYear -> "years"
+    config.PartitionByYearMonth -> "months"
+  }
 }
 
-fn ensure_parent(path: String) -> Result(Nil, String) {
+// ---------------------------------------------------------------------------
+// Internal: rendering
+// ---------------------------------------------------------------------------
+
+fn render_single(
+  render: config.Render,
+  vars: PageVars,
+) -> Result(List(OutputFile), StarlistError) {
+  use tpl <- result.try(renderer.compile_file(render.template))
+  use rendered <- result.try(renderer.render_page(tpl, vars))
+  Ok([OutputFile(filename: render.filename, data: rendered)])
+}
+
+fn render_multi(
+  render: config.Render,
+  vars: PageVars,
+) -> Result(List(OutputFile), StarlistError) {
+  use data_tpl <- result.try(renderer.compile_file(render.template))
+  use index_tpl <- result.try(renderer.compile_file(render.index_template))
+
+  case
+    partitioner.partition(
+      vars,
+      render.partition,
+      render.group,
+      render.partition_filename,
+      partition_description(render.partition),
+    )
+  {
+    Error(Nil) ->
+      Error(errors.ConfigError("Partition returned Off in multi-file mode"))
+    Ok(pr) -> {
+      use index_rendered <- result.try(renderer.render_index(
+        index_tpl,
+        pr.index,
+      ))
+      let index_file =
+        OutputFile(filename: render.filename, data: index_rendered)
+      use data_files <- result.try(
+        list.try_map(pr.data, fn(part) {
+          use rendered <- result.try(renderer.render_page(data_tpl, part.vars))
+          Ok(OutputFile(filename: part.filename, data: rendered))
+        }),
+      )
+      Ok([index_file, ..data_files])
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Internal: file helpers
+// ---------------------------------------------------------------------------
+
+fn ensure_parent(path: String) -> Result(Nil, StarlistError) {
   let dir = filepath.directory_name(path)
   case simplifile.create_directory_all(dir) {
     Ok(_) -> Ok(Nil)
-    Error(err) ->
-      Error("Cannot create directory " <> dir <> ": " <> string.inspect(err))
+    Error(_) -> Error(errors.FileError("Cannot create directory: " <> dir))
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Git operations
+// ---------------------------------------------------------------------------
+
+/// Pull from origin with optional flags. Automatically adds --unshallow if needed.
+pub fn pull(flags: String) -> Result(Nil, StarlistError) {
+  let shallow = case git.is_shallow() {
+    Ok(v) -> v
+    Error(_) -> False
+  }
+  git.pull(flags, shallow)
+}
+
+/// Stage files, commit, and push. Returns True if a commit was made, False if clean.
+pub fn commit_and_push(
+  message: String,
+  files: List(String),
+) -> Result(Bool, StarlistError) {
+  use _ <- result.try(git.add(files))
+  use commit_result <- result.try(git.commit(message))
+  case commit_result {
+    git.NothingToCommit -> Ok(False)
+    git.Committed -> {
+      use branch <- result.try(git.current_branch())
+      use _ <- result.try(git.push(branch))
+      Ok(True)
+    }
   }
 }

@@ -1,37 +1,53 @@
-//// Starlist shared configuration types and TOML parsing.
-////
-//// These types are used by both the action and CLI entrypoints.
-//// Each entrypoint has its own resolution module that builds a Config
-//// from its specific inputs (action inputs vs CLI flags) using the
-//// shared TOML parsing helpers here.
-
+/// Starlist configuration
+import gleam/bool
 import gleam/dict.{type Dict}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
-import starlist/internal/errors
+import starlist/errors.{type StarlistError}
 import tom.{type Toml}
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+type Table =
+  Dict(String, Toml)
 
 /// Resolved configuration.
 pub type Config {
-  Config(token: Option(String), fetch: Fetch, render: Render, git: Git)
+  Config(
+    token: Option(String),
+    data: Data,
+    fetch: Fetch,
+    render: Render,
+    git: Git,
+  )
+}
+
+/// Configuration for the star data file.
+pub type Data {
+  Data(path: String)
 }
 
 /// Where to get star data.
 pub type FetchSource {
   /// Fetch from the GitHub API.
   Api
-  /// Load from an existing data.json file.
+  /// Load from an existing data JSON file.
   File
+}
+
+/// Sort order for starred repositories.
+pub type FetchOrder {
+  Descending
+  Ascending
 }
 
 /// Configuration for fetching stars.
 pub type Fetch {
-  Fetch(source: FetchSource, max_stars: Option(Int))
+  Fetch(
+    source: FetchSource,
+    login: Option(String),
+    max_stars: Option(Int),
+    order: FetchOrder,
+  )
 }
 
 /// Configuration for rendering stars into Markdown.
@@ -39,6 +55,7 @@ pub type Render {
   Render(
     date_time: DateTimeConfig,
     filename: String,
+    output_dir: String,
     partition_filename: String,
     group: Group,
     partition: Partition,
@@ -50,8 +67,12 @@ pub type Render {
 /// Configuration for Git operations.
 pub type Git {
   Git(
+    /// The commit message to use for changed files.
     commit_message: String,
+    /// Additional flags to pass to `git pull`. If `None`, no `git pull` will be executed.
+    /// `--unshallow` will be added as required.
     pull: Option(String),
+    /// The committer as `#(email, name)`. Used only by `starlist_action`.
     committer: Option(#(String, String)),
   )
 }
@@ -59,6 +80,7 @@ pub type Git {
 /// How dates and times are formatted.
 pub type DateTimeConfig {
   IsoDateTime(time_zone: String)
+  /// The format for the date and time with a locale applied. See Intl.DateTimeConfig
   LocaleDateTime(
     locale: String,
     time_zone: String,
@@ -83,18 +105,19 @@ pub type Partition {
   PartitionByYearMonth
 }
 
-// ---------------------------------------------------------------------------
-// Defaults
-// ---------------------------------------------------------------------------
+pub fn default_data() -> Data {
+  Data(path: "data.json")
+}
 
 pub fn default_fetch() -> Fetch {
-  Fetch(source: Api, max_stars: None)
+  Fetch(source: Api, login: None, max_stars: None, order: Ascending)
 }
 
 pub fn default_render() -> Render {
   Render(
     date_time: IsoDateTime(time_zone: "UTC"),
     filename: "README.md",
+    output_dir: ".",
     partition_filename: "stars/{key}.md",
     group: GroupByLanguage,
     partition: PartitionOff,
@@ -111,222 +134,286 @@ pub fn default_git() -> Git {
   )
 }
 
-// ---------------------------------------------------------------------------
-// TOML parsing
-// ---------------------------------------------------------------------------
-
 /// Parse a TOML string into a dict. Returns a ConfigError on failure.
-pub fn parse_toml(
-  input: String,
-) -> Result(Dict(String, Toml), errors.StarlistError) {
+pub fn parse_toml(input: String) -> Result(Table, StarlistError) {
   case string.is_empty(string.trim(input)) {
     True -> Ok(dict.new())
     False ->
       case tom.parse(input) {
         Ok(d) -> Ok(d)
         Error(e) ->
-          Error(errors.ConfigError("Invalid TOML: " <> parse_error_string(e)))
+          Error(errors.ConfigError("Invalid TOML: " <> toml_parse_error(e)))
       }
   }
+}
+
+const source_enum = [#("api", Api), #("file", File)]
+
+const order_enum = [#("descending", Descending), #("ascending", Ascending)]
+
+/// Decode data config from TOML, falling back to defaults.
+pub fn decode_data(toml: Table) -> Result(Data, StarlistError) {
+  let base = default_data()
+
+  use _ <- is_table(toml, "data")
+  use path <- get_string(toml, "data.path", base.path)
+
+  Ok(Data(path:))
 }
 
 /// Decode fetch config from TOML, falling back to defaults.
-pub fn decode_fetch(toml: Dict(String, Toml)) -> Fetch {
-  Fetch(
-    source: case tom.get_string(toml, ["fetch", "source"]) {
-      Ok("file") -> File
-      _ -> Api
-    },
-    max_stars: case tom.get_int(toml, ["fetch", "max_stars"]) {
-      Ok(n) -> Some(n)
-      Error(_) -> None
-    },
-  )
-}
+pub fn decode_fetch(toml: Table) -> Result(Fetch, StarlistError) {
+  let base = default_fetch()
 
-/// Decode render config from TOML, falling back to defaults.
-pub fn decode_render(toml: Dict(String, Toml)) -> Render {
-  let base = default_render()
-  Render(
-    date_time: decode_date_time(toml),
-    filename: toml_string(toml, ["render", "output"], base.filename),
-    partition_filename: toml_string(
-      toml,
-      ["render", "partition_output"],
-      base.partition_filename,
-    ),
-    group: decode_group(toml),
-    partition: decode_partition(toml),
-    template: toml_string(toml, ["render", "template"], base.template),
-    index_template: toml_string(
-      toml,
-      ["render", "index_template"],
-      base.index_template,
-    ),
-  )
+  use _ <- is_table(toml, "fetch")
+  use source <- get_enum(toml, "fetch.source", source_enum, base.source)
+  use order <- get_enum(toml, "fetch.order", order_enum, base.order)
+  use login <- get_opt_string(toml, "fetch.login")
+  let login = case login {
+    Some("@me") -> None
+    _ -> login
+  }
+  use max_stars <- get_opt_pos_int(toml, ["fetch", "max_stars"])
+
+  Ok(Fetch(source:, login:, max_stars:, order:))
 }
 
 /// Decode git config from TOML, falling back to defaults.
-pub fn decode_git(toml: Dict(String, Toml)) -> Git {
+pub fn decode_git(toml: Table) -> Result(Git, StarlistError) {
   let base = default_git()
-  Git(
-    commit_message: toml_string(
-      toml,
-      ["git", "commit_message"],
-      base.commit_message,
-    ),
-    pull: case tom.get_string(toml, ["git", "pull"]) {
-      Ok(v) -> Some(v)
-      Error(_) -> None
-    },
-    committer: decode_committer(toml),
+
+  use _ <- is_table(toml, "git")
+  use committer <- decode_committer(toml)
+  use commit_message <- get_string(
+    toml,
+    "git.commit_message",
+    base.commit_message,
   )
+  use pull <- get_opt_string(toml, "git.pull")
+
+  Ok(Git(commit_message:, committer:, pull:))
 }
 
-// ---------------------------------------------------------------------------
-// Internal decoders
-// ---------------------------------------------------------------------------
+const group_enum = [
+  #("language", GroupByLanguage),
+  #("licence", GroupByLicence),
+  #("license", GroupByLicence),
+  #("topic", GroupByTopic),
+]
 
-fn decode_date_time(toml: Dict(String, Toml)) -> DateTimeConfig {
-  let time_zone = toml_string(toml, ["render", "date_time", "time_zone"], "UTC")
-  case tom.get_string(toml, ["render", "date_time", "locale"]) {
-    Ok(locale) ->
-      LocaleDateTime(
-        locale: locale,
-        time_zone: time_zone,
-        date_style: toml_string(
-          toml,
-          ["render", "date_time", "date_style"],
-          "short",
-        ),
-        time_style: toml_string(
-          toml,
-          ["render", "date_time", "time_style"],
-          "short",
-        ),
+const partition_enum = [
+  #("language", PartitionByLanguage),
+  #("off", PartitionOff),
+  #("topic", PartitionByTopic),
+  #("year", PartitionByYear),
+  #("year-month", PartitionByYearMonth),
+]
+
+/// Decode render config from TOML, falling back to defaults.
+pub fn decode_render(toml: Table) -> Result(Render, StarlistError) {
+  let base = default_render()
+
+  use _ <- is_table(toml, "render")
+  use date_time <- decode_date_time(toml, base.date_time)
+  use group <- get_enum(toml, "render.group", group_enum, base.group)
+  use partition <- get_enum(
+    toml,
+    "render.partition",
+    partition_enum,
+    base.partition,
+  )
+
+  use output_dir <- get_string(toml, "render.output_dir", base.output_dir)
+  use filename <- get_string(toml, "render.output", base.filename)
+  use partition_filename <- get_string(
+    toml,
+    "render.partition_output",
+    base.partition_filename,
+  )
+  use template <- get_string(toml, "render.template", base.template)
+  use index_template <- get_string(
+    toml,
+    "render.index_template",
+    base.index_template,
+  )
+
+  Ok(Render(
+    date_time:,
+    filename:,
+    group:,
+    index_template:,
+    output_dir:,
+    partition:,
+    partition_filename:,
+    template:,
+  ))
+}
+
+const date_time_styles = ["full", "long", "medium", "short"]
+
+fn decode_date_time(
+  toml: Table,
+  default: DateTimeConfig,
+  callback: fn(DateTimeConfig) -> Result(a, StarlistError),
+) -> Result(a, StarlistError) {
+  use table <- is_table(toml, "render.date_time")
+  use <- bool.guard(dict.is_empty(table), return: callback(default))
+
+  use time_zone <- get_string(toml, "render.date_time.time_zone", "UTC")
+
+  case tom.get_string(toml, string.split("render.date_time.locale", on: ".")) {
+    Ok(locale) -> {
+      let styles_enum = list.zip(date_time_styles, date_time_styles)
+
+      use date_style <- get_enum(
+        toml,
+        "render.date_time.date_style",
+        styles_enum,
+        "short",
       )
-    Error(_) -> IsoDateTime(time_zone: time_zone)
+      use time_style <- get_enum(
+        toml,
+        "render.date_time.time_style",
+        styles_enum,
+        "short",
+      )
+
+      callback(LocaleDateTime(locale:, time_zone:, date_style:, time_style:))
+    }
+    Error(tom.NotFound(_)) -> callback(IsoDateTime(time_zone: time_zone))
+    Error(error) -> toml_get_error(error)
   }
 }
 
-fn decode_group(toml: Dict(String, Toml)) -> Group {
-  case tom.get_string(toml, ["render", "group"]) {
-    Ok("language") -> GroupByLanguage
-    Ok("topic") -> GroupByTopic
-    Ok("licence") | Ok("license") -> GroupByLicence
-    _ -> GroupByLanguage
+fn decode_committer(
+  toml: Table,
+  callback: fn(Option(#(String, String))) -> Result(a, StarlistError),
+) -> Result(a, StarlistError) {
+  use table <- is_table(toml, "git.committer")
+  case dict.is_empty(table) {
+    True -> callback(None)
+    False -> {
+      use name <- get_string(toml, "git.committer.name", "")
+      use email <- get_string(toml, "git.committer.email", "")
+      case name, email {
+        "", "" -> callback(None)
+        n, e if n != "" && e != "" -> callback(Some(#(n, e)))
+        _, _ ->
+          Error(errors.ConfigError(
+            "git.committer requires both name and email, or neither",
+          ))
+      }
+    }
   }
 }
 
-fn decode_partition(toml: Dict(String, Toml)) -> Partition {
-  case tom.get_string(toml, ["render", "partition"]) {
-    Ok("language") -> PartitionByLanguage
-    Ok("topic") -> PartitionByTopic
-    Ok("year") -> PartitionByYear
-    Ok("year-month") -> PartitionByYearMonth
-    Ok("off") -> PartitionOff
-    _ -> PartitionOff
+fn is_table(
+  toml: Table,
+  key: String,
+  callback: fn(Table) -> Result(a, StarlistError),
+) -> Result(a, StarlistError) {
+  case tom.get_table(toml, string.split(key, on: ".")) {
+    Ok(table) -> callback(table)
+    Error(tom.NotFound(_)) -> callback(dict.new())
+    Error(error) -> toml_get_error(error)
   }
 }
 
-fn decode_committer(toml: Dict(String, Toml)) -> Option(#(String, String)) {
-  let name = case tom.get_string(toml, ["git", "committer", "name"]) {
-    Ok(n) if n != "" -> Ok(n)
-    _ -> Error(Nil)
-  }
-  let email = case tom.get_string(toml, ["git", "committer", "email"]) {
-    Ok(e) if e != "" -> Ok(e)
-    _ -> Error(Nil)
-  }
-  case name, email {
-    Ok(n), Ok(e) -> Some(#(n, e))
-    _, _ -> None
+fn get_enum(
+  toml: Table,
+  key: String,
+  values: List(#(String, a)),
+  default: a,
+  callback: fn(a) -> Result(b, StarlistError),
+) -> Result(b, StarlistError) {
+  case tom.get_string(toml, string.split(key, on: ".")) {
+    Ok(value) ->
+      case list.key_find(in: values, find: value) {
+        Ok(enum) -> callback(enum)
+        Error(Nil) ->
+          Error(errors.ConfigError(
+            "Expected "
+            <> key
+            <> " to be one of "
+            <> string.inspect(list.map(values, fn(v) { v.0 }))
+            <> " but was "
+            <> string.inspect(value),
+          ))
+      }
+
+    Error(tom.NotFound(_)) -> callback(default)
+    Error(error) -> toml_get_error(error)
   }
 }
 
-// ---------------------------------------------------------------------------
-// TOML helpers
-// ---------------------------------------------------------------------------
-
-fn toml_string(
-  toml: Dict(String, Toml),
+fn get_opt_pos_int(
+  toml: Table,
   key: List(String),
-  default: String,
-) -> String {
-  case tom.get_string(toml, key) {
-    Ok(v) -> v
-    Error(_) -> default
+  callback: fn(Option(Int)) -> Result(a, StarlistError),
+) -> Result(a, StarlistError) {
+  case tom.get_int(toml, key) {
+    Ok(value) if value > 0 -> callback(Some(value))
+    Ok(value) ->
+      Error(errors.ConfigError(
+        "Expected "
+        <> toml_key(key)
+        <> " to be a positive integer but was "
+        <> string.inspect(value),
+      ))
+    Error(tom.NotFound(_)) -> callback(None)
+    Error(error) -> toml_get_error(error)
   }
 }
 
-fn parse_error_string(error: tom.ParseError) -> String {
+fn get_string(
+  toml: Table,
+  key: String,
+  default: String,
+  callback: fn(String) -> Result(a, StarlistError),
+) -> Result(a, StarlistError) {
+  case tom.get_string(toml, string.split(key, on: ".")) {
+    Ok(value) -> callback(value)
+    Error(tom.NotFound(_)) -> callback(default)
+    Error(error) -> toml_get_error(error)
+  }
+}
+
+fn get_opt_string(
+  toml: Table,
+  key: String,
+  callback: fn(Option(String)) -> Result(a, StarlistError),
+) -> Result(a, StarlistError) {
+  case tom.get_string(toml, string.split(key, on: ".")) {
+    Ok(value) -> callback(Some(value))
+    Error(tom.NotFound(_)) -> callback(None)
+    Error(error) -> toml_get_error(error)
+  }
+}
+
+fn toml_parse_error(error: tom.ParseError) -> String {
   case error {
     tom.Unexpected(got:, expected:) ->
       "unexpected '" <> got <> "', expected " <> expected
-    tom.KeyAlreadyInUse(key:) -> "duplicate key: " <> string.join(key, ".")
+    tom.KeyAlreadyInUse(key:) -> "duplicate key: " <> toml_key(key)
   }
 }
 
-// ---------------------------------------------------------------------------
-// Path validation
-// ---------------------------------------------------------------------------
+fn toml_get_error(error: tom.GetError) -> Result(a, StarlistError) {
+  let message = case error {
+    tom.NotFound(key:) ->
+      "Expected " <> toml_key(key) <> " to be present but was missing"
+    tom.WrongType(expected:, got:, key:) ->
+      "Expected "
+      <> toml_key(key)
+      <> " to be a TOML "
+      <> expected
+      <> " but got "
+      <> got
+  }
 
-/// Validate that a path stays within the repo root.
-pub fn validate_path(
-  path: String,
-  repo_root: String,
-  label: String,
-) -> Result(String, errors.StarlistError) {
-  let resolved = case is_absolute(path) {
-    True -> path
-    False -> repo_root <> "/" <> path
-  }
-  case normalize(resolved) {
-    Ok(expanded) ->
-      case string.starts_with(expanded, repo_root) {
-        True -> Ok(expanded)
-        False ->
-          Error(errors.SecurityError(
-            label <> " path '" <> path <> "' resolves outside repository root",
-          ))
-      }
-    Error(Nil) ->
-      Error(errors.SecurityError(
-        label <> " path '" <> path <> "' contains invalid traversal",
-      ))
-  }
+  Error(errors.ConfigError(message))
 }
 
-fn is_absolute(path: String) -> Bool {
-  string.starts_with(path, "/")
-}
-
-/// Normalize a path by resolving `.` and `..` segments.
-fn normalize(path: String) -> Result(String, Nil) {
-  let #(prefix, to_split) = case string.starts_with(path, "/") {
-    True -> #("/", string.drop_start(path, 1))
-    False -> #("", path)
-  }
-  let segments = string.split(to_split, "/") |> collapse_segments([], _)
-  case segments {
-    Error(Nil) -> Error(Nil)
-    Ok(parts) -> Ok(prefix <> string.join(parts, "/"))
-  }
-}
-
-fn collapse_segments(
-  acc: List(String),
-  segments: List(String),
-) -> Result(List(String), Nil) {
-  case segments {
-    [] -> Ok(list.reverse(acc))
-    [".", ..rest] -> collapse_segments(acc, rest)
-    ["", ..rest] -> collapse_segments(acc, rest)
-    ["..", ..rest] ->
-      case acc {
-        [_, ..tail] -> collapse_segments(tail, rest)
-        [] -> Error(Nil)
-      }
-    [seg, ..rest] -> collapse_segments([seg, ..acc], rest)
-  }
+fn toml_key(key: List(String)) -> String {
+  string.join(key, ".")
 }

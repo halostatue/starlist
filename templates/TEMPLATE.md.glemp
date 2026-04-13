@@ -28,7 +28,7 @@ Last updated <%= updated_at.date %> <%= updated_at.time %>
 <% end %>
 <% if repo.archived_on %>  **Archived On**: <%= repo.archived_on.date %>
 <% end %>
-<% if repo.topic_count %>  **Topics**: <%= repo.topic_links %>
+<% if repo.topic_links %>  **Topics**: <%= repo.topic_links %>
 <% end %>
 <% end %>
 

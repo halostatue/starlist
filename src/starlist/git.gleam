@@ -3,10 +3,10 @@
 import gleam/list
 import gleam/string
 import shellout
-import starlist/internal/errors
+import starlist/errors.{type StarlistError}
 
 /// Stage files for commit.
-pub fn add(paths: List(String)) -> Result(Nil, errors.StarlistError) {
+pub fn add(paths: List(String)) -> Result(Nil, StarlistError) {
   try_git(list.prepend(paths, "add"))
 }
 
@@ -19,7 +19,7 @@ pub type CommitResult {
 }
 
 /// Commit staged changes. Returns NothingToCommit if nothing is staged.
-pub fn commit(message: String) -> Result(CommitResult, errors.StarlistError) {
+pub fn commit(message: String) -> Result(CommitResult, StarlistError) {
   case has_staged_changes() {
     False -> Ok(NothingToCommit)
     True -> {
@@ -47,7 +47,7 @@ fn has_staged_changes() -> Bool {
 }
 
 /// Push to the given branch with --follow-tags. No-op if no remote origin.
-pub fn push(branch: String) -> Result(Nil, errors.StarlistError) {
+pub fn push(branch: String) -> Result(Nil, StarlistError) {
   case remote_url() {
     Error(_) -> Ok(Nil)
     Ok(_) -> try_git(["push", "--follow-tags", "origin", branch])
@@ -56,10 +56,7 @@ pub fn push(branch: String) -> Result(Nil, errors.StarlistError) {
 
 /// Execute `git pull --tags` with optional flags, adding `--unshallow` when shallow.
 /// No-op if no remote origin.
-pub fn pull(
-  flags: String,
-  is_shallow: Bool,
-) -> Result(Nil, errors.StarlistError) {
+pub fn pull(flags: String, is_shallow: Bool) -> Result(Nil, StarlistError) {
   case remote_url() {
     Error(_) -> Ok(Nil)
     Ok(_) -> {
@@ -85,7 +82,7 @@ pub fn pull(
 }
 
 /// Check if the current repo is a shallow clone.
-pub fn is_shallow() -> Result(Bool, errors.StarlistError) {
+pub fn is_shallow() -> Result(Bool, StarlistError) {
   case git(["rev-parse", "--is-shallow-repository"]) {
     Ok(output) -> Ok(string.trim(output) == "true")
     Error(e) -> Error(e)
@@ -93,35 +90,32 @@ pub fn is_shallow() -> Result(Bool, errors.StarlistError) {
 }
 
 /// Get the current branch name.
-pub fn current_branch() -> Result(String, errors.StarlistError) {
+pub fn current_branch() -> Result(String, StarlistError) {
   git(["rev-parse", "--abbrev-ref", "HEAD"])
 }
 
 /// Get short git status.
-pub fn status() -> Result(String, errors.StarlistError) {
+pub fn status() -> Result(String, StarlistError) {
   git(["status", "--short"])
 }
 
 /// Configure a git setting.
-pub fn config_set(
-  key: String,
-  value: String,
-) -> Result(Nil, errors.StarlistError) {
+pub fn config_set(key: String, value: String) -> Result(Nil, StarlistError) {
   try_git(["config", key, value])
 }
 
 /// Get a git config value. Returns Error if not set.
-pub fn config_get(key: String) -> Result(String, errors.StarlistError) {
+pub fn config_get(key: String) -> Result(String, StarlistError) {
   git(["config", "--get", key])
 }
 
 /// Get the remote origin URL.
-pub fn remote_url() -> Result(String, errors.StarlistError) {
+pub fn remote_url() -> Result(String, StarlistError) {
   git(["remote", "get-url", "origin"])
 }
 
 /// Set the remote origin URL.
-pub fn set_remote_url(url: String) -> Result(Nil, errors.StarlistError) {
+pub fn set_remote_url(url: String) -> Result(Nil, StarlistError) {
   try_git(["remote", "set-url", "origin", url])
 }
 
@@ -129,12 +123,12 @@ pub fn set_remote_url(url: String) -> Result(Nil, errors.StarlistError) {
 // Internal
 // ---------------------------------------------------------------------------
 
-fn try_git(args: List(String)) -> Result(Nil, errors.StarlistError) {
+fn try_git(args: List(String)) -> Result(Nil, StarlistError) {
   use _ <- try(git(args))
   Ok(Nil)
 }
 
-fn git(args: List(String)) -> Result(String, errors.StarlistError) {
+fn git(args: List(String)) -> Result(String, StarlistError) {
   case shellout.command(run: "git", with: args, in: ".", opt: []) {
     Ok(output) -> Ok(string.trim(output))
     Error(#(code, msg)) ->
@@ -147,9 +141,9 @@ fn git(args: List(String)) -> Result(String, errors.StarlistError) {
 }
 
 fn try(
-  result: Result(a, errors.StarlistError),
-  next: fn(a) -> Result(Nil, errors.StarlistError),
-) -> Result(Nil, errors.StarlistError) {
+  result: Result(a, StarlistError),
+  next: fn(a) -> Result(Nil, StarlistError),
+) -> Result(Nil, StarlistError) {
   case result {
     Ok(v) -> next(v)
     Error(e) -> Error(e)

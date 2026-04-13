@@ -1,8 +1,8 @@
-query GetStarredRepos($cursor: String) {
-  viewer {
+query GetUserStarredRepos($login: String!, $cursor: String, $order: OrderDirection!) {
+  user(login: $login) {
     login
 
-    starredRepositories(first: 40, after: $cursor) {
+    starredRepositories(first: 40, after: $cursor, orderBy: { field: STARRED_AT, direction: $order }) {
       isOverLimit
       totalCount
 
@@ -24,7 +24,7 @@ query GetStarredRepos($cursor: String) {
           isPrivate
           isTemplate
 
-          languages(first: 5, orderBy: { direction: DESC, field: SIZE }) {
+          languages(first: 10, orderBy: { direction: DESC, field: SIZE }) {
             totalCount
             totalSize
             edges {
@@ -41,8 +41,9 @@ query GetStarredRepos($cursor: String) {
           }
 
           licenseInfo {
-            nickname
             spdxId
+            name
+            nickname
           }
 
           nameWithOwner

@@ -7,7 +7,7 @@ import gleam/int
 import gleam/string
 import qcheck
 import starlist/config
-import starlist/internal/timestamp
+import starlist/utils
 
 // --- Generators ---
 
@@ -177,7 +177,7 @@ pub fn timestamp_format_produces_nonempty_fields_test() {
     iso_datetime_generator(),
     datetime_cfg_generator(),
   ))
-  let ts = timestamp.format(cfg, iso_string)
+  let ts = utils.format_timestamp(cfg, iso_string)
   assert ts.date != ""
   assert ts.time != ""
 }
@@ -189,7 +189,7 @@ pub fn timestamp_iso_mode_format_test() {
     iso_datetime_generator(),
     iso_cfg_generator(),
   ))
-  let ts = timestamp.format(cfg, iso_string)
+  let ts = utils.format_timestamp(cfg, iso_string)
   assert is_iso_date(ts.date)
   assert is_iso_time(ts.time)
 }

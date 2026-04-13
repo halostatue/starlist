@@ -40,11 +40,35 @@ security purposes.
 Configuration is provided through a TOML configuration file or command-line
 parameters.
 
+### `data` Configuration
+
+#### `data.path`
+
+The path to the star data JSON file. Defaults to `"data.json"`. The CLI
+`--output` flag (on `fetch`) and `--input` flag (on `generate`) override this
+value for their respective commands.
+
+```toml
+[data]
+path = "data/halostatue.json"
+```
+
 ### `fetch` Configuration
 
 The action `token` is used for fetching stars from the GitHub GraphQL API. Stars
 are fetched in fixed page sizes of 40 (larger pages cause errors with the
 GraphQL API).
+
+#### `fetch.login` (`--login`)
+
+The GitHub login of the user whose stars to fetch. Defaults to the authenticated
+user (the PAT owner). The value `"@me"` is treated as unset (the authenticated
+user). Useful for fetching another user's public stars.
+
+```toml
+[fetch]
+login = "halostatue"
+```
 
 #### `fetch.max_stars` (`--max-stars`)
 
@@ -59,9 +83,9 @@ max_stars = 100
 
 #### `fetch.order` (`--order`)
 
-The order in which stars will be sorted: "ascending" (the default) will sort the
-most recently starred repositories last; "descending" will sort them first.
-Mostly useful when using `max_stars`.
+The order in which stars will be sorted: "ascending" (the default) will sort
+the most recently starred repositories last; "descending" will sort them first.
+Useful with `max_stars` to get the most recent N stars.
 
 ```toml
 fetch.order = "descending"
@@ -146,6 +170,16 @@ The output filename for the rendered stars. Defaults to `README.md`.
 When star partitioning is enabled, this file will be used for the partition
 index file.
 
+#### `render.output_dir` (`--dir`)
+
+The root directory for rendered output files. Defaults to `"."` (the current
+directory). The `--dir` CLI flag overrides this value.
+
+```toml
+[render]
+output_dir = "stars/halostatue"
+```
+
 #### `render.partition_output` (`--partition-output`)
 
 The output filename pattern for partitioned files. If `partition_output` does
@@ -172,7 +206,7 @@ How stars are partitioned within the rendered file.
   processing fewer than 2,000 stars.
 
 - `language` partitions stars by language. A repo will appear in a partitioned
-  page for _each_ of the languages in its list (up to 5).
+  page for _each_ of the languages in its list (up to 10).
 
   It is strongly recommended that the `render.group` be a value other than
   `language` when partitioning by language.

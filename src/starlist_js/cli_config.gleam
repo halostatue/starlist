@@ -3,13 +3,11 @@
 //// Builds a Config from parsed CLI args, optionally layering a TOML file underneath.
 
 import envoy
-import gleam/option.{None}
+import gleam/option
 import gleam/string
 import shellout
-import simplifile
 import starlist/config
-import starlist/internal/cli/commands
-import starlist/internal/errors
+import starlist_js/cli_commands
 
 /// Resolve a token from environment or credentials command.
 pub fn resolve_token(
@@ -47,18 +45,21 @@ fn run_credentials_command(cmd: String) -> Result(String, String) {
 }
 
 /// Build a Fetch config from CLI args.
-pub fn fetch_config(args: commands.FetchArgs) -> config.Fetch {
+pub fn fetch_config(args: cli_commands.FetchArgs) -> config.Fetch {
   config.Fetch(
     source: config.Api,
+    login: option.from_result(args.login),
     max_stars: option.from_result(args.max_stars),
+    order: config.Ascending,
   )
 }
 
 /// Build a Render config from CLI generate args.
-pub fn render_config(args: commands.GenerateArgs) -> config.Render {
+pub fn render_config(args: cli_commands.GenerateArgs) -> config.Render {
   config.Render(
     date_time: resolve_date_time(args),
     filename: args.output,
+    output_dir: args.dir,
     partition_filename: args.partition_output,
     group: resolve_group(args.group),
     partition: resolve_partition(args.partition),
@@ -67,31 +68,11 @@ pub fn render_config(args: commands.GenerateArgs) -> config.Render {
   )
 }
 
-/// Load an optional TOML config file and merge with CLI args.
-pub fn load_toml_file(
-  path: String,
-) -> Result(config.Config, errors.StarlistError) {
-  case simplifile.read(path) {
-    Ok(content) ->
-      case config.parse_toml(content) {
-        Ok(toml) ->
-          Ok(config.Config(
-            token: None,
-            fetch: config.decode_fetch(toml),
-            render: config.decode_render(toml),
-            git: config.decode_git(toml),
-          ))
-        Error(e) -> Error(e)
-      }
-    Error(_) -> Error(errors.FileError("Cannot read config file: " <> path))
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Internal resolvers
 // ---------------------------------------------------------------------------
 
-fn resolve_date_time(args: commands.GenerateArgs) -> config.DateTimeConfig {
+fn resolve_date_time(args: cli_commands.GenerateArgs) -> config.DateTimeConfig {
   let time_zone = result_unwrap(args.time_zone, "UTC")
   case args.locale {
     Ok(locale) ->

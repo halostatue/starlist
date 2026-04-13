@@ -31,7 +31,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Generate stars list
-        uses: halostatue/starlist@v2.0.2
+        uses: halostatue/starlist@v3.0.0
         with:
           token: ${{ secrets.STARLIST_PAT }}
 ```
@@ -42,7 +42,7 @@ Alternatively, you can save your configuration as a TOML file and load it from
 ```yaml
 …
       - name: Generate stars list
-        uses: halostatue/starlist@v2.0.2
+        uses: halostatue/starlist@v3.0.0
         with:
           token: ${{ secrets.STARLIST_PAT }}
           config_file: stars.toml
@@ -94,19 +94,44 @@ generated. Cannot be used with `config`.
 
 Configuration is provided through TOML. It may be embedded in the `config`
 parameter or be referenced in the `config_file` parameter. Configuration may be
-_partial_ configuration, overriding the default values. There are three major
+_partial_ configuration, overriding the default values. There are four major
 sections:
 
+- `data` (configuration for the star data file)
 - `fetch` (configuration for fetching stars)
 - `render` (configuration for rendering stars as markdown)
 - `git` (configuration for committing the rendered stars and pushing them back
   to the origin)
+
+### `data` Configuration
+
+#### `data.path`
+
+The path to the star data JSON file, used for both writing after fetch and
+reading before render. Defaults to `"data.json"`. Useful for multi-user
+workflows where each user's data is stored separately.
+
+```toml
+[data]
+path = "data/halostatue.json"
+```
 
 ### `fetch` Configuration
 
 The action `token` is used for fetching stars from the GitHub GraphQL API. Stars
 are fetched in fixed page sizes of 40 (larger pages cause errors with the
 GraphQL API).
+
+#### `fetch.login`
+
+The GitHub login of the user whose stars to fetch. Defaults to the authenticated
+user (the PAT owner). The value `"@me"` is treated as unset (the authenticated
+user). Useful for fetching another user's public stars.
+
+```toml
+[fetch]
+login = "halostatue"
+```
 
 #### `fetch.max_stars`
 
@@ -121,9 +146,9 @@ max_stars = 100
 
 #### `fetch.order`
 
-The order in which stars will be sorted: "ascending" (the default) will sort the
-most recently starred repositories last; "descending" will sort them first.
-Mostly useful when using `max_stars`.
+The order in which stars will be sorted: "ascending" (the default) will sort
+the most recently starred repositories last; "descending" will sort them first.
+Useful with `max_stars` to get the most recent N stars.
 
 ```toml
 fetch.order = "descending"
@@ -195,6 +220,17 @@ The output filename for the rendered stars. Defaults to `README.md`.
 When star partitioning is enabled, this file will be used for the partition
 index file.
 
+#### `render.output_dir`
+
+The root directory for rendered output files. Defaults to `"."` (the repository
+root). Useful for multi-user workflows where each user's stars are written to a
+separate directory.
+
+```toml
+[render]
+output_dir = "stars/halostatue"
+```
+
 #### `render.partition_output`
 
 The output filename pattern for partitioned files. If `partition_output` does
@@ -221,7 +257,7 @@ How stars are partitioned within the rendered file.
   processing fewer than 2,000 stars.
 
 - `language` partitions stars by language. A repo will appear in a partitioned
-  page for _each_ of the languages in its list (up to 5).
+  page for _each_ of the languages in its list (up to 10).
 
   It is strongly recommended that the `render.group` be a value other than
   `language` when partitioning by language.
@@ -276,8 +312,9 @@ update. The default value is blank for the action. Note that `--tags` and
 
 #### `git.committer`
 
-An object with the committer name and email address for the action. Defaults to
-a bot address:
+An object with the committer name and email address for the action. Both `name`
+and `email` must be provided together, or neither. Providing only one will
+produce a configuration error. Defaults to a bot address:
 
 ```toml
 [git.committer]
@@ -322,7 +359,7 @@ is enabled).
   the `render.group` setting. Each group has:
 
   - `name` (`string`): the group key (language name, topic name, or licence)
-  - `repos` (`StarredRepo[]`): the repositories in this group
+  - `repos` (`DisplayRepo[]`): the repositories in this group
   - `count` (`integer`): the number of repositories in this group
   - `count_label` (`string`): pre-formatted count ("1 repo" or "N repos")
 
@@ -359,7 +396,7 @@ It also receives the following variables:
 
 - `partition_count` (`integer`): The total number of partitions.
 
-### `StarredRepo`
+### `DisplayRepo`
 
 - `name` (`string`): The full name of the repository (`owner/repo`).
 
@@ -368,8 +405,8 @@ It also receives the following variables:
 - `description` (`string`): The description of the repository, or an empty
   string if none.
 
-- `license` (`string`): The licence nickname, SPDX identifier, or
-  `Unknown license`.
+- `licence` (`string`): The licence nickname, SPDX identifier, or
+  `Unknown licence`.
 
 - `forks` (`integer`): The number of forks.
 
@@ -385,10 +422,10 @@ It also receives the following variables:
 - `homepage_url` (`string`): The home page URL for the repository, or an empty
   string.
 
-- `language_count` (`integer`): The total number of languages detected in the
+- `total_languages` (`integer`): The total number of languages detected in the
   repository.
 
-- `languages` (`Language[]`): Up to the first five languages in the repository.
+- `languages` (`Language[]`): Up to the first ten languages in the repository.
 
 - `topic_count` (`integer`): The number of topics associated with the
   repository.

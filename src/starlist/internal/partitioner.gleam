@@ -9,46 +9,36 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
 import starlist/config
-import starlist/internal/star_types.{type StarredRepo, type TemplateVars}
-
-/// Metadata for a single partition, used by the index template.
-pub type PartitionInfo {
-  PartitionInfo(key: String, filename: String, count: Int)
+import starlist/internal/star_types.{
+  type DisplayRepo, type IndexVars, type PageVars, type PartitionContext,
+  IndexVars, PageVars, PartitionContext,
 }
+import starlist/types
 
 /// A single partition's data slice.
 pub type PartitionData {
-  PartitionData(key: String, filename: String, vars: TemplateVars)
+  PartitionData(key: String, filename: String, vars: PageVars)
 }
 
 /// Result of partitioning: index metadata and per-partition data slices.
 pub type PartitionResult {
-  PartitionResult(partitions: List(PartitionInfo), data: List(PartitionData))
+  PartitionResult(index: IndexVars, data: List(PartitionData))
 }
 
-/// Partition the given TemplateVars.
+/// Partition the given PageVars.
 /// Returns Error if partition is Off (caller should use single-file mode).
 pub fn partition(
-  vars: TemplateVars,
+  vars: PageVars,
   partition: config.Partition,
   group: config.Group,
   partition_filename: String,
+  partition_description: String,
 ) -> Result(PartitionResult, Nil) {
   case partition {
     config.PartitionOff -> Error(Nil)
     _ -> {
       let buckets = bucket_stars(vars.stars, partition)
       let sorted_keys = dict.keys(buckets) |> list.sort(string.compare)
-
-      let partitions =
-        list.map(sorted_keys, fn(key) {
-          let stars = dict_get(buckets, key)
-          PartitionInfo(
-            key: key,
-            filename: make_filename(partition_filename, key),
-            count: list.length(stars),
-          )
-        })
 
       let grouped = !partition_matches_group(partition, group)
       let data =
@@ -61,7 +51,7 @@ pub fn partition(
             n -> int.to_string(n) <> " repos"
           }
           let ctx =
-            star_types.PartitionContext(
+            PartitionContext(
               name: key,
               filename: filename,
               count: count,
@@ -71,7 +61,27 @@ pub fn partition(
           PartitionData(key: key, filename: filename, vars: scoped)
         })
 
-      Ok(PartitionResult(partitions:, data:))
+      let contexts =
+        list.map(data, fn(d) {
+          let assert Some(ctx) = d.vars.partition
+          ctx
+        })
+
+      let index =
+        IndexVars(
+          data_version: vars.data_version,
+          updated_at: vars.updated_at,
+          generated_at: vars.generated_at,
+          login: vars.login,
+          truncated: vars.truncated,
+          total: vars.total,
+          fetched: vars.fetched,
+          partitions: contexts,
+          partition_count: list.length(contexts),
+          partition_description: partition_description,
+        )
+
+      Ok(PartitionResult(index:, data:))
     }
   }
 }
@@ -81,9 +91,9 @@ pub fn partition(
 // ---------------------------------------------------------------------------
 
 fn bucket_stars(
-  stars: List(StarredRepo),
+  stars: List(DisplayRepo),
   partition: config.Partition,
-) -> Dict(String, List(StarredRepo)) {
+) -> Dict(String, List(DisplayRepo)) {
   list.fold(stars, dict.new(), fn(acc, repo) {
     let keys = partition_keys(repo, partition)
     list.fold(keys, acc, fn(inner, key) { upsert(inner, key, repo) })
@@ -91,7 +101,7 @@ fn bucket_stars(
 }
 
 fn partition_keys(
-  repo: StarredRepo,
+  repo: DisplayRepo,
   partition: config.Partition,
 ) -> List(String) {
   case partition {
@@ -107,12 +117,14 @@ fn partition_keys(
         Some(topics) -> list.map(topics, fn(t) { t.name })
       }
     config.PartitionByYear -> [year_from_timestamp(repo.starred_on)]
-    config.PartitionByYearMonth -> [year_month_from_timestamp(repo.starred_on)]
+    config.PartitionByYearMonth -> [
+      year_month_from_timestamp(repo.starred_on),
+    ]
   }
 }
 
 /// Extract "YYYY" from a Timestamp whose date is "YYYY-MM-DD" or similar.
-fn year_from_timestamp(ts: star_types.Timestamp) -> String {
+fn year_from_timestamp(ts: types.Timestamp) -> String {
   case string.split(ts.date, "-") {
     [year, ..] -> year
     _ -> ts.date
@@ -120,7 +132,7 @@ fn year_from_timestamp(ts: star_types.Timestamp) -> String {
 }
 
 /// Extract "YYYY-MM" from a Timestamp whose date is "YYYY-MM-DD" or similar.
-fn year_month_from_timestamp(ts: star_types.Timestamp) -> String {
+fn year_month_from_timestamp(ts: types.Timestamp) -> String {
   case string.split(ts.date, "-") {
     [year, month, ..] -> year <> "-" <> month
     _ -> ts.date
@@ -132,15 +144,15 @@ fn year_month_from_timestamp(ts: star_types.Timestamp) -> String {
 // ---------------------------------------------------------------------------
 
 fn scope_vars(
-  base: TemplateVars,
-  stars: List(StarredRepo),
+  base: PageVars,
+  stars: List(DisplayRepo),
   group: config.Group,
   grouped: Bool,
-  partition_ctx: Option(star_types.PartitionContext),
-) -> TemplateVars {
+  partition_ctx: Option(PartitionContext),
+) -> PageVars {
   case grouped {
     False ->
-      star_types.TemplateVars(
+      PageVars(
         ..base,
         stars: stars,
         total: list.length(stars),
@@ -152,7 +164,7 @@ fn scope_vars(
       )
     True -> {
       let #(groups, description) = group_stars(stars, group)
-      star_types.TemplateVars(
+      PageVars(
         ..base,
         stars: stars,
         total: list.length(stars),
@@ -167,9 +179,9 @@ fn scope_vars(
 }
 
 fn group_stars(
-  stars: List(StarredRepo),
+  stars: List(DisplayRepo),
   group: config.Group,
-) -> #(Dict(String, List(StarredRepo)), String) {
+) -> #(Dict(String, List(DisplayRepo)), String) {
   case group {
     config.GroupByLanguage -> #(group_by_language(stars), "languages")
     config.GroupByTopic -> #(group_by_topic(stars), "topics")
@@ -178,8 +190,8 @@ fn group_stars(
 }
 
 fn group_by_language(
-  stars: List(StarredRepo),
-) -> Dict(String, List(StarredRepo)) {
+  stars: List(DisplayRepo),
+) -> Dict(String, List(DisplayRepo)) {
   list.fold(stars, dict.new(), fn(acc, repo) {
     let key = case repo.languages {
       [first, ..] -> first.name
@@ -189,7 +201,7 @@ fn group_by_language(
   })
 }
 
-fn group_by_topic(stars: List(StarredRepo)) -> Dict(String, List(StarredRepo)) {
+fn group_by_topic(stars: List(DisplayRepo)) -> Dict(String, List(DisplayRepo)) {
   list.fold(stars, dict.new(), fn(acc, repo) {
     let key = case repo.topics {
       None | Some([]) -> "no-topics"
@@ -199,9 +211,9 @@ fn group_by_topic(stars: List(StarredRepo)) -> Dict(String, List(StarredRepo)) {
   })
 }
 
-fn group_by_licence(stars: List(StarredRepo)) -> Dict(String, List(StarredRepo)) {
+fn group_by_licence(stars: List(DisplayRepo)) -> Dict(String, List(DisplayRepo)) {
   list.fold(stars, dict.new(), fn(acc, repo) {
-    let key = case repo.license {
+    let key = case repo.licence {
       "" -> "Unknown license"
       l -> l
     }
@@ -329,10 +341,10 @@ fn partition_matches_group(
 }
 
 fn upsert(
-  acc: Dict(String, List(StarredRepo)),
+  acc: Dict(String, List(DisplayRepo)),
   key: String,
-  repo: StarredRepo,
-) -> Dict(String, List(StarredRepo)) {
+  repo: DisplayRepo,
+) -> Dict(String, List(DisplayRepo)) {
   let existing = case dict.get(acc, key) {
     Ok(repos) -> repos
     Error(_) -> []
@@ -341,9 +353,9 @@ fn upsert(
 }
 
 fn dict_get(
-  d: Dict(String, List(StarredRepo)),
+  d: Dict(String, List(DisplayRepo)),
   key: String,
-) -> List(StarredRepo) {
+) -> List(DisplayRepo) {
   case dict.get(d, key) {
     Ok(v) -> v
     Error(_) -> []

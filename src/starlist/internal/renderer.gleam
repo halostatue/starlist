@@ -13,12 +13,13 @@ import glemplate/parser
 import glemplate/renderer
 import glemplate/text as glemplate_text
 import simplifile
-import starlist/internal/errors
+import starlist/errors.{type StarlistError}
 import starlist/internal/star_types.{
-  type Language, type Release, type StarredRepo, type TemplateVars,
-  type Timestamp, type Topic,
+  type DisplayRelease, type DisplayRepo, type IndexVars, type PageVars,
+  type PartitionContext,
 }
 import starlist/internal/templates
+import starlist/types.{type Language, type Topic}
 
 /// Opaque wrapper around a compiled glemplate template.
 pub opaque type Template {
@@ -27,8 +28,8 @@ pub opaque type Template {
 
 /// Compile a template from a file path, falling back to the embedded default
 /// if the file cannot be read.
-pub fn compile_file(path: String) -> Result(Template, errors.StarlistError) {
-  case simplifile.read(path) {
+pub fn compile_file(path: String) -> Result(Template, StarlistError) {
+  case simplifile.read(from: path) {
     Ok(content) -> compile(content, path)
     Error(_) ->
       case embedded_template(path) {
@@ -47,10 +48,7 @@ fn embedded_template(path: String) -> Result(String, Nil) {
 }
 
 /// Compile a template string into a renderable form.
-pub fn compile(
-  source: String,
-  name: String,
-) -> Result(Template, errors.StarlistError) {
+pub fn compile(source: String, name: String) -> Result(Template, StarlistError) {
   let p = parser.new()
   case parser.parse_to_template(source, name, p) {
     Ok(tpl) -> Ok(Template(inner: tpl))
@@ -64,12 +62,28 @@ pub fn compile(
   }
 }
 
-/// Render a compiled template with the given TemplateVars.
-pub fn render(
+/// Render a compiled template with PageVars (single-file or per-partition).
+pub fn render_page(
   template: Template,
-  vars: TemplateVars,
-) -> Result(String, errors.StarlistError) {
-  let a = template_vars_to_assigns(vars)
+  vars: PageVars,
+) -> Result(String, StarlistError) {
+  let a = page_vars_to_assigns(vars)
+  render_assigns(template, a)
+}
+
+/// Render a compiled template with IndexVars (partition index).
+pub fn render_index(
+  template: Template,
+  vars: IndexVars,
+) -> Result(String, StarlistError) {
+  let a = index_vars_to_assigns(vars)
+  render_assigns(template, a)
+}
+
+fn render_assigns(
+  template: Template,
+  a: dict.Dict(String, AssignData),
+) -> Result(String, StarlistError) {
   let cache = dict.new()
   case glemplate_text.render(template.inner, a, cache) {
     Ok(tree) -> Ok(string_tree.to_string(tree))
@@ -82,8 +96,8 @@ pub fn render(
 
 // --- Assigns conversion ---
 
-/// Convert TemplateVars into glemplate assigns dict.
-fn template_vars_to_assigns(vars: TemplateVars) -> dict.Dict(String, AssignData) {
+/// Convert PageVars into glemplate assigns dict.
+fn page_vars_to_assigns(vars: PageVars) -> dict.Dict(String, AssignData) {
   let sorted_keys =
     dict.keys(vars.groups)
     |> list.sort(string.compare)
@@ -101,30 +115,41 @@ fn template_vars_to_assigns(vars: TemplateVars) -> dict.Dict(String, AssignData)
   |> assigns.add_string("group_description", vars.group_description)
   |> assigns.add_list("groups", build_groups(sorted_keys, vars.groups))
   |> add_partition(vars.partition)
+}
+
+/// Convert IndexVars into glemplate assigns dict.
+fn index_vars_to_assigns(vars: IndexVars) -> dict.Dict(String, AssignData) {
+  assigns.new()
+  |> assigns.add_int("data_version", vars.data_version)
+  |> assigns.add_dict("updated_at", timestamp_to_assigns(vars.updated_at))
+  |> assigns.add_dict("generated_at", timestamp_to_assigns(vars.generated_at))
+  |> assigns.add_string("login", vars.login)
+  |> assigns.add_bool("truncated", vars.truncated)
+  |> assigns.add_int("total", vars.total)
+  |> assigns.add_int("fetched", vars.fetched)
   |> assigns.add_list("partitions", build_partition_list(vars.partitions))
   |> assigns.add_int("partition_count", vars.partition_count)
   |> assigns.add_string("partition_description", vars.partition_description)
 }
 
-fn timestamp_to_assigns(ts: Timestamp) -> dict.Dict(String, AssignData) {
+fn timestamp_to_assigns(ts: types.Timestamp) -> dict.Dict(String, AssignData) {
   assigns.new()
   |> assigns.add_string("date", ts.date)
   |> assigns.add_string("time", ts.time)
 }
 
-fn starred_repo_to_assign(repo: StarredRepo) -> AssignData {
+fn starred_repo_to_assign(repo: DisplayRepo) -> AssignData {
   let d =
     assigns.new()
     |> assigns.add_string("name", repo.name)
     |> assigns.add_string("url", repo.url)
-    |> assigns.add_string("license", repo.license)
+    |> assigns.add_string("licence", repo.licence)
     |> assigns.add_int("forks", repo.forks)
     |> assigns.add_int("stars", repo.stars)
     |> assigns.add_bool("is_fork", repo.is_fork)
     |> assigns.add_bool("is_private", repo.is_private)
     |> assigns.add_bool("is_template", repo.is_template)
-    |> assigns.add_int("language_count", repo.language_count)
-    |> assigns.add_int("topic_count", repo.topic_count)
+    |> assigns.add_int("total_languages", repo.total_languages)
     |> assigns.add_list(
       "languages",
       list.map(repo.languages, language_to_assign),
@@ -138,6 +163,7 @@ fn starred_repo_to_assign(repo: StarredRepo) -> AssignData {
     |> add_optional_release("latest_release", repo.latest_release)
     |> add_optional_topics("topics", repo.topics)
     |> add_optional_topic_links("topic_links", repo.topics)
+    |> add_topic_count(repo.topics)
   assigns.Dict(d)
 }
 
@@ -157,7 +183,7 @@ fn topic_to_assign(topic: Topic) -> AssignData {
   )
 }
 
-fn release_to_assigns(rel: Release) -> dict.Dict(String, AssignData) {
+fn release_to_assigns(rel: DisplayRelease) -> dict.Dict(String, AssignData) {
   let d =
     assigns.new()
     |> assigns.add_dict("published_on", timestamp_to_assigns(rel.published_on))
@@ -183,7 +209,7 @@ fn add_optional_string(
 fn add_optional_timestamp(
   d: dict.Dict(String, AssignData),
   key: String,
-  value: Option(Timestamp),
+  value: Option(types.Timestamp),
 ) -> dict.Dict(String, AssignData) {
   case value {
     Some(ts) -> assigns.add_dict(d, key, timestamp_to_assigns(ts))
@@ -194,7 +220,7 @@ fn add_optional_timestamp(
 fn add_optional_release(
   d: dict.Dict(String, AssignData),
   key: String,
-  value: Option(Release),
+  value: Option(DisplayRelease),
 ) -> dict.Dict(String, AssignData) {
   case value {
     Some(rel) -> assigns.add_dict(d, key, release_to_assigns(rel))
@@ -211,6 +237,16 @@ fn add_optional_topics(
     Some(topics) -> assigns.add_list(d, key, list.map(topics, topic_to_assign))
     None -> assigns.add_bool(d, key, False)
   }
+}
+
+fn add_topic_count(
+  d: dict.Dict(String, AssignData),
+  value: Option(List(Topic)),
+) -> dict.Dict(String, AssignData) {
+  assigns.add_int(d, "topic_count", case value {
+    Some(topics) -> list.length(topics)
+    None -> 0
+  })
 }
 
 /// Pre-join topic links as a comma-separated markdown string.
@@ -233,7 +269,7 @@ fn add_optional_topic_links(
 
 fn add_partition(
   d: dict.Dict(String, AssignData),
-  value: option.Option(star_types.PartitionContext),
+  value: option.Option(PartitionContext),
 ) -> dict.Dict(String, AssignData) {
   case value {
     option.Some(ctx) ->
@@ -250,9 +286,7 @@ fn add_partition(
   }
 }
 
-fn build_partition_list(
-  partitions: List(star_types.PartitionContext),
-) -> List(AssignData) {
+fn build_partition_list(partitions: List(PartitionContext)) -> List(AssignData) {
   list.map(partitions, fn(ctx) {
     assigns.Dict(
       assigns.new()
@@ -267,7 +301,7 @@ fn build_partition_list(
 /// Build a list of {name, repos, count, count_label} dicts for template iteration.
 fn build_groups(
   keys: List(String),
-  groups: dict.Dict(String, List(StarredRepo)),
+  groups: dict.Dict(String, List(DisplayRepo)),
 ) -> List(AssignData) {
   list.map(keys, fn(key) {
     let repos = case dict.get(groups, key) {

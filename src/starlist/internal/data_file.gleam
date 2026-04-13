@@ -1,41 +1,42 @@
-//// Star data — JSON serialization/deserialization for stars.json.
+//// Star data — JSON serialization/deserialization for data.json.
 
 import gleam/dynamic/decode
 import gleam/json
 import gleam/string
 import simplifile
-import starlist/internal/errors.{type StarlistError}
-import starlist/internal/star_types.{
-  type Language, type QueryResponse, type ResponseRelease, type ResponseRepo,
-  type Topic,
+import starlist/errors.{type StarlistError}
+import starlist/internal/star_types.{type StarData, StarData}
+import starlist/types.{
+  type Language, type Release, type Repo, type Topic, Language, Release, Repo,
+  Topic,
 }
 
-/// Serialize a QueryResponse to JSON and write to the given filename.
+/// Serialize StarData to JSON and write to the given filename.
 pub fn write_data_file(
-  response: QueryResponse,
+  data: StarData,
   filename: String,
 ) -> Result(Nil, StarlistError) {
   let json_string =
-    query_response_to_json(response)
+    star_data_to_json(data)
     |> json.to_string
   simplifile.write(to: filename, contents: json_string)
   |> map_file_error("writing " <> filename)
 }
 
 /// Read and parse a data file, validating the dataVersion field.
-pub fn load_data_file(filename: String) -> Result(QueryResponse, StarlistError) {
+pub fn load_data_file(filename: String) -> Result(StarData, StarlistError) {
   case simplifile.read(from: filename) {
     Error(_) ->
       Error(errors.FileError(
         "Cannot read " <> filename <> ": file not found or unreadable",
       ))
     Ok(contents) ->
-      case json.parse(from: contents, using: query_response_decoder()) {
+      case json.parse(from: contents, using: star_data_decoder()) {
         Error(_) ->
           Error(errors.FileError(
-            "Failed to decode " <> filename <> " as valid QueryResponse JSON",
+            "Failed to decode " <> filename <> " as valid StarData JSON",
           ))
-        Ok(response) -> validate_data_version(response)
+        Ok(data) -> validate_data_version(data)
       }
   }
 }
@@ -44,19 +45,19 @@ pub fn load_data_file(filename: String) -> Result(QueryResponse, StarlistError) 
 // JSON encoding
 // ---------------------------------------------------------------------------
 
-pub fn query_response_to_json(response: QueryResponse) -> json.Json {
+fn star_data_to_json(data: StarData) -> json.Json {
   json.object([
-    #("dataVersion", json.int(response.data_version)),
-    #("login", json.string(response.login)),
-    #("truncated", json.bool(response.truncated)),
-    #("total", json.int(response.total)),
-    #("fetched", json.int(response.fetched)),
-    #("updatedAt", json.string(response.updated_at)),
-    #("stars", json.array(response.stars, response_repo_to_json)),
+    #("dataVersion", json.int(data.data_version)),
+    #("login", json.string(data.login)),
+    #("truncated", json.bool(data.truncated)),
+    #("total", json.int(data.total)),
+    #("fetched", json.int(data.fetched)),
+    #("updatedAt", json.string(data.updated_at)),
+    #("repos", json.array(data.repos, repo_to_json)),
   ])
 }
 
-fn response_repo_to_json(repo: ResponseRepo) -> json.Json {
+fn repo_to_json(repo: Repo) -> json.Json {
   json.object([
     #("archivedOn", json.nullable(repo.archived_on, json.string)),
     #("description", json.nullable(repo.description, json.string)),
@@ -65,19 +66,15 @@ fn response_repo_to_json(repo: ResponseRepo) -> json.Json {
     #("isFork", json.bool(repo.is_fork)),
     #("isPrivate", json.bool(repo.is_private)),
     #("isTemplate", json.bool(repo.is_template)),
-    #("languageCount", json.int(repo.language_count)),
+    #("languageCount", json.int(repo.total_languages)),
     #("languages", json.array(repo.languages, language_to_json)),
-    #(
-      "latestRelease",
-      json.nullable(repo.latest_release, response_release_to_json),
-    ),
-    #("license", json.string(repo.license)),
+    #("latestRelease", json.nullable(repo.latest_release, release_to_json)),
+    #("licence", json.string(repo.licence)),
     #("name", json.string(repo.name)),
     #("parentRepo", json.nullable(repo.parent_repo, json.string)),
     #("pushedOn", json.string(repo.pushed_on)),
     #("starredOn", json.string(repo.starred_on)),
     #("stars", json.int(repo.stars)),
-    #("topicCount", json.int(repo.topic_count)),
     #(
       "topics",
       json.nullable(repo.topics, fn(ts) { json.array(ts, topic_to_json) }),
@@ -100,7 +97,7 @@ fn topic_to_json(topic: Topic) -> json.Json {
   ])
 }
 
-fn response_release_to_json(rel: ResponseRelease) -> json.Json {
+fn release_to_json(rel: Release) -> json.Json {
   json.object([
     #("name", json.nullable(rel.name, json.string)),
     #("publishedOn", json.string(rel.published_on)),
@@ -111,39 +108,37 @@ fn response_release_to_json(rel: ResponseRelease) -> json.Json {
 // JSON decoding
 // ---------------------------------------------------------------------------
 
-fn validate_data_version(
-  response: QueryResponse,
-) -> Result(QueryResponse, StarlistError) {
-  case response.data_version == star_types.data_version {
-    True -> Ok(response)
+fn validate_data_version(data: StarData) -> Result(StarData, StarlistError) {
+  case data.data_version == star_types.data_version {
+    True -> Ok(data)
     False ->
       Error(errors.VersionMismatchError(
         expected: star_types.data_version,
-        found: response.data_version,
+        found: data.data_version,
       ))
   }
 }
 
-pub fn query_response_decoder() -> decode.Decoder(QueryResponse) {
+fn star_data_decoder() -> decode.Decoder(StarData) {
   use data_version <- decode.field("dataVersion", decode.int)
   use login <- decode.field("login", decode.string)
   use truncated <- decode.field("truncated", decode.bool)
   use total <- decode.field("total", decode.int)
   use fetched <- decode.field("fetched", decode.int)
   use updated_at <- decode.field("updatedAt", decode.string)
-  use stars <- decode.field("stars", decode.list(response_repo_decoder()))
-  decode.success(star_types.QueryResponse(
-    data_version:,
-    login:,
-    truncated:,
-    total:,
-    fetched:,
-    stars:,
-    updated_at:,
+  use repos <- decode.field("repos", decode.list(repo_decoder()))
+  decode.success(StarData(
+    data_version: data_version,
+    login: login,
+    truncated: truncated,
+    total: total,
+    fetched: fetched,
+    repos: repos,
+    updated_at: updated_at,
   ))
 }
 
-fn response_repo_decoder() -> decode.Decoder(ResponseRepo) {
+fn repo_decoder() -> decode.Decoder(Repo) {
   use archived_on <- decode.field("archivedOn", decode.optional(decode.string))
   use description <- decode.field("description", decode.optional(decode.string))
   use forks <- decode.field("forks", decode.int)
@@ -154,25 +149,24 @@ fn response_repo_decoder() -> decode.Decoder(ResponseRepo) {
   use is_fork <- decode.field("isFork", decode.bool)
   use is_private <- decode.field("isPrivate", decode.bool)
   use is_template <- decode.field("isTemplate", decode.bool)
-  use language_count <- decode.field("languageCount", decode.int)
+  use total_languages <- decode.field("languageCount", decode.int)
   use languages <- decode.field("languages", decode.list(language_decoder()))
   use latest_release <- decode.field(
     "latestRelease",
-    decode.optional(response_release_decoder()),
+    decode.optional(release_decoder()),
   )
-  use license <- decode.field("license", decode.string)
+  use licence <- decode.field("licence", decode.string)
   use name <- decode.field("name", decode.string)
   use parent_repo <- decode.field("parentRepo", decode.optional(decode.string))
   use pushed_on <- decode.field("pushedOn", decode.string)
   use starred_on <- decode.field("starredOn", decode.string)
   use stars <- decode.field("stars", decode.int)
-  use topic_count <- decode.field("topicCount", decode.int)
   use topics <- decode.field(
     "topics",
     decode.optional(decode.list(topic_decoder())),
   )
   use url <- decode.field("url", decode.string)
-  decode.success(star_types.ResponseRepo(
+  decode.success(Repo(
     archived_on:,
     description:,
     forks:,
@@ -180,16 +174,15 @@ fn response_repo_decoder() -> decode.Decoder(ResponseRepo) {
     is_fork:,
     is_private:,
     is_template:,
-    language_count:,
+    total_languages:,
     languages:,
     latest_release:,
-    license:,
+    licence:,
     name:,
     parent_repo:,
     pushed_on:,
     starred_on:,
     stars:,
-    topic_count:,
     topics:,
     url:,
   ))
@@ -198,19 +191,19 @@ fn response_repo_decoder() -> decode.Decoder(ResponseRepo) {
 fn language_decoder() -> decode.Decoder(Language) {
   use name <- decode.field("name", decode.string)
   use percent <- decode.field("percent", decode.int)
-  decode.success(star_types.Language(name:, percent:))
+  decode.success(Language(name:, percent:))
 }
 
 fn topic_decoder() -> decode.Decoder(Topic) {
   use name <- decode.field("name", decode.string)
   use url <- decode.field("url", decode.string)
-  decode.success(star_types.Topic(name:, url:))
+  decode.success(Topic(name:, url:))
 }
 
-fn response_release_decoder() -> decode.Decoder(ResponseRelease) {
+fn release_decoder() -> decode.Decoder(Release) {
   use name <- decode.field("name", decode.optional(decode.string))
   use published_on <- decode.field("publishedOn", decode.string)
-  decode.success(star_types.ResponseRelease(name:, published_on:))
+  decode.success(Release(name:, published_on:))
 }
 
 // ---------------------------------------------------------------------------
