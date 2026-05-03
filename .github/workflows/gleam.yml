@@ -67,7 +67,7 @@ jobs:
       - run: gleam build
       - run: gleam test
 
-      - run: gleam run -m build_action
+      - run: gleam run -m pontil_build
 
       - name: Ensure that nothing changed in dist (action is not ready)
         id: diff

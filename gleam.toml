@@ -1,5 +1,5 @@
 name = "starlist"
-version = "3.0.0"
+version = "3.0.1"
 target = "javascript"
 
 description = "Generate a list from user starred GitHub repositories"
@@ -24,8 +24,10 @@ gleam_http = ">= 4.3.0 and < 5.0.0"
 simplifile = ">= 2.4.0 and < 3.0.0"
 
 [dev_dependencies]
-esgleam = ">= 1.0.0 and < 2.0.0"
 gleeunit = ">= 1.0.0 and < 2.0.0"
 qcheck = ">= 1.0.0 and < 2.0.0"
 cog = ">= 2.0.3 and < 3.0.0"
-# sara = ">= 1.0.0 and < 2.0.0"
+pontil_build = ">= 1.0.0 and < 2.0.0"
+
+[tools.pontil_build.bundle]
+entry = "starlist_action.gleam"
