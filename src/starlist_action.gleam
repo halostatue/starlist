@@ -26,7 +26,7 @@ import starlist_action/action_setup
 
 const action_name = "halostatue/starlist"
 
-const action_version = "3.0.0"
+const action_version = "3.0.1"
 
 const auto_partition_threshold = 2000
 

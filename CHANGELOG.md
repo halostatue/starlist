@@ -1,5 +1,15 @@
 # halostatue/starlist Changelog
 
+## 3.0.1 / 2026-05-03
+
+A minor update, for a change.
+
+Instead of using `esgleam`, starlist is now bundled with `pontil_build`. Other
+dependencies were updated.
+
+The README example also shows the use of [step-security/harden-runner][sshr] to
+limit the outbound network requests permitted.
+
 ## 3.0.0 / 2026-04-18
 
 This release presents more breaking changes. It uses the newest version of
@@ -106,4 +116,5 @@ probably be made a new release because none of the configuration is the same.
 The [v1 Changelog][v1-changelog] is on its last release from 2024-10-27.
 
 [pontil]: https://hex.pm/packages/pontil
+[sshr]: https://github.com/step-security/harden-runner
 [v1-Changelog]: https://github.com/halostatue/starlist/commit/c4056cf07f04cbc534edb92b16a971cf516aa5f7/blob/Changelog.md

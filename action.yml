@@ -20,7 +20,7 @@ inputs:
 
 runs:
   using: 'node24'
-  main: 'dist/starlist.js'
+  main: 'dist/starlist.cjs'
 
 branding:
   icon: star

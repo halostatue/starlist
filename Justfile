@@ -17,7 +17,7 @@ _default:
 # Build the action bundle
 @build: generate
     gleam build
-    gleam run -m build_action
+    gleam run -m pontil_build
 
 # Run the action locally in a scratch directory (options --config-file, --config, --use-data)
 action *ARGS: build

@@ -19,11 +19,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.18.0
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+
       - name: Generate stars list
-        uses: halostatue/starlist@v3.0.0
+        uses: halostatue/starlist@v3.0.1
         with:
           token: ${{ secrets.STARLIST_PAT }}
 ```

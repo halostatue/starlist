@@ -6,7 +6,6 @@ packages = [
   { name = "clip", version = "1.2.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "clip", source = "hex", outer_checksum = "FFDF5539D967399D22C58AADBF17423C56B5506055A7064D2A6620ED928E9ECF" },
   { name = "cog", version = "2.0.3", build_tools = ["gleam"], requirements = ["filepath", "gleam_stdlib", "glexer", "simplifile"], otp_app = "cog", source = "hex", outer_checksum = "C17C36D0D7383893EFB0E7D11BFA81F2C54AD81F455979D0625E3B8B5AAC5B94" },
   { name = "envoy", version = "1.2.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "envoy", source = "hex", outer_checksum = "9C6FBB6BFA02A52798BEEC5977A738CAD6E4A057F4B67FD0C8061AD2502C191A" },
-  { name = "esgleam", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_regexp", "gleam_stdlib", "simplifile"], otp_app = "esgleam", source = "hex", outer_checksum = "06341DC528DCA3DAF1BC92D03BBD6A97A6105B012AC064798CE04A108C2F11A4" },
   { name = "exception", version = "2.1.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "exception", source = "hex", outer_checksum = "329D269D5C2A314F7364BD2711372B6F2C58FA6F39981572E5CA68624D291F8C" },
   { name = "filepath", version = "1.1.2", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "filepath", source = "hex", outer_checksum = "B06A9AF0BF10E51401D64B98E4B627F1D2E48C154967DA7AF4D0914780A6D40A" },
   { name = "glam", version = "2.0.4", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "glam", source = "hex", outer_checksum = "48A043A12091F93D911C316DD8F7FFD03CD9FF6F50848FC56E359D3C168DF0FA" },
@@ -28,16 +27,18 @@ packages = [
   { name = "iv", version = "1.4.2", build_tools = ["gleam"], requirements = ["gleam_stdlib", "gleam_yielder"], otp_app = "iv", source = "hex", outer_checksum = "C9B1940787A3318D0B51701EE5AD416010215B5FDC1E582D74106CE9F4381C85" },
   { name = "nibble", version = "1.1.4", build_tools = ["gleam"], requirements = ["gleam_regexp", "gleam_stdlib", "iv"], otp_app = "nibble", source = "hex", outer_checksum = "06397501730FF486AE6F99299982A33F5EA9F8945B5A25920C82C8F924CEA481" },
   { name = "pontil", version = "1.0.0", build_tools = ["gleam"], requirements = ["envoy", "gleam_fetch", "gleam_http", "gleam_javascript", "gleam_json", "gleam_stdlib", "pontil_core", "pontil_platform", "youid"], otp_app = "pontil", source = "hex", outer_checksum = "FEEE4F1846A7916B9FA94830FA62D9428F096CF95333510EE2FF051E2243EC6F" },
+  { name = "pontil_build", version = "1.0.0", build_tools = ["gleam"], requirements = ["envoy", "gleam_http", "gleam_httpc", "gleam_stdlib", "pontil_platform", "shellout", "simplifile", "star", "tom"], otp_app = "pontil_build", source = "hex", outer_checksum = "38C8DB24A4D2C4503C30F1E64FABBEE4FB3A5995CE4A4D4C8025D5F01D8803A7" },
   { name = "pontil_core", version = "1.0.0", build_tools = ["gleam"], requirements = ["envoy", "gleam_stdlib", "pontil_platform", "simplifile", "youid"], otp_app = "pontil_core", source = "hex", outer_checksum = "F5F50042F91673C54A17CC5342680B52E1B0D33F024664B1DA0C7DC011B6693C" },
-  { name = "pontil_platform", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "shellout"], otp_app = "pontil_platform", source = "hex", outer_checksum = "B7C731F77F380EAB162E704BE6C7280D1EB53AE003B811A59F385CA2D24B14A3" },
+  { name = "pontil_platform", version = "1.0.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "shellout"], otp_app = "pontil_platform", source = "hex", outer_checksum = "B9A51960FD61BCA8D4B5F83733D4548CFE26B5694028B2F7C2AFAD56A1F65D4B" },
   { name = "prng", version = "5.1.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "prng", source = "hex", outer_checksum = "29DA88BCFB54D06DD1472951DF101E9524878056D139DA2616B04350B403CE10" },
   { name = "qcheck", version = "1.0.4", build_tools = ["gleam"], requirements = ["exception", "gleam_regexp", "gleam_stdlib", "gleam_yielder", "prng"], otp_app = "qcheck", source = "hex", outer_checksum = "BD9B18C1602FBC667E3E139ED270458F8C743ED791F892CC90989CE10478C4FA" },
   { name = "shellout", version = "1.8.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "shellout", source = "hex", outer_checksum = "C416356D45151F298108C9DB9CD1EDE0313F620B5EDBB5766CD7237659D87841" },
   { name = "simplifile", version = "2.4.0", build_tools = ["gleam"], requirements = ["filepath", "gleam_stdlib"], otp_app = "simplifile", source = "hex", outer_checksum = "7C18AFA4FED0B4CE1FA5B0B4BAC1FA1744427054EA993565F6F3F82E5453170D" },
   { name = "splitter", version = "1.2.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "splitter", source = "hex", outer_checksum = "3DFD6B6C49E61EDAF6F7B27A42054A17CFF6CA2135FF553D0CB61C234D281DD0" },
   { name = "squall", version = "2.0.0", build_tools = ["gleam"], requirements = ["argv", "envoy", "filepath", "glam", "gleam_http", "gleam_httpc", "gleam_json", "gleam_stdlib", "simplifile", "swell"], source = "git", repo = "https://github.com/halostatue/squall.git", commit = "ca6abb8d7f34cffa09ff6496337e58399d93d1dd" },
+  { name = "star", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "star", source = "hex", outer_checksum = "B59982E7CD6509DF99DA46CD01CFEC45DEA2CC5523D4359CC65F789397618505" },
   { name = "swell", version = "2.1.4", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "swell", source = "hex", outer_checksum = "E12BCF0F90886C3B0C641AA2BB69CE9EDEEF1293279256B75DEB14A03F2F8221" },
-  { name = "tom", version = "2.0.2", build_tools = ["gleam"], requirements = ["gleam_stdlib", "gleam_time"], otp_app = "tom", source = "hex", outer_checksum = "234A842F3D087D35737483F5DFB6DE9839E3366EF0CAF8726D2D094210227670" },
+  { name = "tom", version = "2.1.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "gleam_time"], otp_app = "tom", source = "hex", outer_checksum = "DCF04CB7AB35D58CFC598C66EA2E1816D160759802C89B2BA6238780D59BC256" },
   { name = "youid", version = "1.6.0", build_tools = ["gleam"], requirements = ["gleam_crypto", "gleam_stdlib", "gleam_time"], otp_app = "youid", source = "hex", outer_checksum = "7A3ABA44B1B38BC2BDCB5474C5317AA372BE58DFBC649815EE08B03526DDA18D" },
 ]
 
@@ -46,7 +47,6 @@ argv = { version = ">= 1.0.2 and < 2.0.0" }
 clip = { version = ">= 1.2.0 and < 2.0.0" }
 cog = { version = ">= 2.0.3 and < 3.0.0" }
 envoy = { version = ">= 1.1.0 and < 2.0.0" }
-esgleam = { version = ">= 1.0.0 and < 2.0.0" }
 filepath = { version = ">= 1.0.0 and < 2.0.0" }
 gleam_fetch = { version = ">= 1.3.0 and < 2.0.0" }
 gleam_http = { version = ">= 4.3.0 and < 5.0.0" }
@@ -56,6 +56,7 @@ gleam_stdlib = { version = ">= 0.44.0 and < 2.0.0" }
 gleeunit = { version = ">= 1.0.0 and < 2.0.0" }
 glemplate = { version = ">= 8.0.0 and < 9.0.0" }
 pontil = { version = ">= 1.0.0 and < 2.0.0" }
+pontil_build = { version = ">= 1.0.0 and < 2.0.0" }
 qcheck = { version = ">= 1.0.0 and < 2.0.0" }
 shellout = { version = ">= 1.8.0 and < 2.0.0" }
 simplifile = { version = ">= 2.4.0 and < 3.0.0" }
